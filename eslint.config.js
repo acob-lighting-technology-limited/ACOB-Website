@@ -52,6 +52,7 @@ export default [
         IntersectionObserver: 'readonly',
         AbortController: 'readonly',
         DOMException: 'readonly',
+        DOMParser: 'readonly',
         ReadableStream: 'readonly',
         TextEncoder: 'readonly',
         Response: 'readonly',

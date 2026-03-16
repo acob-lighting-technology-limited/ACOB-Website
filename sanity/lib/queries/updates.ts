@@ -82,10 +82,12 @@ export async function getUpdatePostsPaginated({
   page = 1,
   limit = PAGINATION.UPDATES_PER_PAGE,
   search = '',
+  category = '',
 }: {
   page?: number;
   limit?: number;
   search?: string;
+  category?: string;
 }): Promise<PaginatedUpdatesResponse<UpdatePost>> {
   try {
     const offset = (page - 1) * limit;
@@ -93,6 +95,12 @@ export async function getUpdatePostsPaginated({
     // Build the base query
     let query = '*[_type == "updatePost"';
     const params: Record<string, string | number> = {};
+
+    // Add category filter
+    if (category.trim()) {
+      query += ' && category == $category';
+      params.category = category;
+    }
 
     // Add search filter
     if (search.trim()) {
@@ -138,6 +146,9 @@ export async function getUpdatePostsPaginated({
 
     // Get total count for pagination
     let countQuery = 'count(*[_type == "updatePost"';
+    if (category.trim()) {
+      countQuery += ' && category == $category';
+    }
     if (search.trim()) {
       countQuery += ` && (
         title match $search ||

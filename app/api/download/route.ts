@@ -122,7 +122,12 @@ export async function GET(request: NextRequest) {
 
     // Extract filename from URL for download
     const urlPath = new URL(imageUrl, 'http://dummy.com').pathname;
-    const filename = path.basename(urlPath) || 'download.jpg';
+    // Strip header-injection characters (CR, LF, NUL) and non-ASCII before
+    // using the filename in a Content-Disposition header value.
+    const rawFilename = path.basename(urlPath) || 'download.jpg';
+    const filename = rawFilename
+      .replace(/[\r\n\0]/g, '')
+      .replace(/[^\x20-\x7E]/g, '_');
 
     return new NextResponse(watermarkedImage.buffer as ArrayBuffer, {
       headers: {
