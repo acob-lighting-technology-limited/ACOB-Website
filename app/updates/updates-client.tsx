@@ -54,6 +54,7 @@ export default function UpdatesClient({
   initialPosts,
   initialPagination,
   currentSearch,
+  currentPage,
   breadcrumbItems,
 }: UpdatesClientProps) {
   const router = useRouter();
@@ -67,6 +68,9 @@ export default function UpdatesClient({
     const p = new URLSearchParams();
     if (currentSearch) {
       p.set('search', currentSearch);
+    }
+    if (currentPage > 1) {
+      p.set('page', String(currentPage));
     }
     p.set('limit', String(initialPagination.limit));
     return p;

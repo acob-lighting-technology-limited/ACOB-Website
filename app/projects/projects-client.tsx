@@ -31,6 +31,7 @@ interface ProjectsClientProps {
   initialProjects: Project[];
   initialPagination: PaginationInfo;
   currentSearch: string;
+  currentPage: number;
   breadcrumbItems: Array<{ label: string; href?: string }>;
 }
 
@@ -53,6 +54,7 @@ export default function ProjectsClient({
   initialProjects,
   initialPagination,
   currentSearch,
+  currentPage,
   breadcrumbItems,
 }: ProjectsClientProps) {
   const router = useRouter();
@@ -66,6 +68,9 @@ export default function ProjectsClient({
     const p = new URLSearchParams();
     if (currentSearch) {
       p.set('search', currentSearch);
+    }
+    if (currentPage > 1) {
+      p.set('page', String(currentPage));
     }
     p.set('limit', String(initialPagination.limit));
     return p;

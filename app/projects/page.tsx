@@ -62,6 +62,7 @@ export default async function ProjectsPage({
             initialProjects={projects}
             initialPagination={pagination}
             currentSearch={search}
+            currentPage={page}
             breadcrumbItems={breadcrumbItems}
           />
         </Suspense>
