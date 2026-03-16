@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,7 +57,6 @@ export function JobApplicationForm({
     availability: '',
     resumeFile: null,
   });
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [fileName, setFileName] = useState<string>('');
 
   const handleInputChange = (
@@ -109,55 +109,73 @@ export function JobApplicationForm({
     setFileName('');
   };
 
-  const sendApplication = async (
-    formData: ApplicationFormData,
-  ): Promise<unknown> => {
-    try {
-      const formDataToSend = new globalThis.FormData();
-
-      // Append all form fields
-      formDataToSend.append('jobTitle', jobTitle);
-      formDataToSend.append('jobSlug', jobSlug);
-      formDataToSend.append('fullName', formData.fullName);
-      formDataToSend.append('email', formData.email);
-      formDataToSend.append('phone', formData.phone);
-      formDataToSend.append('location', formData.location);
-      formDataToSend.append('linkedin', formData.linkedin);
-      formDataToSend.append('portfolio', formData.portfolio);
-      formDataToSend.append('coverLetter', formData.coverLetter);
-      formDataToSend.append('experience', formData.experience);
-      formDataToSend.append('education', formData.education);
-      formDataToSend.append('availability', formData.availability);
-
-      // Append resume file if exists
-      if (formData.resumeFile) {
-        formDataToSend.append('resume', formData.resumeFile);
-      }
-
-      const response = await fetch('/api/job-application', {
-        method: 'POST',
-        body: formDataToSend,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.error || `HTTP error! status: ${response.status}`,
-        );
-      }
-
-      const result = await response.json();
-      return result;
-    } catch (error: unknown) {
-      console.error('Error submitting application:', error);
-      throw error;
+  async function sendApplication(data: ApplicationFormData): Promise<unknown> {
+    const formDataToSend = new globalThis.FormData();
+    formDataToSend.append('jobTitle', jobTitle);
+    formDataToSend.append('jobSlug', jobSlug);
+    formDataToSend.append('fullName', data.fullName);
+    formDataToSend.append('email', data.email);
+    formDataToSend.append('phone', data.phone);
+    formDataToSend.append('location', data.location);
+    formDataToSend.append('linkedin', data.linkedin);
+    formDataToSend.append('portfolio', data.portfolio);
+    formDataToSend.append('coverLetter', data.coverLetter);
+    formDataToSend.append('experience', data.experience);
+    formDataToSend.append('education', data.education);
+    formDataToSend.append('availability', data.availability);
+    if (data.resumeFile) {
+      formDataToSend.append('resume', data.resumeFile);
     }
-  };
 
-  const handleSubmit = async (): Promise<void> => {
-    setIsSubmitting(true);
+    const response = await fetch('/api/job-application', {
+      method: 'POST',
+      body: formDataToSend,
+    });
 
-    // Basic form validation
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.error || `HTTP error! status: ${response.status}`,
+      );
+    }
+
+    return response.json();
+  }
+
+  const { mutate, isPending: isSubmitting } = useMutation({
+    mutationFn: sendApplication,
+    onSuccess: () => {
+      toast.success('Application submitted successfully!', {
+        description:
+          'Thank you for your interest. We will review your application and get back to you soon.',
+        duration: 6000,
+      });
+      setFormData({
+        fullName: '',
+        email: '',
+        phone: '',
+        location: '',
+        linkedin: '',
+        portfolio: '',
+        coverLetter: '',
+        experience: '',
+        education: '',
+        availability: '',
+        resumeFile: null,
+      });
+      setFileName('');
+    },
+    onError: (err: Error) => {
+      toast.error('Failed to submit application', {
+        description:
+          err.message ||
+          `Please try again or contact us at ${CONTACT_INFO.email.careers}`,
+        duration: 5000,
+      });
+    },
+  });
+
+  const handleSubmit = (): void => {
     const requiredFields: (keyof ApplicationFormData)[] = [
       'fullName',
       'email',
@@ -177,62 +195,19 @@ export function JobApplicationForm({
         description: 'Full name, email, phone, and cover letter are required',
         duration: 4000,
       });
-      setIsSubmitting(false);
       return;
     }
 
-    // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       toast.error('Invalid email address', {
         description: 'Please enter a valid email address',
         duration: 4000,
       });
-      setIsSubmitting(false);
       return;
     }
 
-    try {
-      const loadingToast = toast.loading('Submitting your application...', {
-        description: 'Please wait while we process your application',
-      });
-
-      await sendApplication(formData);
-
-      toast.dismiss(loadingToast);
-      toast.success('Application submitted successfully! 🎉', {
-        description:
-          'Thank you for your interest. We will review your application and get back to you soon.',
-        duration: 6000,
-      });
-
-      // Reset form
-      setFormData({
-        fullName: '',
-        email: '',
-        phone: '',
-        location: '',
-        linkedin: '',
-        portfolio: '',
-        coverLetter: '',
-        experience: '',
-        education: '',
-        availability: '',
-        resumeFile: null,
-      });
-      setFileName('');
-    } catch {
-      toast.error('Failed to submit application', {
-        description: `Something went wrong. Please try again or contact us directly at ${CONTACT_INFO.email.careers}`,
-        duration: 5000,
-        action: {
-          label: 'Retry',
-          onClick: () => handleSubmit(),
-        },
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    mutate(formData);
   };
 
   return (

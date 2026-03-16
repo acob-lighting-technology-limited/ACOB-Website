@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { useResponsiveLimit } from '@/hooks/use-responsive-limit';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import { QUERY_KEYS } from '@/lib/query-keys';
+import { TableSkeleton, QueryError } from '@/components/ui/query-states';
 
 interface UpdatesClientProps {
   initialPosts: UpdatePost[];
@@ -30,6 +33,21 @@ interface UpdatesClientProps {
   currentSearch: string;
   currentPage: number;
   breadcrumbItems: Array<{ label: string; href?: string }>;
+}
+
+interface UpdatesApiResponse {
+  posts: UpdatePost[];
+  pagination: PaginationInfo;
+}
+
+async function fetchUpdates(
+  params: URLSearchParams,
+): Promise<UpdatesApiResponse> {
+  const response = await fetch(`/api/updates?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch updates');
+  }
+  return response.json();
 }
 
 export default function UpdatesClient({
@@ -40,37 +58,32 @@ export default function UpdatesClient({
 }: UpdatesClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  const [posts, setPosts] = useState(initialPosts);
-  const [pagination, setPagination] = useState(initialPagination);
-  const [searchQuery, setSearchQuery] = useState(currentSearch);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(!!currentSearch);
   const { limit: responsiveLimit } = useResponsiveLimit();
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const isInitialMount = useRef(true);
 
-  // Sync state with props when they change (from server component refresh)
-  useEffect(() => {
-    setPosts(initialPosts);
-    setPagination(initialPagination);
-    setSearchQuery(currentSearch);
-    setIsLoading(false);
-  }, [initialPosts, initialPagination, currentSearch]);
-
-  // Watch for URL search param changes and refresh server component
-  useEffect(() => {
-    const urlSearch = searchParams.get('search') || '';
-    if (urlSearch !== currentSearch) {
-      // URL has changed, refresh server component to update Hero
-      router.refresh();
+  const [searchQuery, setSearchQuery] = useState(currentSearch);
+  const [hasSearched, setHasSearched] = useState(!!currentSearch);
+  const [queryParams, setQueryParams] = useState<URLSearchParams>(() => {
+    const p = new URLSearchParams();
+    if (currentSearch) {
+      p.set('search', currentSearch);
     }
-  }, [searchParams, currentSearch, router]);
+    p.set('limit', String(initialPagination.limit));
+    return p;
+  });
 
-  // Update URL and fetch new data when search changes
-  const updateSearch = async (newSearch: string, newPage: number = 1) => {
-    setIsLoading(true);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: QUERY_KEYS.updates(Object.fromEntries(queryParams)),
+    queryFn: () => fetchUpdates(queryParams),
+    initialData: { posts: initialPosts, pagination: initialPagination },
+    staleTime: 30 * 1000,
+  });
+
+  const posts = data?.posts ?? initialPosts;
+  const pagination = data?.pagination ?? initialPagination;
+
+  const updateSearch = (newSearch: string, newPage: number = 1) => {
     const params = new URLSearchParams();
     if (newSearch.trim()) {
       params.set('search', newSearch);
@@ -82,45 +95,8 @@ export default function UpdatesClient({
 
     const queryString = params.toString();
     const newUrl = queryString ? `/updates?${queryString}` : '/updates';
-
-    // Update URL - the useEffect above will detect the change and refresh
     router.replace(newUrl);
-    // Also fetch client-side to update immediately
-    try {
-      const response = await fetch(`/api/updates?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch updates');
-      }
-      const result = await response.json();
-      setPosts(result.posts);
-      setPagination(result.pagination);
-    } catch (error) {
-      console.error('Error fetching updates:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Refetch with responsive limit only after initial mount
-  useEffect(() => {
-    // Skip on initial mount to prevent unnecessary refetch
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-
-    // Only refetch if limit actually changed and we have posts
-    if (
-      responsiveLimit !== pagination.limit &&
-      !isLoading &&
-      posts.length > 0
-    ) {
-      updateSearch(searchQuery, pagination.currentPage);
-    }
-  }, [responsiveLimit]);
-
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
+    setQueryParams(params);
   };
 
   const handleSearchSubmit = () => {
@@ -148,6 +124,18 @@ export default function UpdatesClient({
     updateSearch('', 1);
   };
 
+  // Refresh server component when URL search param drifts
+  const urlSearch = searchParams.get('search') || '';
+  if (urlSearch !== currentSearch) {
+    router.refresh();
+  }
+
+  if (isError) {
+    return (
+      <QueryError message="Could not load updates." onRetry={() => refetch()} />
+    );
+  }
+
   return (
     <>
       {/* Breadcrumb with Search */}
@@ -159,7 +147,7 @@ export default function UpdatesClient({
             <Input
               placeholder="Search updates..."
               value={searchQuery}
-              onChange={e => handleSearchChange(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               onKeyPress={handleKeyPress}
               className="h-11 pl-10 pr-10 bg-background border-2 focus:border-primary transition-all duration-300"
             />
@@ -206,20 +194,7 @@ export default function UpdatesClient({
 
       {/* Updates Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="overflow-hidden animate-pulse">
-              <div className="aspect-[16/9] bg-muted" />
-              <CardContent className="p-6">
-                <div className="h-4 bg-muted rounded mb-3 w-2/3" />
-                <div className="h-6 bg-muted rounded mb-4" />
-                <div className="h-4 bg-muted rounded mb-2" />
-                <div className="h-4 bg-muted rounded mb-4 w-5/6" />
-                <div className="h-10 bg-muted rounded mt-6" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <TableSkeleton rows={6} cols={3} />
       ) : posts.length === 0 ? (
         <Card className="border-2 border-dashed">
           <CardContent className="p-12 text-center">
@@ -243,7 +218,6 @@ export default function UpdatesClient({
               <FadeIn key={post._id} delay={index * 0.05} direction="up">
                 <Link href={`/updates/${post.slug.current}`} className="group">
                   <Card className="h-full overflow-hidden border-border bg-card hover:border-primary/30 hover:shadow-2xl transition-all duration-500">
-                    {/* Image */}
                     <div className="aspect-[16/9] overflow-hidden relative bg-muted">
                       {post.featuredImage ? (
                         <Image
@@ -263,9 +237,7 @@ export default function UpdatesClient({
                           </span>
                         </div>
                       )}
-                      {/* Gradient overlay - always visible for better text readability */}
                       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/70" />
-                      {/* Category at bottom left */}
                       {post.category && (
                         <div className="absolute bottom-4 left-4 right-4 z-10 text-sm font-medium uppercase tracking-wide text-white/90">
                           {post.category}
@@ -274,7 +246,6 @@ export default function UpdatesClient({
                     </div>
 
                     <CardContent className="flex flex-1 flex-col p-4 sm:p-6">
-                      {/* Author & Date */}
                       <div className="flex items-center text-xs text-muted-foreground mb-3">
                         {post.author && (
                           <>
@@ -294,18 +265,14 @@ export default function UpdatesClient({
                       </div>
 
                       <div className="space-y-3 flex-1">
-                        {/* Title */}
                         <h3 className="text-lg font-bold mb-3 text-foreground line-clamp-3 group-hover:text-primary transition-colors duration-300">
                           {post.title}
                         </h3>
-
-                        {/* Excerpt */}
                         <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
                           {post.excerpt}
                         </p>
                       </div>
 
-                      {/* Read More Button */}
                       <div className="mt-auto pt-6">
                         <div className="flex items-center text-sm font-medium text-primary group-hover:gap-2 transition-all duration-300">
                           Read More
@@ -362,7 +329,6 @@ export default function UpdatesClient({
                     { length: pagination.totalPages },
                     (_, i) => i + 1,
                   ).map(page => {
-                    // Show first page, last page, current page, and pages around current
                     if (
                       page === 1 ||
                       page === pagination.totalPages ||
