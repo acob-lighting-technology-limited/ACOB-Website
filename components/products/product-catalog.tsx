@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { ProductCard } from './product-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,12 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Hero } from '@/components/ui/hero';
 import { Container } from '@/components/ui/container';
 import { Search, X } from 'lucide-react';
+import { QUERY_KEYS } from '@/lib/query-keys';
+import {
+  CardSkeleton,
+  QueryError,
+  EmptyState,
+} from '@/components/ui/query-states';
 
 interface Product {
   _id: string;
@@ -30,36 +37,39 @@ interface ProductCatalogProps {
   breadcrumbItems: Array<{ label: string; href?: string }>;
 }
 
+async function fetchProducts(): Promise<Product[]> {
+  const response = await fetch('/api/products');
+  if (!response.ok) {
+    throw new Error('Failed to fetch products');
+  }
+  return response.json();
+}
+
 export function ProductCatalog({ breadcrumbItems }: ProductCatalogProps) {
-  const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const response = await fetch('/api/products');
-        const data = await response.json();
-        setProducts(data);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchProducts();
-  }, []);
-
-  const filteredProducts = products.filter(product => {
-    const matchesSearch =
-      searchQuery === '' ||
-      product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (product.sku &&
-        product.sku.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    return matchesSearch;
+  const {
+    data: products = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: QUERY_KEYS.products(),
+    queryFn: fetchProducts,
   });
+
+  const filteredProducts = useMemo(
+    () =>
+      products.filter(product => {
+        return (
+          searchQuery === '' ||
+          product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (product.sku &&
+            product.sku.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
+      }),
+    [products, searchQuery],
+  );
 
   // Generate hero images from filtered products
   const productImages = useMemo(() => {
@@ -75,6 +85,17 @@ export function ProductCatalog({ breadcrumbItems }: ProductCatalogProps) {
   const handleClearSearch = () => {
     setSearchQuery('');
   };
+
+  if (isError) {
+    return (
+      <Container className="px-4 py-8">
+        <QueryError
+          message="Could not load products."
+          onRetry={() => refetch()}
+        />
+      </Container>
+    );
+  }
 
   return (
     <>
@@ -138,33 +159,26 @@ export function ProductCatalog({ breadcrumbItems }: ProductCatalogProps) {
 
         {/* Products Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Card key={i} className="overflow-hidden animate-pulse">
-                <div className="aspect-[4/3] bg-muted" />
-                <CardContent className="p-6">
-                  <div className="h-6 bg-muted rounded mb-4" />
-                  <div className="h-4 bg-muted rounded mb-2" />
-                  <div className="h-10 bg-muted rounded" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <CardSkeleton count={8} />
         ) : filteredProducts.length === 0 ? (
-          <Card className="!border-t-2 !border-t-primary border border-border">
-            <CardContent className="p-4 sm:p-6 xl:p-8 text-center">
-              <div className="text-muted-foreground mb-4">
-                <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="text-xl font-semibold mb-2">
-                  No products found
-                </h3>
-                <p>Try adjusting your search terms or browse all products.</p>
-              </div>
-              <Button variant="outline" onClick={handleClearSearch}>
-                View All Products
-              </Button>
-            </CardContent>
-          </Card>
+          searchQuery ? (
+            <Card className="!border-t-2 !border-t-primary border border-border">
+              <CardContent className="p-4 sm:p-6 xl:p-8 text-center">
+                <div className="text-muted-foreground mb-4">
+                  <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <h3 className="text-xl font-semibold mb-2">
+                    No products found
+                  </h3>
+                  <p>Try adjusting your search terms or browse all products.</p>
+                </div>
+                <Button variant="outline" onClick={handleClearSearch}>
+                  View All Products
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <EmptyState message="No products found." />
+          )
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredProducts.map(product => (

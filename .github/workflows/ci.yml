@@ -43,9 +43,9 @@ jobs:
         run: npm run build
         env:
           # Required environment variables for build
-          NEXT_PUBLIC_SANITY_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID || 'test-project' }}
-          NEXT_PUBLIC_SANITY_DATASET: ${{ secrets.NEXT_PUBLIC_SANITY_DATASET || 'test' }}
-          SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN || 'test-token' }}
+          NEXT_PUBLIC_SANITY_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_SANITY_PROJECT_ID || vars.NEXT_PUBLIC_SANITY_PROJECT_ID || 'x16t7huo' }}
+          NEXT_PUBLIC_SANITY_DATASET: ${{ secrets.NEXT_PUBLIC_SANITY_DATASET || vars.NEXT_PUBLIC_SANITY_DATASET || 'production' }}
+          SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN || '' }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY || 'test-key' }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY || 'test-key' }}
 

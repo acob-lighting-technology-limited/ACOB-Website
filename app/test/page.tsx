@@ -50,7 +50,17 @@ function MapVariant({ type, title, description }: MapVariantProps) {
       const response = await fetch('/images/ng.svg');
       const svgText = await response.text();
       if (containerRef.current) {
-        containerRef.current.innerHTML = svgText;
+        // Parse with DOMParser instead of innerHTML to avoid arbitrary script execution
+        const parsed = new DOMParser().parseFromString(
+          svgText,
+          'image/svg+xml',
+        );
+        const parsedSvg = parsed.querySelector('svg');
+        // Clear container and append the parsed SVG node
+        containerRef.current.innerHTML = '';
+        if (parsedSvg) {
+          containerRef.current.appendChild(parsedSvg);
+        }
         const svg = containerRef.current.querySelector('svg');
         if (svg) {
           svg.style.width = '100%';

@@ -22,10 +22,10 @@ import type { Product } from '@/lib/types';
  * const products = await getProducts();
  * ```
  */
-export async function getProducts(): Promise<Product[]> {
+export async function getProducts(limit = 200): Promise<Product[]> {
   try {
-    const products = await client.fetch(`
-      *[_type == "product"] | order(_createdAt desc) {
+    const products = await client.fetch(
+      `*[_type == "product"] | order(_createdAt desc) [0...$limit] {
         _id,
         title,
         slug,
@@ -51,8 +51,9 @@ export async function getProducts(): Promise<Product[]> {
         isFeatured,
         _createdAt,
         _updatedAt
-      }
-    `);
+      }`,
+      { limit },
+    );
 
     return products;
   } catch (error) {

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 import { useResponsiveLimit } from '@/hooks/use-responsive-limit';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,12 +24,29 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import { QUERY_KEYS } from '@/lib/query-keys';
+import { TableSkeleton, QueryError } from '@/components/ui/query-states';
 
 interface ProjectsClientProps {
   initialProjects: Project[];
   initialPagination: PaginationInfo;
   currentSearch: string;
   breadcrumbItems: Array<{ label: string; href?: string }>;
+}
+
+interface ProjectsApiResponse {
+  projects: Project[];
+  pagination: PaginationInfo;
+}
+
+async function fetchProjects(
+  params: URLSearchParams,
+): Promise<ProjectsApiResponse> {
+  const response = await fetch(`/api/projects?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch projects');
+  }
+  return response.json();
 }
 
 export default function ProjectsClient({
@@ -39,37 +57,32 @@ export default function ProjectsClient({
 }: ProjectsClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { limit: responsiveLimit } = useResponsiveLimit();
 
-  const [projects, setProjects] = useState(initialProjects);
-  const [pagination, setPagination] = useState(initialPagination);
   const [searchQuery, setSearchQuery] = useState(currentSearch);
-  const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(!!currentSearch);
-  const { limit: responsiveLimit, isReady: isResponsiveReady } =
-    useResponsiveLimit();
+  const [queryParams, setQueryParams] = useState<URLSearchParams>(() => {
+    const p = new URLSearchParams();
+    if (currentSearch) {
+      p.set('search', currentSearch);
+    }
+    p.set('limit', String(initialPagination.limit));
+    return p;
+  });
+
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Sync state with props when they change (from server component refresh)
-  useEffect(() => {
-    setProjects(initialProjects);
-    setPagination(initialPagination);
-    setSearchQuery(currentSearch);
-    setIsLoading(false);
-  }, [initialProjects, initialPagination, currentSearch]);
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: QUERY_KEYS.projects(Object.fromEntries(queryParams)),
+    queryFn: () => fetchProjects(queryParams),
+    initialData: { projects: initialProjects, pagination: initialPagination },
+    staleTime: 30 * 1000,
+  });
 
-  // Watch for URL search param changes and refresh server component
-  useEffect(() => {
-    const urlSearch = searchParams.get('search') || '';
-    if (urlSearch !== currentSearch) {
-      // URL has changed, refresh server component to update Hero
-      router.refresh();
-    }
-  }, [searchParams, currentSearch, router]);
+  const projects = data?.projects ?? initialProjects;
+  const pagination = data?.pagination ?? initialPagination;
 
-  // Update URL and fetch new data when search changes
-  const updateSearch = async (newSearch: string, newPage: number = 1) => {
-    setIsLoading(true);
-
+  const updateSearch = (newSearch: string, newPage: number = 1) => {
     const params = new URLSearchParams();
     if (newSearch.trim()) {
       params.set('search', newSearch);
@@ -81,41 +94,8 @@ export default function ProjectsClient({
 
     const queryString = params.toString();
     const newUrl = queryString ? `/projects?${queryString}` : '/projects';
-
-    // Update URL - the useEffect above will detect the change and refresh
     router.replace(newUrl);
-    // Also fetch client-side to update immediately
-    try {
-      const response = await fetch(`/api/projects?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch projects');
-      }
-      const result = await response.json();
-      setProjects(result.projects);
-      setPagination(result.pagination);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Refetch with responsive limit on mount if limit changed (only after client hydration)
-  // Note: Dependencies intentionally limited to responsiveLimit and isResponsiveReady.
-  // searchQuery, pagination, isLoading, and updateSearch are omitted to avoid refetching
-  // on every state change - this effect only handles limit synchronization.
-  useEffect(() => {
-    if (
-      isResponsiveReady &&
-      responsiveLimit !== pagination.limit &&
-      !isLoading
-    ) {
-      updateSearch(searchQuery, pagination.currentPage);
-    }
-  }, [responsiveLimit, isResponsiveReady]);
-
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
+    setQueryParams(params);
   };
 
   const handleSearchSubmit = () => {
@@ -143,6 +123,21 @@ export default function ProjectsClient({
     updateSearch('', 1);
   };
 
+  // Refresh server component when URL search param drifts
+  const urlSearch = searchParams.get('search') || '';
+  if (urlSearch !== currentSearch) {
+    router.refresh();
+  }
+
+  if (isError) {
+    return (
+      <QueryError
+        message="Could not load projects."
+        onRetry={() => refetch()}
+      />
+    );
+  }
+
   return (
     <>
       {/* Breadcrumb with Search */}
@@ -154,7 +149,7 @@ export default function ProjectsClient({
             <Input
               placeholder="Search projects..."
               value={searchQuery}
-              onChange={e => handleSearchChange(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               onKeyPress={handleKeyPress}
               className="h-11 pl-10 pr-10 bg-background border-2 focus:border-primary transition-all duration-300"
             />
@@ -201,20 +196,7 @@ export default function ProjectsClient({
 
       {/* Projects Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="overflow-hidden animate-pulse">
-              <div className="aspect-[16/9] bg-muted" />
-              <CardContent className="p-6">
-                <div className="h-6 bg-muted rounded mb-4" />
-                <div className="h-4 bg-muted rounded mb-2" />
-                <div className="h-4 bg-muted rounded mb-4" />
-                <div className="h-4 bg-muted rounded mb-6" />
-                <div className="h-10 bg-muted rounded" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <TableSkeleton rows={6} cols={3} />
       ) : projects.length === 0 ? (
         <Card className="!border-t-2 !border-t-primary border border-border">
           <CardContent className="p-4 sm:p-6 xl:p-8 text-center">
@@ -238,7 +220,6 @@ export default function ProjectsClient({
                   className="group"
                 >
                   <Card className="overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-border hover:border-primary/50">
-                    {/* Image */}
                     <div className="aspect-[16/9] overflow-hidden relative bg-muted">
                       {project.projectImage ? (
                         <Image
@@ -258,12 +239,10 @@ export default function ProjectsClient({
                           </span>
                         </div>
                       )}
-                      {/* Gradient overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
 
                     <CardContent className="p-6 flex flex-col flex-1">
-                      {/* Location & Date */}
                       <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3 flex-wrap">
                         {(project.location || project.state) && (
                           <div className="flex items-center gap-1">
@@ -287,18 +266,15 @@ export default function ProjectsClient({
                         )}
                       </div>
 
-                      {/* Title */}
                       <h3 className="text-lg font-bold mb-3 text-foreground group-hover:text-primary transition-colors duration-300 line-clamp-3">
                         {project.title}
                       </h3>
 
-                      {/* Description */}
                       <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 mb-4 flex-1">
                         {project.excerpt ||
                           extractTextFromPortableText(project.content || [])}
                       </p>
 
-                      {/* View Project Link */}
                       <div className="flex items-center text-sm font-medium text-primary group-hover:gap-2 transition-all duration-300">
                         View Project
                         <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform duration-300" />
@@ -348,7 +324,6 @@ export default function ProjectsClient({
                     { length: pagination.totalPages },
                     (_, i) => i + 1,
                   ).map(page => {
-                    // Show first page, last page, current page, and pages around current
                     if (
                       page === 1 ||
                       page === pagination.totalPages ||

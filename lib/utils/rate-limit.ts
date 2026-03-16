@@ -14,6 +14,26 @@ interface TokenBucket {
 // In-memory store for rate limiting
 const rateLimitStore = new Map<string, TokenBucket>();
 
+// Lazily prune stale entries on each request instead of using setInterval,
+// which is unreliable in serverless / edge environments where the module may
+// be loaded in multiple isolated contexts.
+const PRUNE_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+const MAX_ENTRY_AGE_MS = 60 * 60 * 1000; // 1 hour
+let lastPruned = Date.now();
+
+function maybePruneStore(): void {
+  const now = Date.now();
+  if (now - lastPruned < PRUNE_INTERVAL_MS) {
+    return;
+  }
+  lastPruned = now;
+  for (const [key, bucket] of rateLimitStore.entries()) {
+    if (now - bucket.lastRefill > MAX_ENTRY_AGE_MS) {
+      rateLimitStore.delete(key);
+    }
+  }
+}
+
 /**
  * Simple token bucket rate limiter
  * @param request - Next.js request object
@@ -27,6 +47,8 @@ export function rateLimit(
     uniqueTokenPerInterval: RATE_LIMITS.GENERAL_API.maxRequests,
   },
 ): boolean {
+  maybePruneStore();
+
   // Get client identifier (IP address or custom header)
   const identifier =
     request.headers.get('x-forwarded-for') ||
@@ -99,20 +121,3 @@ export function withRateLimit(
     return handler(request);
   };
 }
-
-/**
- * Clean up old entries periodically to prevent memory leaks
- */
-setInterval(
-  () => {
-    const now = Date.now();
-    const maxAge = 60 * 60 * 1000; // 1 hour
-
-    for (const [key, bucket] of rateLimitStore.entries()) {
-      if (now - bucket.lastRefill > maxAge) {
-        rateLimitStore.delete(key);
-      }
-    }
-  },
-  10 * 60 * 1000,
-); // Run every 10 minutes

@@ -52,6 +52,7 @@ export default [
         IntersectionObserver: 'readonly',
         AbortController: 'readonly',
         DOMException: 'readonly',
+        DOMParser: 'readonly',
         ReadableStream: 'readonly',
         TextEncoder: 'readonly',
         Response: 'readonly',
@@ -117,6 +118,15 @@ export default [
       indent: 'off',
       'no-trailing-spaces': 'error',
       'eol-last': ['error', 'always'],
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector:
+            "CallExpression[callee.name='useEffect'] > ArrowFunctionExpression > BlockStatement > ExpressionStatement > CallExpression[callee.object.name='fetch']",
+          message:
+            'Do not fetch data inside useEffect. Use useQuery from @tanstack/react-query instead.',
+        },
+      ],
     },
   },
   {

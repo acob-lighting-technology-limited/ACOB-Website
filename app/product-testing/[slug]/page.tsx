@@ -295,11 +295,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
 export async function generateStaticParams() {
   const query = '*[_type == "product"]{ "slug": slug.current }';
-  const products = (await client.fetch(query)) || [];
+  let products: Array<{ slug?: string }> = [];
+
+  try {
+    products = (await client.fetch(query)) || [];
+  } catch (error) {
+    console.warn(
+      'Skipping product-testing static params generation due to Sanity fetch error.',
+      error,
+    );
+    return [];
+  }
 
   return products
-    .filter((p: { slug?: string }) => p?.slug)
-    .map((product: { slug: string }) => ({
+    .filter((p): p is { slug: string } => typeof p?.slug === 'string')
+    .map(product => ({
       slug: product.slug,
     }));
 }

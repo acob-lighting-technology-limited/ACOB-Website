@@ -13,30 +13,24 @@ import type { SanityImageSource } from '@sanity/image-url/lib/types/types';
 // ENVIRONMENT VARIABLES
 // ============================================================================
 
+const DEFAULT_SANITY_PROJECT_ID = 'x16t7huo';
+const DEFAULT_SANITY_DATASET = 'production';
+
 const projectId =
   process.env.SANITY_STUDIO_PROJECT_ID ||
-  process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+  process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ||
+  DEFAULT_SANITY_PROJECT_ID;
 
 const dataset =
-  process.env.SANITY_STUDIO_DATASET || process.env.NEXT_PUBLIC_SANITY_DATASET;
+  process.env.SANITY_STUDIO_DATASET ||
+  process.env.NEXT_PUBLIC_SANITY_DATASET ||
+  DEFAULT_SANITY_DATASET;
 
-const token = process.env.SANITY_API_TOKEN;
+const token = process.env.SANITY_API_TOKEN?.trim() || undefined;
 
 // ============================================================================
 // VALIDATION
 // ============================================================================
-
-if (!projectId) {
-  throw new Error(
-    'SANITY_STUDIO_PROJECT_ID or NEXT_PUBLIC_SANITY_PROJECT_ID is required',
-  );
-}
-
-if (!dataset) {
-  throw new Error(
-    'SANITY_STUDIO_DATASET or NEXT_PUBLIC_SANITY_DATASET is required',
-  );
-}
 
 if (!token) {
   if (process.env.NODE_ENV === 'development') {
@@ -66,7 +60,8 @@ if (!token) {
 export const client = createClient({
   projectId,
   dataset,
-  useCdn: process.env.NODE_ENV === 'production',
+  // Sanity recommends disabling CDN for authenticated requests.
+  useCdn: !token && process.env.NODE_ENV === 'production',
   apiVersion: '2025-07-16',
   token: token,
 });

@@ -3,6 +3,35 @@ import { rateLimit } from '@/lib/utils/rate-limit';
 import { RATE_LIMITS } from '@/lib/constants/ui';
 import { CONTACT_INFO } from '@/lib/constants/app.constants';
 
+/** Escape HTML special characters to prevent XSS in email templates */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+/**
+ * Validate a URL and ensure it uses http/https only.
+ * Returns the sanitized URL or null if invalid.
+ */
+function sanitizeUrl(raw: string): string | null {
+  if (!raw.trim()) {
+    return null;
+  }
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      return null;
+    }
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(request: NextRequest) {
   // Apply rate limiting
   const isRateLimited = rateLimit(request, {
@@ -68,14 +97,68 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate optional URL fields — reject javascript: / data: URIs
+    if (linkedin && !sanitizeUrl(linkedin)) {
+      return NextResponse.json(
+        { error: 'Invalid LinkedIn URL' },
+        { status: 400 },
+      );
+    }
+    if (portfolio && !sanitizeUrl(portfolio)) {
+      return NextResponse.json(
+        { error: 'Invalid portfolio URL' },
+        { status: 400 },
+      );
+    }
+
+    // Sanitize all user-supplied strings for safe HTML interpolation
+    const safeJobTitle = escapeHtml(jobTitle);
+    const safeFullName = escapeHtml(fullName);
+    const safeEmail = escapeHtml(email);
+    const safePhone = escapeHtml(phone);
+    const safeLocation = escapeHtml(location);
+    const safeLinkedin = linkedin ? escapeHtml(sanitizeUrl(linkedin)!) : '';
+    const safePortfolio = portfolio ? escapeHtml(sanitizeUrl(portfolio)!) : '';
+    const safeCoverLetter = escapeHtml(coverLetter);
+    const safeExperience = escapeHtml(experience);
+    const safeEducation = escapeHtml(education);
+    const safeAvailability = escapeHtml(availability);
+
     // Handle resume file
     let resumeAttachment = null;
     let resumeFileName = '';
     if (resumeFile && resumeFile instanceof globalThis.File) {
+      const ALLOWED_MIME_TYPES = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ];
+      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+      if (!ALLOWED_MIME_TYPES.includes(resumeFile.type)) {
+        return NextResponse.json(
+          {
+            error:
+              'Invalid file type. Only PDF and Word documents are accepted.',
+          },
+          { status: 400 },
+        );
+      }
+
+      if (resumeFile.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          { error: 'File too large. Maximum size is 5 MB.' },
+          { status: 400 },
+        );
+      }
+
       const bytes = await resumeFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
       const base64 = buffer.toString('base64');
-      resumeFileName = resumeFile.name;
+      // Sanitise filename — strip path separators and special chars
+      resumeFileName = resumeFile.name
+        .replace(/[^a-zA-Z0-9._-]/g, '_')
+        .slice(0, 200);
 
       resumeAttachment = {
         filename: resumeFileName,
@@ -103,7 +186,7 @@ export async function POST(request: NextRequest) {
     const emailBody = {
       from: 'onboarding@resend.dev',
       to: [CAREERS_RECIPIENT_EMAIL],
-      subject: `New Job Application - ${jobTitle}`,
+      subject: `New Job Application - ${safeJobTitle}`,
       html: `
         <!DOCTYPE html>
         <html lang="en">
@@ -124,7 +207,7 @@ export async function POST(request: NextRequest) {
                 New Job Application
               </h1>
               <p style="color: rgba(255,255,255,0.95); margin: 10px 0 0; font-size: 16px;">
-                Application for ${jobTitle}
+                Application for ${safeJobTitle}
               </p>
               <div style="width: 60px; height: 4px; background: linear-gradient(90deg, #22c55e, #16a34a); margin: 20px auto 0; border-radius: 2px;"></div>
             </div>
@@ -141,47 +224,47 @@ export async function POST(request: NextRequest) {
                 <div style="display: grid; gap: 15px;">
                   <div>
                     <span style="font-weight: 600; color: #374151; display: block; margin-bottom: 5px;">Full Name:</span>
-                    <span style="color: #1f2937; font-size: 16px;">${fullName}</span>
+                    <span style="color: #1f2937; font-size: 16px;">${safeFullName}</span>
                   </div>
 
                   <div>
                     <span style="font-weight: 600; color: #374151; display: block; margin-bottom: 5px;">Email:</span>
-                    <span style="color: #1f2937; font-size: 16px;">${email}</span>
+                    <span style="color: #1f2937; font-size: 16px;">${safeEmail}</span>
                   </div>
 
                   <div>
                     <span style="font-weight: 600; color: #374151; display: block; margin-bottom: 5px;">Phone:</span>
-                    <span style="color: #1f2937; font-size: 16px;">${phone}</span>
+                    <span style="color: #1f2937; font-size: 16px;">${safePhone}</span>
                   </div>
 
                   ${
-                    location
+                    safeLocation
                       ? `
                   <div>
                     <span style="font-weight: 600; color: #374151; display: block; margin-bottom: 5px;">Location:</span>
-                    <span style="color: #1f2937; font-size: 16px;">${location}</span>
+                    <span style="color: #1f2937; font-size: 16px;">${safeLocation}</span>
                   </div>
                   `
                       : ''
                   }
 
                   ${
-                    linkedin
+                    safeLinkedin
                       ? `
                   <div>
                     <span style="font-weight: 600; color: #374151; display: block; margin-bottom: 5px;">LinkedIn:</span>
-                    <a href="${linkedin}" style="color: #15803d; font-size: 16px; text-decoration: none;">${linkedin}</a>
+                    <a href="${safeLinkedin}" style="color: #15803d; font-size: 16px; text-decoration: none;">${safeLinkedin}</a>
                   </div>
                   `
                       : ''
                   }
 
                   ${
-                    portfolio
+                    safePortfolio
                       ? `
                   <div>
                     <span style="font-weight: 600; color: #374151; display: block; margin-bottom: 5px;">Portfolio:</span>
-                    <a href="${portfolio}" style="color: #15803d; font-size: 16px; text-decoration: none;">${portfolio}</a>
+                    <a href="${safePortfolio}" style="color: #15803d; font-size: 16px; text-decoration: none;">${safePortfolio}</a>
                   </div>
                   `
                       : ''
@@ -195,12 +278,12 @@ export async function POST(request: NextRequest) {
                   <span style="margin-right: 12px;">📝</span>Cover Letter
                 </h2>
                 <div style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-radius: 8px; padding: 20px; border-left: 4px solid #22c55e;">
-                  <p style="color: #374151; font-size: 15px; line-height: 1.8; white-space: pre-line; margin: 0;">${coverLetter}</p>
+                  <p style="color: #374151; font-size: 15px; line-height: 1.8; white-space: pre-line; margin: 0;">${safeCoverLetter}</p>
                 </div>
               </div>
 
               ${
-                experience
+                safeExperience
                   ? `
               <!-- Experience -->
               <div style="background-color: #ffffff; border-radius: 12px; padding: 25px; border: 1px solid #e5e7eb; margin-bottom: 30px;">
@@ -208,7 +291,7 @@ export async function POST(request: NextRequest) {
                   <span style="margin-right: 12px;">💼</span>Relevant Experience
                 </h2>
                 <div style="background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border-radius: 8px; padding: 20px; border-left: 4px solid #22c55e;">
-                  <p style="color: #374151; font-size: 15px; line-height: 1.8; white-space: pre-line; margin: 0;">${experience}</p>
+                  <p style="color: #374151; font-size: 15px; line-height: 1.8; white-space: pre-line; margin: 0;">${safeExperience}</p>
                 </div>
               </div>
               `
@@ -216,28 +299,28 @@ export async function POST(request: NextRequest) {
               }
 
               ${
-                education
+                safeEducation
                   ? `
               <!-- Education -->
               <div style="background-color: #ffffff; border-radius: 12px; padding: 25px; border: 1px solid #e5e7eb; margin-bottom: 30px;">
                 <h2 style="color: #166534; margin: 0 0 15px; font-size: 20px; font-weight: 700;">
                   <span style="margin-right: 12px;">🎓</span>Education
                 </h2>
-                <p style="color: #374151; font-size: 15px; margin: 0;">${education}</p>
+                <p style="color: #374151; font-size: 15px; margin: 0;">${safeEducation}</p>
               </div>
               `
                   : ''
               }
 
               ${
-                availability
+                safeAvailability
                   ? `
               <!-- Availability -->
               <div style="background-color: #ffffff; border-radius: 12px; padding: 25px; border: 1px solid #e5e7eb; margin-bottom: 30px;">
                 <h2 style="color: #166534; margin: 0 0 15px; font-size: 20px; font-weight: 700;">
                   <span style="margin-right: 12px;">📅</span>Availability
                 </h2>
-                <p style="color: #374151; font-size: 15px; margin: 0;">${availability}</p>
+                <p style="color: #374151; font-size: 15px; margin: 0;">${safeAvailability}</p>
               </div>
               `
                   : ''
@@ -249,7 +332,7 @@ export async function POST(request: NextRequest) {
               <!-- Resume -->
               <div style="background: linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%); border-radius: 12px; padding: 20px; margin-bottom: 30px; border-left: 4px solid #f59e0b;">
                 <p style="color: #92400e; font-size: 14px; margin: 0; font-weight: 600;">
-                  📎 Resume attached: ${resumeFileName}
+                  📎 Resume attached: ${escapeHtml(resumeFileName)}
                 </p>
               </div>
               `
