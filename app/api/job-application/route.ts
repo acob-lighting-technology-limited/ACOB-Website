@@ -72,10 +72,37 @@ export async function POST(request: NextRequest) {
     let resumeAttachment = null;
     let resumeFileName = '';
     if (resumeFile && resumeFile instanceof globalThis.File) {
+      const ALLOWED_MIME_TYPES = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ];
+      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+      if (!ALLOWED_MIME_TYPES.includes(resumeFile.type)) {
+        return NextResponse.json(
+          {
+            error:
+              'Invalid file type. Only PDF and Word documents are accepted.',
+          },
+          { status: 400 },
+        );
+      }
+
+      if (resumeFile.size > MAX_FILE_SIZE) {
+        return NextResponse.json(
+          { error: 'File too large. Maximum size is 5 MB.' },
+          { status: 400 },
+        );
+      }
+
       const bytes = await resumeFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
       const base64 = buffer.toString('base64');
-      resumeFileName = resumeFile.name;
+      // Sanitise filename — strip path separators and special chars
+      resumeFileName = resumeFile.name
+        .replace(/[^a-zA-Z0-9._-]/g, '_')
+        .slice(0, 200);
 
       resumeAttachment = {
         filename: resumeFileName,

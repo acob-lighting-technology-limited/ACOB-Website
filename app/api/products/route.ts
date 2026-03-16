@@ -6,11 +6,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
 
-    let filter = '*[_type == "product"';
-    if (category) {
-      filter += ` && category == "${category}"`;
-    }
-    filter += ']';
+    const filter = category
+      ? '*[_type == "product" && category == $category]'
+      : '*[_type == "product"]';
 
     const query = `${filter} | order(_createdAt desc) {
       _id,
@@ -45,7 +43,8 @@ export async function GET(request: NextRequest) {
       technical
     }`;
 
-    const products = await client.fetch(query);
+    const params = category ? { category } : {};
+    const products = await client.fetch(query, params);
 
     return NextResponse.json(products);
   } catch (error) {

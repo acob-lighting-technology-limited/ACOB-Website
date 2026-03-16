@@ -3,6 +3,25 @@ import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs/promises';
 
+const ALLOWED_EXTERNAL_HOSTNAMES = [
+  'cdn.sanity.io',
+  'res.cloudinary.com',
+  'www.acoblighting.com',
+  'acoblighting.com',
+];
+
+function isAllowedUrl(rawUrl: string): boolean {
+  try {
+    const parsed = new URL(rawUrl);
+    if (parsed.protocol !== 'https:') {
+      return false;
+    }
+    return ALLOWED_EXTERNAL_HOSTNAMES.includes(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -19,15 +38,23 @@ export async function GET(request: NextRequest) {
     let imageBuffer: Buffer;
 
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      // External URL (Sanity, Cloudinary, etc.)
+      if (!isAllowedUrl(imageUrl)) {
+        return NextResponse.json(
+          { error: 'Image URL domain not allowed' },
+          { status: 400 },
+        );
+      }
       const imageResponse = await fetch(imageUrl);
       if (!imageResponse.ok) {
         throw new Error('Failed to fetch image');
       }
       imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
     } else {
-      // Local file from /public
-      const imagePath = path.join(process.cwd(), 'public', imageUrl);
+      // Local file from /public — normalise and prevent path traversal
+      const safePath = path
+        .normalize(imageUrl)
+        .replace(/^(\.\.(\/|\\|$))+/, '');
+      const imagePath = path.join(process.cwd(), 'public', safePath);
       imageBuffer = await fs.readFile(imagePath);
     }
 
@@ -36,7 +63,16 @@ export async function GET(request: NextRequest) {
       process.cwd(),
       'public/images/acob-logo-dark.png',
     );
-    const watermarkBuffer = await fs.readFile(watermarkPath);
+
+    let watermarkBuffer: Buffer;
+    try {
+      watermarkBuffer = await fs.readFile(watermarkPath);
+    } catch {
+      return NextResponse.json(
+        { error: 'Watermark asset not found' },
+        { status: 500 },
+      );
+    }
 
     // Get original image dimensions
     const imageMetadata = await sharp(imageBuffer).metadata();
@@ -88,19 +124,19 @@ export async function GET(request: NextRequest) {
     const urlPath = new URL(imageUrl, 'http://dummy.com').pathname;
     const filename = path.basename(urlPath) || 'download.jpg';
 
-    // Return watermarked image with download headers
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new NextResponse(watermarkedImage as any, {
+    return new NextResponse(watermarkedImage.buffer as ArrayBuffer, {
       headers: {
         'Content-Type': 'image/jpeg',
         'Content-Disposition': `attachment; filename="${filename}"`,
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Cache-Control': 'no-store',
       },
     });
   } catch (error) {
-    console.error('Error watermarking image:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error watermarking image:', error);
+    }
     return NextResponse.json(
-      { error: 'Failed to process image', details: (error as Error).message },
+      { error: 'Failed to process image' },
       { status: 500 },
     );
   }

@@ -45,15 +45,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Email functionality disabled per user request
+    // Email functionality temporarily disabled
     return NextResponse.json(
       {
-        success: true,
-        message:
-          'Quote request received. Our team will contact you shortly via your preferred contact method.',
-        disabled: true,
+        error:
+          'Quote submission is temporarily unavailable. Please contact us directly.',
       },
-      { status: 200 },
+      { status: 503 },
     );
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
