@@ -20,7 +20,7 @@ const projectId =
 const dataset =
   process.env.SANITY_STUDIO_DATASET || process.env.NEXT_PUBLIC_SANITY_DATASET;
 
-const token = process.env.SANITY_API_TOKEN;
+const token = process.env.SANITY_API_TOKEN?.trim() || undefined;
 
 // ============================================================================
 // VALIDATION
@@ -66,7 +66,8 @@ if (!token) {
 export const client = createClient({
   projectId,
   dataset,
-  useCdn: process.env.NODE_ENV === 'production',
+  // Sanity recommends disabling CDN for authenticated requests.
+  useCdn: !token && process.env.NODE_ENV === 'production',
   apiVersion: '2025-07-16',
   token: token,
 });
