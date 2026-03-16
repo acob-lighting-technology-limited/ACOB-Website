@@ -155,8 +155,6 @@ export default function CategoryUpdatesClient({
   }, []);
 
   const handlePageChange = (page: number) => {
-    // Scroll to top immediately before fetching
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     updateSearch(searchQuery, page, true);
   };
 
@@ -362,11 +360,12 @@ export default function CategoryUpdatesClient({
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
-                      onClick={() =>
+                      onClick={e => {
+                        e.preventDefault();
                         handlePageChange(
                           Math.max(1, pagination.currentPage - 1),
-                        )
-                      }
+                        );
+                      }}
                       className={
                         pagination.currentPage === 1
                           ? 'pointer-events-none opacity-50'
@@ -390,7 +389,10 @@ export default function CategoryUpdatesClient({
                       return (
                         <PaginationItem key={page}>
                           <PaginationLink
-                            onClick={() => handlePageChange(page)}
+                            onClick={e => {
+                              e.preventDefault();
+                              handlePageChange(page);
+                            }}
                             isActive={pagination.currentPage === page}
                             className="cursor-pointer"
                             size="default"
@@ -414,14 +416,15 @@ export default function CategoryUpdatesClient({
 
                   <PaginationItem>
                     <PaginationNext
-                      onClick={() =>
+                      onClick={e => {
+                        e.preventDefault();
                         handlePageChange(
                           Math.min(
                             pagination.totalPages,
                             pagination.currentPage + 1,
                           ),
-                        )
-                      }
+                        );
+                      }}
                       className={
                         pagination.currentPage === pagination.totalPages
                           ? 'pointer-events-none opacity-50'

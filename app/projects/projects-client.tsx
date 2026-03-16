@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useResponsiveLimit } from '@/hooks/use-responsive-limit';
@@ -31,6 +31,7 @@ interface ProjectsClientProps {
   initialProjects: Project[];
   initialPagination: PaginationInfo;
   currentSearch: string;
+  currentPage: number;
   breadcrumbItems: Array<{ label: string; href?: string }>;
 }
 
@@ -53,11 +54,13 @@ export default function ProjectsClient({
   initialProjects,
   initialPagination,
   currentSearch,
+  currentPage,
   breadcrumbItems,
 }: ProjectsClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { limit: responsiveLimit } = useResponsiveLimit();
+  const { limit: responsiveLimit, isReady: isResponsiveReady } =
+    useResponsiveLimit();
 
   const [searchQuery, setSearchQuery] = useState(currentSearch);
   const [hasSearched, setHasSearched] = useState(!!currentSearch);
@@ -65,6 +68,9 @@ export default function ProjectsClient({
     const p = new URLSearchParams();
     if (currentSearch) {
       p.set('search', currentSearch);
+    }
+    if (currentPage > 1) {
+      p.set('page', String(currentPage));
     }
     p.set('limit', String(initialPagination.limit));
     return p;
@@ -113,7 +119,6 @@ export default function ProjectsClient({
   };
 
   const handlePageChange = (page: number) => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     updateSearch(searchQuery, page);
   };
 
@@ -122,6 +127,14 @@ export default function ProjectsClient({
     setHasSearched(false);
     updateSearch('', 1);
   };
+
+  // Sync list size with viewport once client hydration is complete.
+  useEffect(() => {
+    if (!isResponsiveReady || responsiveLimit === pagination.limit) {
+      return;
+    }
+    updateSearch(searchQuery, 1);
+  }, [responsiveLimit, isResponsiveReady]);
 
   // Refresh server component when URL search param drifts
   const urlSearch = searchParams.get('search') || '';
@@ -306,11 +319,12 @@ export default function ProjectsClient({
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
-                      onClick={() =>
+                      onClick={e => {
+                        e.preventDefault();
                         handlePageChange(
                           Math.max(1, pagination.currentPage - 1),
-                        )
-                      }
+                        );
+                      }}
                       className={
                         pagination.currentPage === 1
                           ? 'pointer-events-none opacity-50'
@@ -333,7 +347,10 @@ export default function ProjectsClient({
                       return (
                         <PaginationItem key={page}>
                           <PaginationLink
-                            onClick={() => handlePageChange(page)}
+                            onClick={e => {
+                              e.preventDefault();
+                              handlePageChange(page);
+                            }}
                             isActive={pagination.currentPage === page}
                             className="cursor-pointer"
                             size="default"
@@ -357,14 +374,15 @@ export default function ProjectsClient({
 
                   <PaginationItem>
                     <PaginationNext
-                      onClick={() =>
+                      onClick={e => {
+                        e.preventDefault();
                         handlePageChange(
                           Math.min(
                             pagination.totalPages,
                             pagination.currentPage + 1,
                           ),
-                        )
-                      }
+                        );
+                      }}
                       className={
                         pagination.currentPage === pagination.totalPages
                           ? 'pointer-events-none opacity-50'
