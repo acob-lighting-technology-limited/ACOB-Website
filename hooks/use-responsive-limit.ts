@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 /**
  * Hook to get responsive card limit based on screen size
  * - Mobile (default): 6 cards
- * - Tablet (768px+): 10 cards
+ * - Tablet (768px+): 9 cards
  * - Laptop/Desktop (1024px+): 12 cards
  *
  * Returns 12 initially (server default) to prevent hydration mismatch,
@@ -24,7 +24,7 @@ export function useResponsiveLimit() {
         setLimit(12);
       } else if (width >= 768) {
         // Tablet
-        setLimit(10);
+        setLimit(9);
       } else {
         // Mobile
         setLimit(6);

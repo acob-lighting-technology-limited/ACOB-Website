@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useResponsiveLimit } from '@/hooks/use-responsive-limit';
@@ -58,7 +58,8 @@ export default function UpdatesClient({
 }: UpdatesClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { limit: responsiveLimit } = useResponsiveLimit();
+  const { limit: responsiveLimit, isReady: isResponsiveReady } =
+    useResponsiveLimit();
 
   const [searchQuery, setSearchQuery] = useState(currentSearch);
   const [hasSearched, setHasSearched] = useState(!!currentSearch);
@@ -114,7 +115,6 @@ export default function UpdatesClient({
   };
 
   const handlePageChange = (page: number) => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     updateSearch(searchQuery, page);
   };
 
@@ -123,6 +123,14 @@ export default function UpdatesClient({
     setHasSearched(false);
     updateSearch('', 1);
   };
+
+  // Sync list size with viewport once client hydration is complete.
+  useEffect(() => {
+    if (!isResponsiveReady || responsiveLimit === pagination.limit) {
+      return;
+    }
+    updateSearch(searchQuery, 1);
+  }, [responsiveLimit, isResponsiveReady]);
 
   // Refresh server component when URL search param drifts
   const urlSearch = searchParams.get('search') || '';
@@ -311,11 +319,12 @@ export default function UpdatesClient({
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
-                      onClick={() =>
+                      onClick={e => {
+                        e.preventDefault();
                         handlePageChange(
                           Math.max(1, pagination.currentPage - 1),
-                        )
-                      }
+                        );
+                      }}
                       className={
                         pagination.currentPage === 1
                           ? 'pointer-events-none opacity-50'
@@ -338,7 +347,10 @@ export default function UpdatesClient({
                       return (
                         <PaginationItem key={page}>
                           <PaginationLink
-                            onClick={() => handlePageChange(page)}
+                            onClick={e => {
+                              e.preventDefault();
+                              handlePageChange(page);
+                            }}
                             isActive={pagination.currentPage === page}
                             className="cursor-pointer"
                             size="default"
@@ -362,14 +374,15 @@ export default function UpdatesClient({
 
                   <PaginationItem>
                     <PaginationNext
-                      onClick={() =>
+                      onClick={e => {
+                        e.preventDefault();
                         handlePageChange(
                           Math.min(
                             pagination.totalPages,
                             pagination.currentPage + 1,
                           ),
-                        )
-                      }
+                        );
+                      }}
                       className={
                         pagination.currentPage === pagination.totalPages
                           ? 'pointer-events-none opacity-50'
