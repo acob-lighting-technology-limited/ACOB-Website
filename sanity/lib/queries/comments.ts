@@ -28,12 +28,11 @@ export async function getApprovedCommentsForPost(
 ): Promise<Comment[]> {
   return await client.fetch(
     `
-    *[_type == "comment" && postId == $postId && isApproved == true] | order(createdAt desc) {
+    *[_type == "comment" && updatePost._ref == $postId && approved == true] | order(createdAt desc) {
       _id,
       name,
       comment,
-      createdAt,
-      website
+      createdAt
     }
   `,
     { postId },
