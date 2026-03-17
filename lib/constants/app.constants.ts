@@ -88,12 +88,12 @@ export const COMPANY_STATISTICS = {
 // ============================================================================
 
 export const PAGINATION = {
-  DEFAULT_LIMIT: 12,
+  DEFAULT_LIMIT: 9,
   MAX_LIMIT: 100,
   MIN_LIMIT: 1,
-  PROJECTS_PER_PAGE: 12,
-  UPDATES_PER_PAGE: 12,
-  PRODUCTS_PER_PAGE: 12,
+  PROJECTS_PER_PAGE: 9,
+  UPDATES_PER_PAGE: 9,
+  PRODUCTS_PER_PAGE: 9,
   SEARCH_RESULTS_PER_PAGE: 20,
 } as const;
 

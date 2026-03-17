@@ -26,9 +26,21 @@ export function TableSkeleton({
 
 export function CardSkeleton({ count = 3 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: count }).map((_, i) => (
-        <Skeleton key={i} className="h-40 w-full rounded-xl" />
+        <div
+          key={i}
+          className="overflow-hidden rounded-lg border border-border bg-card animate-pulse"
+        >
+          <div className="aspect-[16/9] bg-muted" />
+          <div className="p-6 space-y-3">
+            <div className="h-3 bg-muted rounded w-2/3" />
+            <div className="h-5 bg-muted rounded" />
+            <div className="h-3 bg-muted rounded" />
+            <div className="h-3 bg-muted rounded w-5/6" />
+            <div className="h-4 bg-muted rounded w-24 mt-4" />
+          </div>
+        </div>
       ))}
     </div>
   );

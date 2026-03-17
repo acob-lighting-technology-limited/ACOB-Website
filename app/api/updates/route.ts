@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
 
     // Extract pagination and filter parameters
     const page = parseInt(searchParams.get('page') || '1', 10);
-    const limit = parseInt(searchParams.get('limit') || '12', 10);
+    const limit = parseInt(searchParams.get('limit') || '9', 10);
     const search = searchParams.get('search') || '';
     const category = searchParams.get('category') || '';
 

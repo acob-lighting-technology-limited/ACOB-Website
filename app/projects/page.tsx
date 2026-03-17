@@ -1,9 +1,6 @@
 import { Suspense } from 'react';
-import { Container } from '@/components/ui/container';
-import { Hero } from '@/components/ui/hero';
 import { ProjectsGridSkeleton } from '@/components/ui/projects-grid-skeleton';
 import { getProjectsPaginated } from '@/sanity/lib/client';
-import type { Project } from '@/lib/types';
 import ProjectsClient from './projects-client';
 
 // Revalidate every 10 minutes (600 seconds)
@@ -24,7 +21,7 @@ export default async function ProjectsPage({
   const page = parseInt(params.page || '1');
   const search = params.search || '';
   const state = params.state || '';
-  const limit = 12;
+  const limit = 9;
 
   // Fetch projects with pagination
   const result = await getProjectsPaginated({
@@ -38,35 +35,14 @@ export default async function ProjectsPage({
 
   const breadcrumbItems = [{ label: 'Home', href: '/' }, { label: 'Projects' }];
 
-  // Map current page's project images for carousel
-  const projectImages = projects
-    .filter((p: Project) => p.projectImage) // Only include projects with images
-    .map((p: Project) => ({
-      src: p.projectImage!,
-      alt: p.title,
-      href: `/projects/${p.slug.current}`,
-    }));
-
   return (
-    <>
-      <Hero
-        key="projects-hero"
-        image={projectImages}
-        title="Our Projects"
-        description="Delivering Reliable Solar Energy Infrastructure Across Nigeria"
+    <Suspense fallback={<ProjectsGridSkeleton />}>
+      <ProjectsClient
+        initialProjects={projects}
+        initialPagination={pagination}
+        currentSearch={search}
+        breadcrumbItems={breadcrumbItems}
       />
-
-      <Container className="px-4 py-8">
-        <Suspense fallback={<ProjectsGridSkeleton />}>
-          <ProjectsClient
-            initialProjects={projects}
-            initialPagination={pagination}
-            currentSearch={search}
-            currentPage={page}
-            breadcrumbItems={breadcrumbItems}
-          />
-        </Suspense>
-      </Container>
-    </>
+    </Suspense>
   );
 }

@@ -1,6 +1,4 @@
 import { Suspense } from 'react';
-import { Container } from '@/components/ui/container';
-import { Hero } from '@/components/ui/hero';
 import { UpdatesGridSkeleton } from '@/components/ui/updates-grid-skeleton';
 import { getUpdatePostsPaginated } from '@/sanity/lib/client';
 import type { UpdatePost } from '@/lib/types';
@@ -21,7 +19,7 @@ export async function CategoryUpdatesPage({
   const params = searchParams ? await searchParams : {};
   const page = parseInt(params.page || '1');
   const search = params.search || '';
-  const limit = 12;
+  const limit = 9;
 
   // Format category name for display
   const categoryTitle = category
@@ -72,44 +70,17 @@ export async function CategoryUpdatesPage({
     { label: categoryTitle },
   ];
 
-  // Get category post images for carousel (use all category posts, not just current page)
-  const categoryImages = categoryPosts
-    .filter((post: UpdatePost) => post.featuredImage)
-    .slice(0, 5) // Limit to 5 images for carousel
-    .map((post: UpdatePost) => ({
-      src: post.featuredImage!,
-      alt: post.title,
-    }));
-
-  // Fallback image if no posts with images
-  if (categoryImages.length === 0) {
-    categoryImages.push({
-      src: '/images/services/header.webp',
-      alt: categoryTitle,
-    });
-  }
-
   return (
-    <>
-      <Hero
-        key={`category-${category}-hero`}
-        image={categoryImages}
-        title={categoryTitle}
-        description={`Latest ${categoryTitle.toLowerCase()} updates and news from ACOB Lighting`}
+    <Suspense fallback={<UpdatesGridSkeleton />}>
+      <CategoryUpdatesClient
+        initialPosts={paginatedPosts}
+        initialPagination={pagination}
+        currentSearch={search}
+        currentPage={page}
+        breadcrumbItems={breadcrumbItems}
+        category={category}
+        categoryTitle={categoryTitle}
       />
-
-      <Container className="px-4 py-8">
-        <Suspense fallback={<UpdatesGridSkeleton />}>
-          <CategoryUpdatesClient
-            initialPosts={paginatedPosts}
-            initialPagination={pagination}
-            currentSearch={search}
-            currentPage={page}
-            breadcrumbItems={breadcrumbItems}
-            category={category}
-          />
-        </Suspense>
-      </Container>
-    </>
+    </Suspense>
   );
 }
