@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { MaskText } from '../animations/MaskText';
 import { getBlurDataURL } from '@/lib/utils/image-optimization';
+import { useResponsiveLimit } from '@/hooks/use-responsive-limit';
 
 interface HeroProps {
   title: string;
@@ -111,6 +112,7 @@ const HeroCarousel = React.memo(function HeroCarousel({
   title,
   description,
 }: HeroCarouselProps) {
+  const { limit: responsiveLimit } = useResponsiveLimit();
   const [current, setCurrent] = useState(0);
   const [previous, setPrevious] = useState(0);
   const touchStartX = useRef<number>(0);
@@ -129,8 +131,16 @@ const HeroCarousel = React.memo(function HeroCarousel({
         },
       ];
     }
-    return images;
-  }, [images]);
+    return images.slice(0, responsiveLimit);
+  }, [images, responsiveLimit]);
+
+  // Reset current slide if it exceeds the new slide count after resize
+  useEffect(() => {
+    if (current >= slides.length) {
+      setCurrent(0);
+      setPrevious(0);
+    }
+  }, [slides.length, current]);
 
   // Auto-advance slides
   useEffect(() => {

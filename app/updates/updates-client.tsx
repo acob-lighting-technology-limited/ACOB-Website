@@ -100,7 +100,7 @@ export default function UpdatesClient({
 
     const queryString = params.toString();
     const newUrl = queryString ? `/updates?${queryString}` : '/updates';
-    router.replace(newUrl);
+    router.replace(newUrl, { scroll: false });
     setQueryParams(params);
   };
 
@@ -138,9 +138,13 @@ export default function UpdatesClient({
 
   // Refresh server component when URL search param drifts
   const urlSearch = searchParams.get('search') || '';
-  if (urlSearch !== currentSearch) {
-    router.refresh();
-  }
+  const urlSearchRef = useRef(urlSearch);
+  useEffect(() => {
+    if (urlSearchRef.current !== urlSearch) {
+      urlSearchRef.current = urlSearch;
+      router.refresh();
+    }
+  }, [urlSearch, router]);
 
   if (isError) {
     return (
@@ -323,12 +327,12 @@ export default function UpdatesClient({
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
-                      onClick={e => {
-                        e.preventDefault();
+                      onClick={() =>
                         handlePageChange(
                           Math.max(1, pagination.currentPage - 1),
-                        );
-                      }}
+                        )
+                      }
+                      disabled={pagination.currentPage === 1}
                       className={
                         pagination.currentPage === 1
                           ? 'pointer-events-none opacity-50'
@@ -351,10 +355,7 @@ export default function UpdatesClient({
                       return (
                         <PaginationItem key={page}>
                           <PaginationLink
-                            onClick={e => {
-                              e.preventDefault();
-                              handlePageChange(page);
-                            }}
+                            onClick={() => handlePageChange(page)}
                             isActive={pagination.currentPage === page}
                             className="cursor-pointer"
                             size="default"
@@ -378,15 +379,17 @@ export default function UpdatesClient({
 
                   <PaginationItem>
                     <PaginationNext
-                      onClick={e => {
-                        e.preventDefault();
+                      onClick={() =>
                         handlePageChange(
                           Math.min(
                             pagination.totalPages,
                             pagination.currentPage + 1,
                           ),
-                        );
-                      }}
+                        )
+                      }
+                      disabled={
+                        pagination.currentPage === pagination.totalPages
+                      }
                       className={
                         pagination.currentPage === pagination.totalPages
                           ? 'pointer-events-none opacity-50'

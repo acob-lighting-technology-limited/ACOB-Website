@@ -360,12 +360,12 @@ export default function CategoryUpdatesClient({
                 <PaginationContent>
                   <PaginationItem>
                     <PaginationPrevious
-                      onClick={e => {
-                        e.preventDefault();
+                      onClick={() =>
                         handlePageChange(
                           Math.max(1, pagination.currentPage - 1),
-                        );
-                      }}
+                        )
+                      }
+                      disabled={pagination.currentPage === 1}
                       className={
                         pagination.currentPage === 1
                           ? 'pointer-events-none opacity-50'
@@ -389,10 +389,7 @@ export default function CategoryUpdatesClient({
                       return (
                         <PaginationItem key={page}>
                           <PaginationLink
-                            onClick={e => {
-                              e.preventDefault();
-                              handlePageChange(page);
-                            }}
+                            onClick={() => handlePageChange(page)}
                             isActive={pagination.currentPage === page}
                             className="cursor-pointer"
                             size="default"
@@ -416,15 +413,17 @@ export default function CategoryUpdatesClient({
 
                   <PaginationItem>
                     <PaginationNext
-                      onClick={e => {
-                        e.preventDefault();
+                      onClick={() =>
                         handlePageChange(
                           Math.min(
                             pagination.totalPages,
                             pagination.currentPage + 1,
                           ),
-                        );
-                      }}
+                        )
+                      }
+                      disabled={
+                        pagination.currentPage === pagination.totalPages
+                      }
                       className={
                         pagination.currentPage === pagination.totalPages
                           ? 'pointer-events-none opacity-50'
