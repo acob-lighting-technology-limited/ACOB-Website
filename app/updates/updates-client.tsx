@@ -74,7 +74,7 @@ export default function UpdatesClient({
     // Immediately show loading + scroll to top
     setIsLoading(true);
     setError(null);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'instant' });
 
     // Update URL without Next.js navigation
     const urlParams = new URLSearchParams();
