@@ -129,7 +129,13 @@ const HeroCarousel = React.memo(function HeroCarousel({
         },
       ];
     }
-    return images;
+    return images.slice(0, 9);
+  }, [images]);
+
+  // Reset slide index when images change (e.g. pagination)
+  useEffect(() => {
+    setCurrent(0);
+    setPrevious(0);
   }, [images]);
 
   // Auto-advance slides
