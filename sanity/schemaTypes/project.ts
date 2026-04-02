@@ -223,6 +223,53 @@ export const projectType = defineType({
       validation: Rule => Rule.required(),
     }),
     defineField({
+      name: 'latitude',
+      title: 'Latitude',
+      type: 'number',
+      description: 'Latitude for the homepage map project dot. Example: 9.0765',
+      validation: Rule =>
+        Rule.min(-90)
+          .max(90)
+          .custom((value, context) => {
+            const longitude = (context.document as { longitude?: number })
+              ?.longitude;
+
+            if (
+              (value === undefined || value === null) &&
+              longitude !== undefined &&
+              longitude !== null
+            ) {
+              return 'Latitude is required when longitude is set';
+            }
+
+            return true;
+          }),
+    }),
+    defineField({
+      name: 'longitude',
+      title: 'Longitude',
+      type: 'number',
+      description:
+        'Longitude for the homepage map project dot. Example: 7.3986',
+      validation: Rule =>
+        Rule.min(-180)
+          .max(180)
+          .custom((value, context) => {
+            const latitude = (context.document as { latitude?: number })
+              ?.latitude;
+
+            if (
+              (value === undefined || value === null) &&
+              latitude !== undefined &&
+              latitude !== null
+            ) {
+              return 'Longitude is required when latitude is set';
+            }
+
+            return true;
+          }),
+    }),
+    defineField({
       name: 'isFeatured',
       title: 'Featured Project',
       type: 'boolean',

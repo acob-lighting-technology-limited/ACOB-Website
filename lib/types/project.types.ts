@@ -128,6 +128,10 @@ export interface Project {
   lga?: string;
   /** Nigerian state */
   state?: string;
+  /** Latitude for the homepage map marker */
+  latitude?: number;
+  /** Longitude for the homepage map marker */
+  longitude?: number;
   /** Main project image URL */
   projectImage: string;
   /** Sanity image references (for compatibility) */
