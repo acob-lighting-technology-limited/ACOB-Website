@@ -43,6 +43,12 @@ export const navigationItems = [
         description: 'Our trusted partners and collaborations',
         icon: 'Handshake',
       },
+      {
+        name: 'Our Reach',
+        href: '/about/our-reach',
+        description: 'See our footprint and project reach across Nigeria',
+        icon: 'MapPin',
+      },
     ],
   },
   {

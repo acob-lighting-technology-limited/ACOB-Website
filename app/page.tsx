@@ -84,7 +84,7 @@ export default async function HomePage() {
       <ServicesSection />
       <ProjectsSection projects={projects} />
       <CompanySection />
-      <NigeriaReachSection projects={projects} />
+      <NigeriaReachSection projects={projects} showMoreLink />
       <UpdatesSection posts={posts} />
       <PartnersSection />
     </main>

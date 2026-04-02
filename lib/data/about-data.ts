@@ -43,6 +43,13 @@ export const aboutSections = [
     href: '/about/partners',
     image: '/images/about/partners-collage.webp?height=200&width=300',
   },
+  {
+    title: 'Our Reach',
+    description:
+      'Explore our project footprint across Nigeria and see how our delivery network keeps growing.',
+    href: '/about/our-reach',
+    image: '/images/about/company-profile.webp?height=200&width=300',
+  },
 ];
 
 export const teamMembers = [
@@ -166,6 +173,7 @@ export const sidebarLinks = [
   { label: 'Company Profile', href: '/about/profile', isActive: false },
   { label: 'Certifications', href: '/about/certifications', isActive: false },
   { label: 'Partners', href: '/about/partners', isActive: false },
+  { label: 'Our Reach', href: '/about/our-reach', isActive: false },
 ];
 
 // Helper function to get about section by href
