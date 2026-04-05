@@ -302,9 +302,14 @@ export class OneDriveService {
           Authorization: `Bearer ${token}`,
           'Content-Type': mimeType || 'application/octet-stream',
         },
-        body: (content instanceof ArrayBuffer
-          ? new Uint8Array(content)
-          : content) as BodyInit,
+        body: new Blob([
+          content instanceof ArrayBuffer
+            ? content
+            : content.slice(
+                content.byteOffset,
+                content.byteOffset + content.byteLength,
+              ),
+        ]),
       },
     );
 
@@ -315,3 +320,7 @@ export class OneDriveService {
     return response.json() as Promise<OneDriveUploadResult>;
   }
 }
+
+
+
+
