@@ -376,6 +376,40 @@ export const productType = defineType({
         'Toggle to feature this product in the announcement banner (shows "New products available!")',
       initialValue: false,
     }),
+    defineField({
+      name: 'sharepointBackup',
+      title: 'SharePoint Backup',
+      type: 'object',
+      readOnly: true,
+      fields: [
+        defineField({
+          name: 'status',
+          title: 'Status',
+          type: 'string',
+        }),
+        defineField({
+          name: 'lastSyncedAt',
+          title: 'Last Synced At',
+          type: 'datetime',
+        }),
+        defineField({
+          name: 'folderPath',
+          title: 'Folder Path',
+          type: 'string',
+        }),
+        defineField({
+          name: 'assetCount',
+          title: 'Asset Count',
+          type: 'number',
+        }),
+        defineField({
+          name: 'lastError',
+          title: 'Last Error',
+          type: 'text',
+          rows: 3,
+        }),
+      ],
+    }),
   ],
   preview: {
     select: {
