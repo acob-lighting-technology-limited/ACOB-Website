@@ -196,18 +196,26 @@ function getDocumentSlug(document: SanityDocumentForBackup): string {
 }
 
 function parseIsoDate(value?: string): Date | null {
-  if (!value) return null;
+  if (!value) {
+    return null;
+  }
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function getPreferredDocumentDate(document: SanityDocumentForBackup): Date | null {
+function getPreferredDocumentDate(
+  document: SanityDocumentForBackup,
+): Date | null {
   if (document._type === 'project') {
-    return parseIsoDate(document.projectDate) || parseIsoDate(document._createdAt);
+    return (
+      parseIsoDate(document.projectDate) || parseIsoDate(document._createdAt)
+    );
   }
 
   if (document._type === 'updatePost') {
-    return parseIsoDate(document.publishedAt) || parseIsoDate(document._createdAt);
+    return (
+      parseIsoDate(document.publishedAt) || parseIsoDate(document._createdAt)
+    );
   }
 
   return parseIsoDate(document._createdAt);

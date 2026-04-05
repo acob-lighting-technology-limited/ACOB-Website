@@ -23,7 +23,9 @@ function getSecret(request: NextRequest): string | null {
 }
 
 function parseTypes(value: string | null): SupportedDocumentType[] {
-  if (!value) return SUPPORTED_TYPES;
+  if (!value) {
+    return SUPPORTED_TYPES;
+  }
 
   const parsed = value
     .split(',')
@@ -36,7 +38,9 @@ function parseTypes(value: string | null): SupportedDocumentType[] {
 }
 
 function parseLimit(value: string | null): number | undefined {
-  if (!value) return undefined;
+  if (!value) {
+    return undefined;
+  }
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 }
@@ -58,7 +62,9 @@ async function resolveTargets(request: NextRequest) {
 
   const documents = await listBackfillCandidates(types);
   const filtered = documents.filter(doc => {
-    if (force) return true;
+    if (force) {
+      return true;
+    }
     return doc.sharepointBackup?.status !== 'synced';
   });
 
