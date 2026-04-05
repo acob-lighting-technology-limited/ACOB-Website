@@ -34,6 +34,9 @@ interface SanityDocumentForBackup {
   projectImage?: SanityMediaItem;
   featuredImage?: SanityMediaItem;
   content?: SanityMediaItem[];
+  projectContent?: {
+    images?: SanityMediaItem[];
+  };
   media?: {
     productImage?: SanityMediaItem;
     productImages?: SanityMediaItem[];
@@ -133,6 +136,19 @@ const DOCUMENT_QUERY = `
         url,
         originalFilename,
         mimeType
+      }
+    },
+    projectContent{
+      images[]{
+        _type,
+        alt,
+        title,
+        asset->{
+          _id,
+          url,
+          originalFilename,
+          mimeType
+        }
       }
     },
     media{
@@ -305,14 +321,44 @@ function collectAssets(
   if (document._type === 'project') {
     addAsset(assets, document.projectImage?.asset, folderPath, 'main-image');
 
-    let imageIndex = 0;
+    let contentImageIndex = 0;
     for (const item of document.content || []) {
       if (item._type !== 'image') {
         continue;
       }
 
-      imageIndex += 1;
-      addAsset(assets, item.asset, folderPath, `content-image-${imageIndex}`);
+      contentImageIndex += 1;
+      addAsset(
+        assets,
+        item.asset,
+        folderPath,
+        `content-image-${contentImageIndex}`,
+      );
+    }
+
+    let galleryImageIndex = 0;
+    let galleryVideoIndex = 0;
+    for (const item of document.projectContent?.images || []) {
+      if (item._type === 'image') {
+        galleryImageIndex += 1;
+        addAsset(
+          assets,
+          item.asset,
+          folderPath,
+          `gallery-image-${galleryImageIndex}`,
+        );
+      }
+
+      if (item._type === 'video') {
+        galleryVideoIndex += 1;
+        addAsset(
+          assets,
+          item.asset,
+          folderPath,
+          `gallery-video-${galleryVideoIndex}`,
+          '.mp4',
+        );
+      }
     }
   }
 
