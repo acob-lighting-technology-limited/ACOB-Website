@@ -21,6 +21,7 @@ interface SanityMediaItem {
 interface SanityDocumentForBackup {
   _id: string;
   _type: SupportedDocumentType;
+  _createdAt?: string;
   title?: string;
   slug?: {
     current?: string;
@@ -28,6 +29,8 @@ interface SanityDocumentForBackup {
   general?: {
     title?: string;
   };
+  projectDate?: string;
+  publishedAt?: string;
   projectImage?: SanityMediaItem;
   featuredImage?: SanityMediaItem;
   content?: SanityMediaItem[];
@@ -55,22 +58,54 @@ export interface BackupResult {
   uploadedFiles: string[];
 }
 
+export interface BackfillDocumentRow {
+  _id: string;
+  _type: SupportedDocumentType;
+  _createdAt?: string;
+  title?: string;
+  slug?: { current?: string };
+  general?: { title?: string };
+  projectDate?: string;
+  publishedAt?: string;
+  sharepointBackup?: {
+    status?: string;
+    folderPath?: string;
+  };
+}
+
 const SHAREPOINT_ROOT_FOLDER =
   process.env.SHAREPOINT_WEBSITE_ROOT_FOLDER || '/Website';
 
 const DOCUMENT_TYPE_FOLDER: Record<SupportedDocumentType, string> = {
-  project: 'Projects',
-  product: 'Products',
-  updatePost: 'Updates',
+  project: 'project',
+  product: 'product',
+  updatePost: 'update',
 };
+
+const BACKFILL_LIST_QUERY = `
+  *[_type in $types]{
+    _id,
+    _type,
+    _createdAt,
+    title,
+    slug,
+    general,
+    projectDate,
+    publishedAt,
+    sharepointBackup
+  } | order(_type asc, _createdAt asc)
+`;
 
 const DOCUMENT_QUERY = `
   *[_id == $id][0]{
     _id,
     _type,
+    _createdAt,
     title,
     slug,
     general,
+    projectDate,
+    publishedAt,
     projectImage{
       alt,
       asset->{
@@ -158,6 +193,60 @@ function getDocumentSlug(document: SanityDocumentForBackup): string {
 
   const sanitized = sanitizeSegment(rawValue);
   return sanitized || sanitizeSegment(document._id);
+}
+
+function parseIsoDate(value?: string): Date | null {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function getPreferredDocumentDate(document: SanityDocumentForBackup): Date | null {
+  if (document._type === 'project') {
+    return parseIsoDate(document.projectDate) || parseIsoDate(document._createdAt);
+  }
+
+  if (document._type === 'updatePost') {
+    return parseIsoDate(document.publishedAt) || parseIsoDate(document._createdAt);
+  }
+
+  return parseIsoDate(document._createdAt);
+}
+
+function getDateSuffix(document: SanityDocumentForBackup): string {
+  const explicitDate =
+    document._type === 'project'
+      ? parseIsoDate(document.projectDate)
+      : document._type === 'updatePost'
+        ? parseIsoDate(document.publishedAt)
+        : null;
+
+  if (!explicitDate) {
+    return '';
+  }
+
+  const day = String(explicitDate.getUTCDate()).padStart(2, '0');
+  const month = String(explicitDate.getUTCMonth() + 1).padStart(2, '0');
+  const year = explicitDate.getUTCFullYear();
+  return `-${day}-${month}-${year}`;
+}
+
+function buildDocumentFolderPath(document: SanityDocumentForBackup): {
+  slug: string;
+  folderPath: string;
+} {
+  const slug = getDocumentSlug(document);
+  const year = String(
+    (getPreferredDocumentDate(document) || new Date()).getUTCFullYear(),
+  );
+  const datedFolderName = `${slug}${getDateSuffix(document)}`;
+
+  return {
+    slug,
+    folderPath: normalizePath(
+      `${SHAREPOINT_ROOT_FOLDER}/${DOCUMENT_TYPE_FOLDER[document._type]}/${year}/${datedFolderName}`,
+    ),
+  };
 }
 
 function getFileExtension(asset: SanityAssetRef): string {
@@ -335,6 +424,14 @@ export function isSharePointBackupEnabled(): boolean {
   return new OneDriveService().isEnabled();
 }
 
+export async function listBackfillCandidates(
+  types: SupportedDocumentType[],
+): Promise<BackfillDocumentRow[]> {
+  return client.fetch<BackfillDocumentRow[]>(BACKFILL_LIST_QUERY, {
+    types,
+  });
+}
+
 export async function backupSanityDocumentAssets(
   documentId: string,
 ): Promise<BackupResult> {
@@ -352,10 +449,7 @@ export async function backupSanityDocumentAssets(
     throw new Error(`Unsupported document type for backup: ${document._type}`);
   }
 
-  const slug = getDocumentSlug(document);
-  const folderPath = normalizePath(
-    `${SHAREPOINT_ROOT_FOLDER}/${DOCUMENT_TYPE_FOLDER[document._type]}/${slug}`,
-  );
+  const { slug, folderPath } = buildDocumentFolderPath(document);
 
   await patchBackupStatus(document._id, 'syncing', { folderPath });
 
