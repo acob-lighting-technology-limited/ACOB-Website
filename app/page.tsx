@@ -10,6 +10,10 @@ import {
   getFeaturedProjects,
   getUpdatePosts,
 } from '@/sanity/lib/client';
+import {
+  ANNIVERSARY_2026,
+  isAnniversaryYear2026,
+} from '@/lib/constants/anniversary';
 
 // Lazy load below-the-fold sections
 const CompanySection = dynamic(
@@ -39,33 +43,52 @@ const NigeriaReachSection = dynamic(
 // Revalidate every 5 minutes (300 seconds)
 export const revalidate = 300;
 
+const isAnniversaryYear = isAnniversaryYear2026();
+
 export const metadata: Metadata = {
-  title: 'ACOB Lighting Technology Limited - Leading Solar Energy Solutions',
-  description:
-    'ACOB Lighting Technology Limited is a leading supplier of solar materials for manufacturers, installers & contractors. We provide mini-grid solutions, street lighting infrastructure, and comprehensive solar energy services across Nigeria.',
+  title: isAnniversaryYear
+    ? `${ANNIVERSARY_2026.title} | ACOB Lighting Technology Limited`
+    : 'ACOB Lighting Technology Limited - Leading Solar Energy Solutions',
+  description: isAnniversaryYear
+    ? `${ANNIVERSARY_2026.summary} ${ANNIVERSARY_2026.period} • ${ANNIVERSARY_2026.tagline}.`
+    : 'ACOB Lighting Technology Limited is a leading supplier of solar materials for manufacturers, installers & contractors. We provide mini-grid solutions, street lighting infrastructure, and comprehensive solar energy services across Nigeria.',
   openGraph: {
-    title: 'ACOB Lighting Technology Limited - Leading Solar Energy Solutions',
-    description:
-      'Leading supplier of solar materials and mini-grid solutions for manufacturers, installers & contractors across Nigeria.',
+    title: isAnniversaryYear
+      ? `${ANNIVERSARY_2026.title} | ACOB Lighting Technology Limited`
+      : 'ACOB Lighting Technology Limited - Leading Solar Energy Solutions',
+    description: isAnniversaryYear
+      ? `${ANNIVERSARY_2026.summary} ${ANNIVERSARY_2026.period} • ${ANNIVERSARY_2026.tagline}.`
+      : 'Leading supplier of solar materials and mini-grid solutions for manufacturers, installers & contractors across Nigeria.',
     type: 'website',
     url: 'https://www.acoblighting.com/',
     siteName: 'ACOB Lighting Technology Limited',
     images: [
       {
-        url: 'https://www.acoblighting.com/images/og-image.jpg',
+        url: isAnniversaryYear
+          ? 'https://www.acoblighting.com/images/acob-10-years-impact-2026.jpeg'
+          : 'https://www.acoblighting.com/images/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'ACOB Lighting Solar Energy Solutions - Mini-Grid Projects Across Nigeria',
+        alt: isAnniversaryYear
+          ? 'ACOB Lighting Technology Limited celebrating 10 years of impact, 2016 to 2026'
+          : 'ACOB Lighting Solar Energy Solutions - Mini-Grid Projects Across Nigeria',
         type: 'image/jpeg',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ACOB Lighting Technology Limited - Leading Solar Energy Solutions',
-    description:
-      'Leading supplier of solar materials and mini-grid solutions for manufacturers, installers & contractors across Nigeria.',
-    images: ['https://www.acoblighting.com/images/og-image.jpg'],
+    title: isAnniversaryYear
+      ? `${ANNIVERSARY_2026.title} | ACOB Lighting Technology Limited`
+      : 'ACOB Lighting Technology Limited - Leading Solar Energy Solutions',
+    description: isAnniversaryYear
+      ? `${ANNIVERSARY_2026.summary} ${ANNIVERSARY_2026.period} • ${ANNIVERSARY_2026.tagline}.`
+      : 'Leading supplier of solar materials and mini-grid solutions for manufacturers, installers & contractors across Nigeria.',
+    images: [
+      isAnniversaryYear
+        ? 'https://www.acoblighting.com/images/acob-10-years-impact-2026.jpeg'
+        : 'https://www.acoblighting.com/images/og-image.jpg',
+    ],
   },
 };
 

@@ -12,6 +12,9 @@ import { AnimatedCounter } from '../ui/animated-counter';
 import { cn } from '@/lib/utils';
 import { getBlurDataURL } from '@/lib/utils/image-optimization';
 import {
+  isAnniversaryYear2026,
+} from '@/lib/constants/anniversary';
+import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
@@ -29,9 +32,14 @@ interface HeroSectionProps {
   }>;
 }
 
+function formatHeroProjectTitle(title: string): string {
+  return `${title.trim().split(',')[0].replace(/\.+$/u, '').trim()}.`;
+}
+
 export const HeroSection = React.memo(function HeroSection({
   projects,
 }: HeroSectionProps) {
+  const showAnniversary = isAnniversaryYear2026();
   const allSlides = useMemo(() => {
     if (!projects || projects.length === 0) {
       return [
@@ -45,21 +53,19 @@ export const HeroSection = React.memo(function HeroSection({
       ];
     }
 
-    return projects.slice(0, 10).map(project => ({
+    return projects.slice(0, 10).map(project => {
+      return {
       id: `project-${project._id}`,
-      title: project.title,
+      title: formatHeroProjectTitle(project.title),
       image: project.projectImage || '/images/olooji-community.webp',
-      location:
-        project.location && project.state
-          ? `${project.location}, ${project.state.toUpperCase() === 'FCT' ? 'FCT' : `${project.state} State.`}`
-          : project.location ||
-            (project.state
-              ? project.state.toUpperCase() === 'FCT'
-                ? 'FCT'
-                : `${project.state} State.`
-              : 'Across Nigeria'),
+      location: project.state
+        ? project.state.toUpperCase() === 'FCT'
+          ? 'FCT.'
+          : `${project.state} State.`
+        : project.location || 'Across Nigeria.',
       slug: project.slug?.current ?? '',
-    }));
+      };
+    });
   }, [projects]);
 
   const [current, setCurrent] = useState(0);
@@ -246,9 +252,9 @@ export const HeroSection = React.memo(function HeroSection({
                 }}
               >
                 <p className="max-w-xl text-sm md:text-base text-gray-200">
-                  We deliver dependable solar, mini-grid, and energy storage
-                  solutions that unlock productivity and resilience for
-                  communities across Nigeria.
+                  {showAnniversary
+                    ? 'For 10 remarkable years, ACOB Lighting Technology Limited has remained committed to lighting up communities, driving innovation, and creating lasting impact across Nigeria.'
+                    : 'We deliver dependable solar, mini-grid, and energy storage solutions that unlock productivity and resilience for communities across Nigeria.'}
                 </p>
               </div>
 
@@ -340,7 +346,7 @@ export const HeroSection = React.memo(function HeroSection({
                   </span>
                 </div>
                 <h2 className="text-xl font-semibold text-white line-clamp-2">
-                  {allSlides[current].title}
+                  {formatHeroProjectTitle(allSlides[current].title)}
                 </h2>
               </div>
             </div>

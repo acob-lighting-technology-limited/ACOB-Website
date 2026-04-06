@@ -48,7 +48,7 @@ export const aboutSections = [
     description:
       'Explore our project footprint across Nigeria and see how our delivery network keeps growing.',
     href: '/about/our-reach',
-    image: '/images/about/company-profile.webp?height=200&width=300',
+    image: '/images/about/our-reach.webp?height=200&width=300',
   },
 ];
 
@@ -163,6 +163,13 @@ export const milestones = [
     title: 'National Scale Impact',
     description: `Deployed projects in ${COMPANY_INFO.stats.communitiesDeployed} communities, powering ${COMPANY_INFO.stats.totalConnections.toLocaleString()} connections with ${COMPANY_INFO.stats.installedCapacityKwp} kWp capacity. ${COMPANY_INFO.stats.communitiesUnderConstruction} more communities under construction.`,
     icon: 'Users',
+  },
+  {
+    year: '2026',
+    title: '10 Years of Impact',
+    description:
+      'Marked a decade of purpose, progress, and power, celebrating 10 years of lighting up communities, driving innovation, and creating lasting impact across Nigeria.',
+    icon: 'Award',
   },
 ];
 

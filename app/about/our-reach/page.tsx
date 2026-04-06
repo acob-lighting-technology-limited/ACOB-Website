@@ -95,7 +95,7 @@ export default async function OurReachPage() {
       <Hero
         title="Our Reach"
         description="Tracking ACOB's growing project footprint across Nigeria"
-        image="/images/about/company-profile.webp"
+        image="/images/about/our-reach.webp"
       />
 
       <Container>

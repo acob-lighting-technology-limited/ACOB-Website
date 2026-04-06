@@ -37,6 +37,9 @@ interface SanityDocumentForBackup {
   projectContent?: {
     images?: SanityMediaItem[];
   };
+  sharepointBackup?: {
+    folderPath?: string;
+  };
   media?: {
     productImage?: SanityMediaItem;
     productImages?: SanityMediaItem[];
@@ -150,6 +153,9 @@ const DOCUMENT_QUERY = `
           mimeType
         }
       }
+    },
+    sharepointBackup{
+      folderPath
     },
     media{
       productImage{
@@ -504,10 +510,25 @@ export async function backupSanityDocumentAssets(
   }
 
   const { slug, folderPath } = buildDocumentFolderPath(document);
+  const previousFolderPath = normalizePath(
+    document.sharepointBackup?.folderPath || '',
+  );
+  const shouldMoveExistingFolder =
+    !!document.sharepointBackup?.folderPath &&
+    previousFolderPath !== folderPath;
 
   await patchBackupStatus(document._id, 'syncing', { folderPath });
 
   try {
+    if (shouldMoveExistingFolder) {
+      const moved = await onedrive.moveFolder(previousFolderPath, folderPath);
+      if (!moved) {
+        console.warn(
+          `SharePoint folder move skipped for ${document._id}: ${previousFolderPath} -> ${folderPath}`,
+        );
+      }
+    }
+
     const assets = collectAssets(document, folderPath);
     await onedrive.createFolder(folderPath);
 

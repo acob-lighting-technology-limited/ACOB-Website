@@ -96,6 +96,7 @@ const nextConfig = {
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https://cdn.sanity.io https://res.cloudinary.com https://www.acoblighting.com",
               "connect-src 'self' https://api.resend.com https://api.openrouter.ai https://api.groq.com https://*.sanity.io https://vitals.vercel-insights.com https://va.vercel-scripts.com",
+              "frame-src 'self' https://www.google.com https://maps.google.com https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

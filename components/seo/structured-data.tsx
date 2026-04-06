@@ -1,15 +1,23 @@
 import { CONTACT_INFO } from '@/lib/constants/app.constants';
+import {
+  ANNIVERSARY_2026,
+  isAnniversaryYear2026,
+} from '@/lib/constants/anniversary';
 
 export function StructuredData() {
+  const isAnniversaryYear = isAnniversaryYear2026();
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'ACOB Lighting Technology Limited',
     url: 'https://www.acoblighting.com',
     logo: 'https://www.acoblighting.com/images/acob-logo-dark.png',
-    image: 'https://www.acoblighting.com/images/olooji-community.webp',
-    description:
-      'Leading supplier of solar materials for manufacturers, installers & contractors. Mini-grid solutions, captive power systems, and professional energy audits.',
+    image: isAnniversaryYear
+      ? 'https://www.acoblighting.com/images/acob-10-years-impact-2026.jpeg'
+      : 'https://www.acoblighting.com/images/olooji-community.webp',
+    description: isAnniversaryYear
+      ? `${ANNIVERSARY_2026.summary} ${ANNIVERSARY_2026.period} • ${ANNIVERSARY_2026.tagline}.`
+      : 'Leading supplier of solar materials for manufacturers, installers & contractors. Mini-grid solutions, captive power systems, and professional energy audits.',
     address: {
       '@type': 'PostalAddress',
       streetAddress:
