@@ -10,7 +10,15 @@ import {
   companyInfo,
 } from '@/lib/data/footer-data';
 import { toast } from 'sonner';
-import { isChristmasPeriod } from '@/lib/utils/christmas-period';
+import {
+  isChristmasPeriod,
+  isTemporary2026LogoPeriod,
+} from '@/lib/utils/christmas-period';
+import {
+  isAnniversaryYear2026,
+} from '@/lib/constants/anniversary';
+
+const LOGO_2026_VERSION = '2';
 
 // Social Icon Button Component with brand color animation
 function SocialIconButton({
@@ -50,9 +58,13 @@ function SocialIconButton({
 
 export function Footer() {
   const isChristmas = isChristmasPeriod();
+  const use2026Logo = isTemporary2026LogoPeriod();
+  const showAnniversary = isAnniversaryYear2026();
   const logoSrc = isChristmas
     ? '/images/acob-logo-dark-christmas.png'
-    : '/images/acob-logo-dark.png';
+    : use2026Logo
+      ? `/images/acob-logo-dark-2026.png?v=${LOGO_2026_VERSION}`
+      : '/images/acob-logo-dark.png';
 
   // Brand colors for social media platforms
   const brandColors: Record<string, string> = {
@@ -109,10 +121,9 @@ export function Footer() {
                 />
               </Link>
               <p className="text-sm text-zinc-400 leading-relaxed transition-colors duration-500">
-                ACOB Lighting Technology Limited delivers sustainable power
-                solutions across Nigeria. We specialize in mini-grid systems,
-                solar installations, and energy storage solutions that empower
-                homes, businesses, and communities with reliable, clean energy.
+                {showAnniversary
+                  ? 'Celebrating 10 years of impact, ACOB Lighting Technology Limited delivers sustainable power solutions across Nigeria through mini-grid systems, solar installations, and energy storage solutions that empower homes, businesses, and communities with reliable, clean energy.'
+                  : 'ACOB Lighting Technology Limited delivers sustainable power solutions across Nigeria. We specialize in mini-grid systems, solar installations, and energy storage solutions that empower homes, businesses, and communities with reliable, clean energy.'}
               </p>
               {/* Social Links */}
               <div className="flex">

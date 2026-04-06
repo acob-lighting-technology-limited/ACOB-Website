@@ -5,6 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { MaskText } from '@/components/animations/MaskText';
 import { FadeIn } from '@/components/animations/FadeIn';
+import {
+  ANNIVERSARY_2026,
+  isAnniversaryYear2026,
+} from '@/lib/constants/anniversary';
 
 const commitments = [
   'Community-first electrification strategies built with local partners',
@@ -13,6 +17,8 @@ const commitments = [
 ];
 
 export function AboutSection() {
+  const showAnniversary = isAnniversaryYear2026();
+
   return (
     <section className="border-b border-border-[0.5px] bg-primary text-primary-foreground py-12 sm:py-16 lg:py-20 xl:py-24 transition-all duration-500">
       <Container className="px-4">
@@ -30,6 +36,11 @@ export function AboutSection() {
                 ]}
                 className="text-base text-primary-foreground/95 md:text-lg"
               />
+              {showAnniversary && (
+                <p className="max-w-2xl text-base text-primary-foreground/90 md:text-lg">
+                  {ANNIVERSARY_2026.extendedSummary}
+                </p>
+              )}
               <ul className="space-y-3 text-sm uppercase tracking-wide text-primary-foreground/90">
                 {commitments.map(item => (
                   <li key={item} className="flex items-start gap-3">

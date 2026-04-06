@@ -12,8 +12,13 @@ import { Hero } from '@/components/ui/hero';
 import { aboutLeadershipQuotes } from '@/lib/data/about-overview-data';
 import { CoreValuesSection } from '@/components/sections/core-values-section';
 import { COMPANY_INFO } from '@/lib/constants';
+import {
+  ANNIVERSARY_2026,
+  isAnniversaryYear2026,
+} from '@/lib/constants/anniversary';
 
 export default function OurStoryPage() {
+  const showAnniversary = isAnniversaryYear2026();
   const breadcrumbItems = [
     { label: 'Home', href: '/' },
     { label: 'About Us', href: '/about' },
@@ -64,6 +69,19 @@ export default function OurStoryPage() {
                 financing structures, responsive O&M, and digital monitoring to
                 ensure long-term reliability.
               </p>
+              {showAnniversary && (
+                <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5 text-foreground">
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
+                    {ANNIVERSARY_2026.title}
+                  </p>
+                  <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+                    {ANNIVERSARY_2026.extendedSummary}
+                  </p>
+                  <p className="mt-3 text-sm font-medium text-foreground">
+                    {ANNIVERSARY_2026.period} • {ANNIVERSARY_2026.tagline}
+                  </p>
+                </div>
+              )}
             </div>
           </Card>
 
@@ -93,6 +111,15 @@ export default function OurStoryPage() {
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   {[
                     { icon: Calendar, label: 'Founded', value: '2016' },
+                    ...(showAnniversary
+                      ? [
+                          {
+                            icon: Calendar,
+                            label: 'Anniversary',
+                            value: '10 Years in 2026',
+                          },
+                        ]
+                      : []),
                     {
                       icon: Users,
                       label: 'Staff Strength',

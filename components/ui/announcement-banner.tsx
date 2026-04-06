@@ -2,8 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { X, Briefcase, Package } from 'lucide-react';
+import { X, Briefcase, Package, Award } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ANNIVERSARY_2026,
+  isAnniversaryYear2026,
+} from '@/lib/constants/anniversary';
 
 interface AnnouncementBannerProps {
   jobCount: number;
@@ -16,6 +20,8 @@ export function AnnouncementBanner({
 }: AnnouncementBannerProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const isAnniversaryYear = isAnniversaryYear2026();
+  const ANNIVERSARY_STORAGE_KEY = 'acob-anniversary-banner-dismissed';
   const JOB_STORAGE_KEY = 'acob-job-banner-dismissed';
   const PRODUCT_STORAGE_KEY = 'acob-product-banner-dismissed';
 
@@ -29,6 +35,18 @@ export function AnnouncementBanner({
     linkText: string;
     storageKey: string;
   }> = [];
+
+  if (isAnniversaryYear) {
+    announcements.push({
+      id: 'anniversary',
+      icon: Award,
+      message: ANNIVERSARY_2026.title,
+      details: `${ANNIVERSARY_2026.period} • ${ANNIVERSARY_2026.tagline}`,
+      link: '/about/our-story',
+      linkText: 'Explore the journey →',
+      storageKey: ANNIVERSARY_STORAGE_KEY,
+    });
+  }
 
   if (jobCount > 0) {
     announcements.push({

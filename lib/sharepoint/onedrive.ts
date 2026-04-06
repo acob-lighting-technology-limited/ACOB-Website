@@ -15,6 +15,10 @@ interface OneDriveDriveResponse {
 interface OneDriveItem {
   id: string;
   name: string;
+  parentReference?: {
+    id?: string;
+    path?: string;
+  };
 }
 
 export interface OneDriveUploadResult {
@@ -283,6 +287,88 @@ export class OneDriveService {
 
       currentPath = currentPath ? `${currentPath}/${part}` : part;
     }
+  }
+
+  private async getItemByPath(
+    itemPath: string,
+  ): Promise<OneDriveItem | null> {
+    const baseUrl = await this.resolveSingleDriveBaseUrl();
+    const normalizedPath = normalizeGraphPath(itemPath);
+
+    try {
+      return await this.driveRequest<OneDriveItem>(
+        baseUrl,
+        buildItemEndpoint(normalizedPath),
+      );
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('itemNotFound')) {
+        return null;
+      }
+
+      throw error;
+    }
+  }
+
+  async moveFolder(fromPath: string, toPath: string): Promise<boolean> {
+    const normalizedFromPath = normalizeGraphPath(fromPath);
+    const normalizedToPath = normalizeGraphPath(toPath);
+
+    if (
+      normalizedFromPath === '/' ||
+      normalizedToPath === '/' ||
+      normalizedFromPath === normalizedToPath
+    ) {
+      return false;
+    }
+
+    const baseUrl = await this.resolveSingleDriveBaseUrl();
+    const sourceItem = await this.getItemByPath(normalizedFromPath);
+    if (!sourceItem) {
+      return false;
+    }
+
+    const destinationItem = await this.getItemByPath(normalizedToPath);
+    if (destinationItem) {
+      return false;
+    }
+
+    const destinationSegments = normalizedToPath
+      .replace(/^\//, '')
+      .split('/')
+      .filter(Boolean);
+    const destinationName = destinationSegments.pop();
+    if (!destinationName) {
+      return false;
+    }
+
+    const destinationParentPath = destinationSegments.length
+      ? `/${destinationSegments.join('/')}`
+      : '/';
+
+    await this.createFolder(destinationParentPath);
+
+    const destinationParent =
+      destinationParentPath === '/'
+        ? await this.driveRequest<OneDriveItem>(baseUrl, '/root')
+        : await this.getItemByPath(destinationParentPath);
+
+    if (!destinationParent?.id) {
+      throw new Error(
+        `Unable to resolve SharePoint destination folder: ${destinationParentPath}`,
+      );
+    }
+
+    await this.driveRequest<OneDriveItem>(baseUrl, `/items/${sourceItem.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        name: destinationName,
+        parentReference: {
+          id: destinationParent.id,
+        },
+      }),
+    });
+
+    return true;
   }
 
   async uploadFile(

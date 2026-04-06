@@ -12,9 +12,14 @@ import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Hero } from '@/components/ui/hero';
 import { SectionHeader } from '@/components/ui/section-header';
 import { aboutSections } from '@/lib/data/about-data';
+import {
+  ANNIVERSARY_2026,
+  isAnniversaryYear2026,
+} from '@/lib/constants/anniversary';
 
 export default function AboutPage() {
   const breadcrumbItems = [{ label: 'Home', href: '/' }, { label: 'About Us' }];
+  const showAnniversary = isAnniversaryYear2026();
 
   // Images from about sub-routes - use the same images as the cards
   const aboutImages = aboutSections.map(section => ({
@@ -36,19 +41,37 @@ export default function AboutPage() {
         <section className="mb-20 rounded-3xl border border-border bg-surface p-4 sm:p-6 xl:p-8 shadow-sm backdrop-blur">
           <div className="mx-auto max-w-4xl space-y-6 text-center">
             <span className="inline-flex items-center justify-center rounded-full border border-primary/40 bg-primary/20 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-              Who We Are
+              {showAnniversary ? ANNIVERSARY_2026.title : 'Who We Are'}
             </span>
             <h2 className="text-3xl font-bold text-foreground md:text-4xl">
               <MaskText
-                phrases={["Pioneering Nigeria's Energy Access Revolution"]}
+                phrases={[
+                  showAnniversary
+                    ? `• ${ANNIVERSARY_2026.period} •`
+                    : "Pioneering Nigeria's Energy Access Revolution",
+                ]}
               />
             </h2>
+            {showAnniversary && (
+              <h3 className="text-2xl font-bold text-foreground md:text-3xl">
+                <MaskText
+                  phrases={["Pioneering Nigeria's Energy Access Revolution"]}
+                />
+              </h3>
+            )}
             <p className="text-lg leading-relaxed text-muted-foreground">
               ACOB Lighting Technology Limited delivers dependable solar energy
               infrastructure to rural and peri-urban communities across Nigeria.
               We help local businesses, health facilities, and households thrive
               with sustainable power solutions.
             </p>
+            {showAnniversary && (
+              <p className="text-base leading-relaxed text-foreground/80">
+                {ANNIVERSARY_2026.summary} We celebrate 10 years of impact and
+                look forward to many more years of lighting up lives and shaping
+                a brighter future.
+              </p>
+            )}
           </div>
         </section>
 

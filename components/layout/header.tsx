@@ -11,7 +11,10 @@ import { ChevronDown, Menu, X, Package } from 'lucide-react';
 import { navigationItems } from '@/lib/data/navigation-data';
 import { LucideIcons } from '@/lib/data/lucide-icons';
 import { motion, AnimatePresence } from 'framer-motion';
-import { isChristmasPeriod } from '@/lib/utils/christmas-period';
+import {
+  isChristmasPeriod,
+  isTemporary2026LogoPeriod,
+} from '@/lib/utils/christmas-period';
 import {
   SCROLL_THRESHOLD,
   HEADER_SHOW_THRESHOLD,
@@ -19,6 +22,8 @@ import {
   DROPDOWN_CLOSE_DELAY,
   SCROLL_STOP_TIMEOUT,
 } from '@/lib/constants/ui';
+
+const LOGO_2026_VERSION = '2';
 
 interface SubItem {
   name: string;
@@ -43,6 +48,7 @@ interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
   logoSrc: string;
+  useTallAnniversaryLogo: boolean;
 }
 
 const DropdownMenu: React.FC<DropdownMenuProps> = ({
@@ -146,6 +152,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   isOpen,
   onClose,
   logoSrc,
+  useTallAnniversaryLogo,
 }) => {
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
@@ -190,6 +197,9 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
     return pathname === subItemHref || pathname.startsWith(`${subItemHref}/`);
   };
 
+  const mobileLogoWidth = useTallAnniversaryLogo ? 152 : 140;
+  const mobileLogoHeight = useTallAnniversaryLogo ? 42 : 36;
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -225,14 +235,16 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                     key={logoSrc}
                     src={logoSrc || '/placeholder.svg'}
                     alt="ACOB Lighting Logo"
-                    width={140}
-                    height={36}
+                    width={mobileLogoWidth}
+                    height={mobileLogoHeight}
                     priority
                     data-no-protection="true"
-                    className="h-9 w-auto group-hover:scale-105 transition-transform duration-500"
+                    className={`w-auto group-hover:scale-105 transition-transform duration-500 ${
+                      useTallAnniversaryLogo ? 'h-10' : 'h-9'
+                    }`}
                     style={{
-                      width: '140px',
-                      height: '36px',
+                      width: `${mobileLogoWidth}px`,
+                      height: `${mobileLogoHeight}px`,
                       objectFit: 'contain',
                     }}
                   />
@@ -410,19 +422,27 @@ export function Header() {
 
   // Check if we're in Christmas period
   const isChristmas = isChristmasPeriod();
+  const use2026Logo = isTemporary2026LogoPeriod();
+  const useTallAnniversaryLogo = use2026Logo && !isChristmas;
 
   // Default to light logo for SSR to prevent hydration mismatch
   const logoSrc = !mounted
     ? isChristmas
       ? '/images/acob-logo-light-christmas.png'
-      : '/images/acob-logo-light.png'
+      : use2026Logo
+        ? `/images/acob-logo-light-2026.png?v=${LOGO_2026_VERSION}`
+        : '/images/acob-logo-light.png'
     : isChristmas
       ? resolvedTheme === 'dark'
         ? '/images/acob-logo-dark-christmas.png'
         : '/images/acob-logo-light-christmas.png'
       : resolvedTheme === 'dark'
-        ? '/images/acob-logo-dark.png'
-        : '/images/acob-logo-light.png';
+        ? use2026Logo
+          ? `/images/acob-logo-dark-2026.png?v=${LOGO_2026_VERSION}`
+          : '/images/acob-logo-dark.png'
+        : use2026Logo
+          ? `/images/acob-logo-light-2026.png?v=${LOGO_2026_VERSION}`
+          : '/images/acob-logo-light.png';
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -535,14 +555,16 @@ export function Header() {
                   key={logoSrc}
                   src={logoSrc || '/placeholder.svg'}
                   alt="ACOB Lighting Logo"
-                  width={250}
-                  height={60}
+                  width={useTallAnniversaryLogo ? 192 : 180}
+                  height={useTallAnniversaryLogo ? 46 : 40}
                   priority
                   data-no-protection="true"
-                  className="h-12 w-auto group-hover:scale-105 transition-transform duration-500"
+                  className={`w-auto group-hover:scale-105 transition-transform duration-500 ${
+                    useTallAnniversaryLogo ? 'h-[46px]' : 'h-12'
+                  }`}
                   style={{
-                    width: '180px',
-                    height: '40px',
+                    width: useTallAnniversaryLogo ? '192px' : '180px',
+                    height: useTallAnniversaryLogo ? '46px' : '40px',
                     objectFit: 'contain',
                   }}
                 />
@@ -620,6 +642,7 @@ export function Header() {
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         logoSrc={logoSrc}
+        useTallAnniversaryLogo={useTallAnniversaryLogo}
       />
     </>
   );
