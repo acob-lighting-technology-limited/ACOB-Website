@@ -14,11 +14,9 @@ import {
   isChristmasPeriod,
   isTemporary2026LogoPeriod,
 } from '@/lib/utils/christmas-period';
-import {
-  isAnniversaryYear2026,
-} from '@/lib/constants/anniversary';
+import { isAnniversaryYear2026 } from '@/lib/constants/anniversary';
 
-const LOGO_2026_VERSION = '2';
+const LOGO_2026_VERSION = '3';
 
 // Social Icon Button Component with brand color animation
 function SocialIconButton({
@@ -114,10 +112,10 @@ export function Footer() {
                   key={logoSrc}
                   src={logoSrc || '/placeholder.svg'}
                   alt="ACOB Lighting Technology Limited"
-                  width={140}
-                  height={36}
+                  width={use2026Logo ? 220 : 140}
+                  height={use2026Logo ? 64 : 36}
                   data-no-protection="true"
-                  className="h-10 w-auto"
+                  className={use2026Logo ? 'h-16 w-auto' : 'h-10 w-auto'}
                 />
               </Link>
               <p className="text-sm text-zinc-400 leading-relaxed transition-colors duration-500">
