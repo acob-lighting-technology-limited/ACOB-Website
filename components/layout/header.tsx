@@ -23,7 +23,7 @@ import {
   SCROLL_STOP_TIMEOUT,
 } from '@/lib/constants/ui';
 
-const LOGO_2026_VERSION = '2';
+const LOGO_2026_VERSION = '3';
 
 interface SubItem {
   name: string;
@@ -197,8 +197,8 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
     return pathname === subItemHref || pathname.startsWith(`${subItemHref}/`);
   };
 
-  const mobileLogoWidth = useTallAnniversaryLogo ? 152 : 140;
-  const mobileLogoHeight = useTallAnniversaryLogo ? 42 : 36;
+  const mobileLogoWidth = useTallAnniversaryLogo ? 184 : 140;
+  const mobileLogoHeight = useTallAnniversaryLogo ? 52 : 36;
 
   return (
     <AnimatePresence>
@@ -228,7 +228,9 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="flex items-center justify-between p-6 border-b border-border bg-gradient-to-r from-primary/5 to-primary/10"
+                className={`flex items-center justify-between border-b border-border bg-gradient-to-r from-primary/5 to-primary/10 ${
+                  useTallAnniversaryLogo ? 'px-5 py-4' : 'p-6'
+                }`}
               >
                 <Link href="/" className="flex items-center space-x-2 group">
                   <Image
@@ -240,7 +242,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                     priority
                     data-no-protection="true"
                     className={`w-auto group-hover:scale-105 transition-transform duration-500 ${
-                      useTallAnniversaryLogo ? 'h-10' : 'h-9'
+                      useTallAnniversaryLogo ? 'h-[52px]' : 'h-9'
                     }`}
                     style={{
                       width: `${mobileLogoWidth}px`,
@@ -548,23 +550,27 @@ export function Header() {
         `}
       >
         <Container noPadding className="px-4">
-          <div className="flex items-center justify-between h-16">
+          <div
+            className={`flex items-center justify-between ${
+              useTallAnniversaryLogo ? 'h-[68px]' : 'h-16'
+            }`}
+          >
             <div>
               <Link href="/" className="flex items-center space-x-2 group">
                 <Image
                   key={logoSrc}
                   src={logoSrc || '/placeholder.svg'}
                   alt="ACOB Lighting Logo"
-                  width={useTallAnniversaryLogo ? 192 : 180}
-                  height={useTallAnniversaryLogo ? 46 : 40}
+                  width={useTallAnniversaryLogo ? 228 : 180}
+                  height={useTallAnniversaryLogo ? 58 : 40}
                   priority
                   data-no-protection="true"
                   className={`w-auto group-hover:scale-105 transition-transform duration-500 ${
-                    useTallAnniversaryLogo ? 'h-[46px]' : 'h-12'
+                    useTallAnniversaryLogo ? 'h-[58px]' : 'h-12'
                   }`}
                   style={{
-                    width: useTallAnniversaryLogo ? '192px' : '180px',
-                    height: useTallAnniversaryLogo ? '46px' : '40px',
+                    width: useTallAnniversaryLogo ? '228px' : '180px',
+                    height: useTallAnniversaryLogo ? '58px' : '40px',
                     objectFit: 'contain',
                   }}
                 />
