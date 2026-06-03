@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import {
   PortableText,
@@ -28,85 +28,65 @@ export function ProjectContent({
 }: ProjectContentProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [contentMedia, setContentMedia] = useState<
-    Array<{ src: string; alt: string; type: 'image' | 'video' }>
-  >([]);
 
   // Determine if we're using new or old content structure
   const useNewStructure = !!projectContent;
 
-  // Extract all images from content for the lightbox (old structure)
-  const extractImagesLegacy = (blocks: PortableTextBlock[]) => {
-    const images: Array<{ src: string; alt: string }> = [];
-    blocks.forEach(block => {
-      if (
-        block._type === 'image' &&
-        'asset' in block &&
-        typeof block.asset === 'object'
-      ) {
-        const imageUrl =
-          urlFor(block)
-            .width(1920)
-            .height(1080)
-            .fit('max')
-            .auto('format')
-            .quality(90)
-            .url() || '/placeholder.svg';
-        images.push({
-          src: imageUrl,
-          alt:
-            ('alt' in block && typeof block.alt === 'string'
-              ? block.alt
-              : '') || 'Project image',
-        });
-      }
-    });
-    return images;
-  };
-
-  // Extract images and videos from new structure
-  const extractMediaNew = (
-    media?: Array<{
-      asset: { url?: string };
-      alt?: string;
-      title?: string;
-      _type?: string;
-    }>,
-  ) => {
-    if (!media) {
-      return [];
-    }
-    return media
-      .filter(item => item?.asset?.url)
-      .map(item => {
-        const url = item.asset.url!;
-        const isVideo =
-          item._type === 'file' ||
-          item._type === 'video' ||
-          url.match(/\.(mp4|webm|ogg|mov)$/i);
-        return {
-          src: url,
-          alt:
-            item.title ||
-            item.alt ||
-            (isVideo ? 'Project video' : 'Project image'),
-          type: (isVideo ? 'video' : 'image') as 'image' | 'video',
-        };
-      });
-  };
-
-  // Initialize media when component mounts
-  useEffect(() => {
+  // Built synchronously — no useEffect delay, always in sync with props
+  const contentMedia = useMemo(() => {
     if (useNewStructure && projectContent?.images) {
-      setContentMedia(extractMediaNew(projectContent.images));
-    } else if (content) {
-      setContentMedia(
-        extractImagesLegacy(content).map(img => ({
-          ...img,
-          type: 'image' as const,
-        })),
-      );
+      return (projectContent.images ?? [])
+        .filter(item => item?.asset?.url)
+        .map(item => {
+          const url = item.asset.url!;
+          const isVideo =
+            (item as { _type?: string })._type === 'file' ||
+            (item as { _type?: string })._type === 'video' ||
+            !!url.match(/\.(mp4|webm|ogg|mov)$/i);
+          return {
+            src: url,
+            alt:
+              (item as { title?: string }).title ||
+              item.alt ||
+              (isVideo ? 'Project video' : 'Project image'),
+            type: (isVideo ? 'video' : 'image') as 'image' | 'video',
+          };
+        });
     }
+    if (content) {
+      const images: Array<{
+        src: string;
+        alt: string;
+        type: 'image' | 'video';
+      }> = [];
+      content.forEach(block => {
+        if (
+          block._type === 'image' &&
+          'asset' in block &&
+          typeof block.asset === 'object' &&
+          block.asset !== null
+        ) {
+          const imageUrl =
+            urlFor(block)
+              .width(1920)
+              .height(1080)
+              .fit('max')
+              .auto('format')
+              .quality(90)
+              .url() || '/placeholder.svg';
+          images.push({
+            src: imageUrl,
+            alt:
+              ('alt' in block && typeof block.alt === 'string'
+                ? block.alt
+                : '') || 'Project image',
+            type: 'image',
+          });
+        }
+      });
+      return images;
+    }
+    return [];
   }, [content, projectContent, useNewStructure]);
 
   const handleImageClick = (imageIndex: number) => {

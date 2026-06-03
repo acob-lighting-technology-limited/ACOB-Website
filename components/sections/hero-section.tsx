@@ -11,9 +11,7 @@ import { stats } from '@/lib/data/transition-data';
 import { AnimatedCounter } from '../ui/animated-counter';
 import { cn } from '@/lib/utils';
 import { getBlurDataURL } from '@/lib/utils/image-optimization';
-import {
-  isAnniversaryYear2026,
-} from '@/lib/constants/anniversary';
+import { isAnniversaryYear2026 } from '@/lib/constants/anniversary';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -55,15 +53,15 @@ export const HeroSection = React.memo(function HeroSection({
 
     return projects.slice(0, 10).map(project => {
       return {
-      id: `project-${project._id}`,
-      title: formatHeroProjectTitle(project.title),
-      image: project.projectImage || '/images/olooji-community.webp',
-      location: project.state
-        ? project.state.toUpperCase() === 'FCT'
-          ? 'FCT.'
-          : `${project.state} State.`
-        : project.location || 'Across Nigeria.',
-      slug: project.slug?.current ?? '',
+        id: `project-${project._id}`,
+        title: formatHeroProjectTitle(project.title),
+        image: project.projectImage || '/images/olooji-community.webp',
+        location: project.state
+          ? project.state.toUpperCase() === 'FCT'
+            ? 'FCT.'
+            : `${project.state} State.`
+          : project.location || 'Across Nigeria.',
+        slug: project.slug?.current ?? '',
       };
     });
   }, [projects]);
@@ -120,7 +118,7 @@ export const HeroSection = React.memo(function HeroSection({
   }, []);
 
   return (
-    <section className="relative h-[calc(100vh-4rem)] w-full overflow-hidden bg-black">
+    <section className="relative h-screen w-full overflow-hidden bg-black">
       {/* Background Images with Ken Burns Effect */}
       <div className="absolute inset-0 bg-black">
         {allSlides.map((slide, index) => (

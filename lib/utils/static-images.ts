@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getProjects } from '@/sanity/lib/client';
 import type { Project } from '@/lib/types';
 

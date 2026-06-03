@@ -45,23 +45,42 @@ if (!token) {
 // ============================================================================
 
 /**
- * Server-side Sanity client
+ * Server-side Sanity client (READ-OPTIMIZED)
  *
  * Use this client for:
- * - API routes
+ * - API routes (read operations)
  * - Server-side rendering (SSR)
  * - Server components
  *
  * Features:
- * - Includes API token for write operations
- * - CDN enabled in production for faster reads
- * - Caching enabled
+ * - CDN enabled in production for faster, free reads
+ * - No token (CDN reads don't need authentication)
+ * - Dramatically reduces API quota usage
  */
 export const client = createClient({
   projectId,
   dataset,
-  // Sanity recommends disabling CDN for authenticated requests.
-  useCdn: !token && process.env.NODE_ENV === 'production',
+  // CDN is free, fast, and doesn't count toward API quota.
+  // Always use CDN for read operations in production.
+  useCdn: process.env.NODE_ENV === 'production',
+  apiVersion: '2025-07-16',
+  // No token for read-only CDN queries — token disables CDN caching
+});
+
+/**
+ * Server-side Sanity client (WRITE/MUTATION)
+ *
+ * Use this client ONLY for:
+ * - Write operations (patch, create, delete)
+ * - Webhook handlers
+ * - SharePoint backup mutations
+ *
+ * This client bypasses CDN because authenticated requests require it.
+ */
+export const writeClient = createClient({
+  projectId,
+  dataset,
+  useCdn: false,
   apiVersion: '2025-07-16',
   token: token,
 });

@@ -19,7 +19,13 @@
 // RE-EXPORT CLIENT AND UTILITIES
 // ============================================================================
 
-export { client, clientForBrowser, urlFor, sanityConfig } from '../config';
+export {
+  client,
+  writeClient,
+  clientForBrowser,
+  urlFor,
+  sanityConfig,
+} from '../config';
 
 // ============================================================================
 // PROJECT QUERIES

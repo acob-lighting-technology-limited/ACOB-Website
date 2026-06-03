@@ -23,7 +23,7 @@ export const PageHeroCarousel = React.memo(function PageHeroCarousel({
   images,
   title,
   description,
-  height = 'h-[50vh] md:h-[45vh] lg:h-[60vh]',
+  height = 'h-[calc(50vh+6rem)] md:h-[calc(45vh+6rem)] lg:h-[calc(60vh+6rem)]',
   autoPlayInterval = 5000,
 }: PageHeroCarouselProps) {
   const [current, setCurrent] = useState(0);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { defineField, defineType } from 'sanity';
 import { PackageIcon } from '@sanity/icons';
 import {
@@ -408,7 +409,6 @@ export const projectType = defineType({
           description: 'Annual energy output in kilowatt-hours per year',
         },
       ],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any),
     // New Project Content Structure
     defineField({
@@ -637,14 +637,12 @@ This project underscores ACOB Lighting Technology's leadership in deploying rene
               name: 'author',
               title: 'Author',
               type: 'string',
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               validation: (Rule: any) => Rule.required(),
             },
             {
               name: 'email',
               title: 'Email',
               type: 'string',
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               validation: (Rule: any) => Rule.required(),
             },
             {
@@ -652,7 +650,6 @@ This project underscores ACOB Lighting Technology's leadership in deploying rene
               title: 'Comment',
               type: 'text',
               rows: 3,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               validation: (Rule: any) => Rule.required().min(10),
             },
             {
@@ -675,7 +672,6 @@ This project underscores ACOB Lighting Technology's leadership in deploying rene
               subtitle: 'commentContent',
               media: 'isApproved',
             },
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             prepare(selection: Record<string, any>) {
               const { title, subtitle, media } = selection as {
                 title: string;

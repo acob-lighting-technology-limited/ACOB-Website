@@ -43,7 +43,7 @@ export const Hero = React.memo(function Hero({
     }[imagePosition];
 
     return (
-      <div className="relative w-full h-[50vh] md:h-[45vh] lg:h-[60vh] overflow-hidden">
+      <div className="relative w-full h-[calc(50vh+6rem)] md:h-[calc(45vh+6rem)] lg:h-[calc(60vh+6rem)] overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0 bg-black">
           <div className="absolute inset-0 overflow-hidden">
@@ -246,7 +246,7 @@ const HeroCarousel = React.memo(function HeroCarousel({
 
   return (
     <div
-      className="relative w-full overflow-hidden touch-pan-y h-[50vh] md:h-[45vh] lg:h-[60vh]"
+      className="relative w-full overflow-hidden touch-pan-y h-[calc(50vh+6rem)] md:h-[calc(45vh+6rem)] lg:h-[calc(60vh+6rem)]"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
