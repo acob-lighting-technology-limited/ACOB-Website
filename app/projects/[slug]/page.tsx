@@ -1,6 +1,7 @@
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Container } from '@/components/ui/container';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ArrowRight, ArrowLeft, MapPin, Calendar } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import {
@@ -9,6 +10,7 @@ import {
   getProjectsPaginated,
 } from '@/sanity/lib/client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Hero } from '@/components/ui/hero';
 import type { Project } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -176,35 +178,90 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
         {/* Related Projects */}
         {relatedProjects.length > 0 && (
-          <div className="mt-8">
-            <h3 className="text-2xl font-bold mb-4">Related Projects</h3>
-            <ul className="space-y-2">
+          <div className="mt-12">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold">Related Projects</h3>
+              <Link
+                href="/projects"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+              >
+                View all
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {relatedProjects.map((relatedProject: Project) => (
-                <li key={relatedProject._id}>
-                  <Link
-                    href={`/projects/${relatedProject.slug.current}`}
-                    className="group flex items-center gap-3 p-3 rounded-lg transition-all duration-300 hover:bg-muted/50 border border-border hover:border-primary/50"
-                  >
-                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors duration-300 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors duration-300">
-                        {relatedProject.title}
-                      </h4>
+                <Link
+                  key={relatedProject._id}
+                  href={`/projects/${relatedProject.slug.current}`}
+                  className="group flex flex-col rounded-xl border border-border bg-card overflow-hidden hover:border-primary/50 hover:shadow-lg transition-all duration-300"
+                >
+                  {/* Thumbnail */}
+                  <div className="relative h-44 w-full bg-muted overflow-hidden">
+                    {relatedProject.projectImage ? (
+                      <Image
+                        src={relatedProject.projectImage}
+                        alt={relatedProject.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-primary/5">
+                        <span className="text-4xl font-bold text-primary/20 select-none">
+                          ACOB
+                        </span>
+                      </div>
+                    )}
+                    {relatedProject.category && (
+                      <div className="absolute top-3 left-3">
+                        <Badge className="text-[10px] uppercase tracking-wide shadow">
+                          {relatedProject.category}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Body */}
+                  <div className="flex flex-col flex-1 p-4 gap-2">
+                    <h4 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors duration-200 line-clamp-2 leading-snug">
+                      {relatedProject.title}
+                    </h4>
+                    {relatedProject.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                        {relatedProject.description}
+                      </p>
+                    )}
+                    <div className="mt-auto pt-3 flex items-center justify-between border-t border-border/60">
                       {relatedProject.location && (
-                        <div className="flex items-center text-xs text-muted-foreground mt-1">
-                          <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
+                          <MapPin className="h-3 w-3 flex-shrink-0" />
                           <span className="truncate">
                             {relatedProject.location}
                             {relatedProject.state &&
-                              `, ${relatedProject.state.toUpperCase() === 'FCT' ? 'FCT' : `${relatedProject.state} State.`}`}
+                              `, ${relatedProject.state.toUpperCase() === 'FCT' ? 'FCT' : `${relatedProject.state} State`}`}
+                          </span>
+                        </div>
+                      )}
+                      {relatedProject.projectDate && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 ml-2">
+                          <Calendar className="h-3 w-3" />
+                          <span>
+                            {new Date(relatedProject.projectDate).getFullYear()}
                           </span>
                         </div>
                       )}
                     </div>
-                  </Link>
-                </li>
+                    <div className="flex justify-end">
+                      <span className="text-xs text-primary font-medium flex items-center gap-1 group-hover:gap-2 transition-all duration-200">
+                        View project
+                        <ArrowRight className="h-3 w-3" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
               ))}
-            </ul>
+            </div>
           </div>
         )}
 

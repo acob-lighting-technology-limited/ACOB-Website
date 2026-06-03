@@ -24,10 +24,6 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { CardSkeleton, QueryError } from '@/components/ui/query-states';
-import {
-  ANNIVERSARY_2026,
-  isAnniversaryYear2026,
-} from '@/lib/constants/anniversary';
 
 const PAGE_LIMIT = 9;
 
@@ -44,7 +40,6 @@ export default function UpdatesClient({
   currentSearch,
   breadcrumbItems,
 }: UpdatesClientProps) {
-  const showAnniversary = isAnniversaryYear2026();
   const [posts, setPosts] = useState<UpdatePost[]>(initialPosts);
   const [pagination, setPagination] =
     useState<PaginationInfo>(initialPagination);
@@ -166,17 +161,6 @@ export default function UpdatesClient({
       />
 
       <Container className="px-4 py-8">
-        {showAnniversary && (
-          <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-4 text-sm text-foreground shadow-sm">
-            <p className="font-semibold uppercase tracking-[0.25em] text-primary">
-              {ANNIVERSARY_2026.title}
-            </p>
-            <p className="mt-2 text-muted-foreground">
-              {ANNIVERSARY_2026.summary} {ANNIVERSARY_2026.period} •{' '}
-              {ANNIVERSARY_2026.tagline}
-            </p>
-          </div>
-        )}
         {/* Breadcrumb with Search */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <Breadcrumb items={breadcrumbItems} />

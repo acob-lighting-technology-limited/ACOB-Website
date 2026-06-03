@@ -1,4 +1,4 @@
-import { client } from '@/sanity/lib/config';
+import { client, writeClient } from '@/sanity/lib/config';
 import { OneDriveService } from '@/lib/sharepoint/onedrive';
 
 type SupportedDocumentType = 'project' | 'product' | 'updatePost';
@@ -455,7 +455,7 @@ async function patchBackupStatus(
   }> = {},
 ): Promise<void> {
   try {
-    await client
+    await writeClient
       .patch(documentId)
       .set({
         sharepointBackup: {

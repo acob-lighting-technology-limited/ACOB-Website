@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import {
   PortableText,
@@ -14,74 +14,95 @@ interface UpdateContentProps {
   content: PortableTextBlock[];
 }
 
+type LightboxMediaItem = { src: string; alt: string; type: 'image' | 'video' };
+type MediaBlock = PortableTextBlock & {
+  asset?: { url?: string; _ref?: string; _type?: string } | null;
+  alt?: string;
+  title?: string;
+};
+
+function getLightboxImageUrl(source: Parameters<typeof urlFor>[0]) {
+  try {
+    return (
+      urlFor(source).width(1920).fit('max').auto('format').quality(90).url() ||
+      null
+    );
+  } catch {
+    return null;
+  }
+}
+
+function getMediaFromBlock(block: PortableTextBlock): LightboxMediaItem | null {
+  const mediaBlock = block as MediaBlock;
+
+  if (!mediaBlock.asset || typeof mediaBlock.asset !== 'object') {
+    return null;
+  }
+
+  if (mediaBlock._type === 'image') {
+    const src = getLightboxImageUrl(mediaBlock);
+
+    if (!src) {
+      return null;
+    }
+
+    return {
+      src,
+      alt: mediaBlock.alt || 'Update post image',
+      type: 'image',
+    };
+  }
+
+  if (
+    (mediaBlock._type === 'file' || mediaBlock._type === 'video') &&
+    typeof mediaBlock.asset.url === 'string'
+  ) {
+    return {
+      src: mediaBlock.asset.url,
+      alt: mediaBlock.title || mediaBlock.alt || 'Update post video',
+      type: 'video',
+    };
+  }
+
+  return null;
+}
+
 export function UpdateContent({ content }: UpdateContentProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [contentMedia, setContentMedia] = useState<
-    Array<{ src: string; alt: string; type: 'image' | 'video' }>
-  >([]);
+  const [fallbackMedia, setFallbackMedia] = useState<LightboxMediaItem | null>(
+    null,
+  );
 
-  // Extract all images and videos from content for the lightbox
-  const extractMedia = (blocks: PortableTextBlock[]) => {
-    const media: Array<{ src: string; alt: string; type: 'image' | 'video' }> =
-      [];
-    blocks.forEach(block => {
-      if (
-        block._type === 'image' &&
-        'asset' in block &&
-        typeof block.asset === 'object'
-      ) {
-        const imageUrl =
-          urlFor(block)
-            .width(1920)
-            .height(1080)
-            .fit('max')
-            .auto('format')
-            .quality(90)
-            .url() || '/placeholder.svg';
-        media.push({
-          src: imageUrl,
-          alt:
-            ('alt' in block && typeof block.alt === 'string'
-              ? block.alt
-              : '') || 'Update post image',
-          type: 'image',
-        });
-      } else if (
-        (block._type === 'file' || block._type === 'video') &&
-        'asset' in block &&
-        typeof block.asset === 'object'
-      ) {
-        // Handle video files
-        const asset = block.asset as { url?: string; _ref?: string };
-        if (asset.url) {
-          media.push({
-            src: asset.url,
-            alt:
-              ('title' in block && typeof block.title === 'string'
-                ? block.title
-                : '') ||
-              ('alt' in block && typeof block.alt === 'string'
-                ? block.alt
-                : '') ||
-              'Update post video',
-            type: 'video',
-          });
-        }
+  // Built synchronously from content — no useEffect delay, always in sync
+  const contentMedia = useMemo(() => {
+    const media: LightboxMediaItem[] = [];
+    (content ?? []).forEach(block => {
+      const item = getMediaFromBlock(block);
+
+      if (item) {
+        media.push(item);
       }
     });
     return media;
-  };
-
-  // Initialize media when component mounts
-  useEffect(() => {
-    setContentMedia(extractMedia(content));
   }, [content]);
 
-  const handleImageClick = (imageIndex: number) => {
-    setSelectedImageIndex(imageIndex);
+  const handleMediaClick = (
+    mediaIndex: number,
+    fallback: LightboxMediaItem,
+  ) => {
+    if (contentMedia[mediaIndex]) {
+      setFallbackMedia(null);
+      setSelectedImageIndex(mediaIndex);
+    } else {
+      setFallbackMedia(fallback);
+      setSelectedImageIndex(0);
+    }
+
     setLightboxOpen(true);
   };
+
+  const lightboxMedia = fallbackMedia ? [fallbackMedia] : contentMedia;
 
   // Track current media index for the lightbox
   let mediaCounter = 0;
@@ -105,6 +126,12 @@ export function UpdateContent({ content }: UpdateContentProps) {
             .auto('format')
             .quality(75)
             .url() || '/placeholder.svg';
+        const imageAlt = value.alt || 'Update post image';
+        const lightboxItem: LightboxMediaItem = {
+          src: getLightboxImageUrl(value) || imageUrl,
+          alt: imageAlt,
+          type: 'image',
+        };
 
         const currentMediaIndex = mediaCounter;
         mediaCounter++;
@@ -115,12 +142,15 @@ export function UpdateContent({ content }: UpdateContentProps) {
             className="inline-block w-1/2 lg:w-1/3 px-2 my-4"
           >
             <button
-              onClick={() => handleImageClick(currentMediaIndex)}
+              onClick={e => {
+                e.stopPropagation();
+                handleMediaClick(currentMediaIndex, lightboxItem);
+              }}
               className="relative w-full aspect-[4/3] group cursor-zoom-in overflow-hidden rounded-lg"
             >
               <Image
                 src={imageUrl}
-                alt={value.alt || 'Update post image'}
+                alt={imageAlt}
                 width={800}
                 height={600}
                 sizes="(max-width: 1024px) 50vw, 33vw"
@@ -151,18 +181,27 @@ export function UpdateContent({ content }: UpdateContentProps) {
 
         // Check if it's a video file
         const isVideo = value.asset.url.match(/\.(mp4|webm|ogg|mov)$/i);
-        const currentMediaIndex = mediaCounter;
-        mediaCounter++;
 
         if (isVideo) {
           const videoTitle = value.title || value.alt || 'Update post video';
+          const currentMediaIndex = mediaCounter;
+          mediaCounter++;
+          const lightboxItem: LightboxMediaItem = {
+            src: value.asset.url,
+            alt: videoTitle,
+            type: 'video',
+          };
+
           return (
             <div
               key={currentMediaIndex}
               className="inline-block w-1/2 lg:w-1/3 px-2 my-4"
             >
               <button
-                onClick={() => handleImageClick(currentMediaIndex)}
+                onClick={e => {
+                  e.stopPropagation();
+                  handleMediaClick(currentMediaIndex, lightboxItem);
+                }}
                 className="relative w-full aspect-[4/3] group cursor-zoom-in overflow-hidden rounded-lg"
               >
                 <video
@@ -202,6 +241,11 @@ export function UpdateContent({ content }: UpdateContentProps) {
         const currentMediaIndex = mediaCounter;
         mediaCounter++;
         const videoTitle = value.title || value.alt || 'Update post video';
+        const lightboxItem: LightboxMediaItem = {
+          src: value.asset.url,
+          alt: videoTitle,
+          type: 'video',
+        };
 
         return (
           <div
@@ -209,7 +253,10 @@ export function UpdateContent({ content }: UpdateContentProps) {
             className="inline-block w-1/2 lg:w-1/3 px-2 my-4"
           >
             <button
-              onClick={() => handleImageClick(currentMediaIndex)}
+              onClick={e => {
+                e.stopPropagation();
+                handleMediaClick(currentMediaIndex, lightboxItem);
+              }}
               className="relative w-full aspect-[4/3] group cursor-zoom-in overflow-hidden rounded-lg"
             >
               <video
@@ -322,7 +369,7 @@ export function UpdateContent({ content }: UpdateContentProps) {
 
       {/* Lightbox */}
       <Lightbox
-        media={contentMedia}
+        media={lightboxMedia}
         initialIndex={selectedImageIndex}
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}

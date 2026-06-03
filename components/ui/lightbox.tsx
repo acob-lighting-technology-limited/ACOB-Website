@@ -1,8 +1,27 @@
 'use client';
 
+/**
+ * Lightbox — industry-standard full-screen media viewer.
+ *
+ * Layout (all in px, constant):
+ *   ┌──────────────────────────────────────────┐  ← TOPBAR_H  (56 px)
+ *   │  counter   title              zoom  close │
+ *   ├──┬───────────────────────────────────┬───┤
+ *   │◀ │                                   │ ▶│  ← media area fills remaining height
+ *   │  │   img/video  w-full h-full        │  │    left/right = ARROW_W (52 px) when
+ *   │  │   object-contain                  │  │    multiple items, else 0
+ *   │  │                                   │  │
+ *   ├──┴───────────────────────────────────┴───┤
+ *   │  [thumb] [thumb*] [thumb] [thumb]        │  ← THUMBBAR_H (88 px) when >1 item
+ *   └──────────────────────────────────────────┘
+ *
+ * Key insight: media area has explicit top/bottom/left/right so the browser knows
+ * its exact dimensions. The img/video then uses w-full h-full object-contain —
+ * this guarantees the full image is always visible, never cropped.
+ */
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import Image from 'next/image';
 import {
   X,
   ChevronLeft,
@@ -12,12 +31,6 @@ import {
   Play,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from '@/components/ui/context-menu';
 
 type MediaType = 'image' | 'video';
 
@@ -27,11 +40,21 @@ interface MediaItem {
   type: MediaType;
 }
 
-interface LightboxProps {
+export interface LightboxProps {
   media: Array<{ src: string; alt: string; type?: MediaType }>;
   initialIndex: number;
   isOpen: boolean;
   onClose: () => void;
+}
+
+const TOPBAR_H = 56; // px
+const THUMBBAR_H = 88; // px  (0 when single item)
+const ARROW_W = 52; // px  (0 when single item)
+
+function getTouchDist(t1: React.Touch, t2: React.Touch) {
+  const dx = t2.clientX - t1.clientX;
+  const dy = t2.clientY - t1.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
 }
 
 export function Lightbox({
@@ -40,636 +63,427 @@ export function Lightbox({
   isOpen,
   onClose,
 }: LightboxProps) {
-  const [currentIndex, setCurrentIndex] = useState(initialIndex);
-  const [previousIndex, setPreviousIndex] = useState(initialIndex);
-  const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(
-    null,
-  );
-  const [isZoomed, setIsZoomed] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [index, setIndex] = useState(initialIndex);
   const [mounted, setMounted] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
-  const [isPanning, setIsPanning] = useState(false);
-  const [isPinching, setIsPinching] = useState(false);
-  const touchStartX = useRef<number>(0);
-  const touchEndX = useRef<number>(0);
-  const scrollPosition = useRef<number>(0);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+
+  const dragOrigin = useRef({ x: 0, y: 0 });
+  const panOrigin = useRef({ x: 0, y: 0 });
+  const swipeOrigin = useRef({ x: 0, y: 0 });
+  const pinchDist0 = useRef(0);
+  const pinchZoom0 = useRef(1);
+  const savedScroll = useRef(0);
   const videoRef = useRef<React.ElementRef<'video'>>(null);
-  const imageContainerRef = useRef<HTMLDivElement>(null);
-  const pinchStartDistance = useRef<number>(0);
-  const pinchStartZoom = useRef<number>(1);
-  const panStart = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const lastPinchDistance = useRef<number>(0);
+  // Guard: ignore close calls that arrive within 300 ms of the lightbox opening
+  // (prevents the opening click from immediately re-closing via event propagation)
+  const justOpenedRef = useRef(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Normalize media items to include type
-  const normalizedMedia: MediaItem[] = media.map(item => ({
-    ...item,
-    type:
-      item.type ||
-      (item.src.match(/\.(mp4|webm|ogg|mov)$/i) ? 'video' : 'image'),
+  // Normalise media items
+  const items: MediaItem[] = media.map(m => ({
+    src: m.src,
+    alt: m.alt,
+    type: m.type ?? (m.src.match(/\.(mp4|webm|ogg|mov)$/i) ? 'video' : 'image'),
   }));
 
+  const current = items[index];
+  const isVideo = current?.type === 'video';
+  const isZoomed = zoom > 1.01;
+  const multi = items.length > 1;
+  const arrowW = multi ? ARROW_W : 0;
+  const thumbbarH = multi ? THUMBBAR_H : 0;
+  const canRender = isOpen && mounted && Boolean(current);
+
+  // ── Sync index with caller ────────────────────────────────────────────────
   useEffect(() => {
-    setCurrentIndex(initialIndex);
+    setIndex(initialIndex);
   }, [initialIndex]);
 
-  // Reset video state and zoom when changing media
+  // ── Reset zoom/pan on item change ─────────────────────────────────────────
   useEffect(() => {
-    setIsPlaying(false);
-    setIsZoomed(false);
-    setZoomLevel(1);
-    setPanPosition({ x: 0, y: 0 });
-    setIsPinching(false);
-    setIsPanning(false);
-    pinchStartDistance.current = 0;
-    lastPinchDistance.current = 0;
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
     if (videoRef.current) {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;
     }
-  }, [currentIndex]);
+  }, [index]);
 
-  // Handle keyboard navigation
+  // ── Mount guard for SSR ───────────────────────────────────────────────────
   useEffect(() => {
-    if (!isOpen) {
+    setMounted(true);
+  }, []);
+
+  // ── Body scroll lock (overflow only — no position:fixed to avoid layout jumps) ──
+  useEffect(() => {
+    if (!canRender) {
       return;
     }
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      } else if (e.key === 'ArrowLeft') {
-        handlePrevious();
-      } else if (e.key === 'ArrowRight') {
-        handleNext();
-      } else if (
-        e.key === ' ' &&
-        normalizedMedia[currentIndex]?.type === 'video'
-      ) {
-        e.preventDefault();
-        togglePlayPause();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentIndex, normalizedMedia]);
-
-  // Reset zoom when lightbox closes
-  useEffect(() => {
-    if (!isOpen) {
-      setIsZoomed(false);
-      setZoomLevel(1);
-      setPanPosition({ x: 0, y: 0 });
-    }
-  }, [isOpen]);
-
-  // Prevent body scroll and hide background when lightbox is open
-  useEffect(() => {
-    if (isOpen) {
-      scrollPosition.current = window.scrollY;
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollPosition.current}px`;
-      document.body.style.left = '0';
-      document.body.style.right = '0';
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
-      document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
-      document.documentElement.style.overflow = 'hidden';
-      document.documentElement.style.position = 'fixed';
-      document.documentElement.style.width = '100%';
-      document.documentElement.style.height = '100%';
-    } else {
-      const scrollY = scrollPosition.current;
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-      document.body.style.overflow = '';
-      document.body.style.touchAction = '';
-      document.documentElement.style.overflow = '';
-      document.documentElement.style.position = '';
-      document.documentElement.style.width = '';
-      document.documentElement.style.height = '';
-      window.scrollTo(0, scrollY);
-    }
-
+    savedScroll.current = window.scrollY;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     return () => {
-      const scrollY = scrollPosition.current;
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.left = '';
-      document.body.style.right = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-      document.body.style.overflow = '';
-      document.body.style.touchAction = '';
-      document.documentElement.style.overflow = '';
-      document.documentElement.style.position = '';
-      document.documentElement.style.width = '';
-      document.documentElement.style.height = '';
-      if (scrollY) {
-        window.scrollTo(0, scrollY);
-      }
+      document.body.style.overflow = prev;
+      // Restore scroll position in case layout shifted while locked
+      window.scrollTo({
+        top: savedScroll.current,
+        behavior: 'instant' as ScrollBehavior,
+      });
     };
+  }, [canRender]);
+
+  // ── Just-opened guard — blocks close() for 300 ms after opening ──────────
+  useEffect(() => {
+    if (!canRender) {
+      return;
+    }
+    justOpenedRef.current = true;
+    const t = window.setTimeout(() => {
+      justOpenedRef.current = false;
+    }, 300);
+    return () => {
+      window.clearTimeout(t);
+      justOpenedRef.current = false;
+    };
+  }, [canRender]);
+
+  // ── Reset on close ────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isOpen) {
+      setZoom(1);
+      setPan({ x: 0, y: 0 });
+    }
   }, [isOpen]);
 
-  const handleNext = useCallback(() => {
-    setPreviousIndex(currentIndex);
-    setSlideDirection('left');
-    setCurrentIndex(prev => (prev + 1) % normalizedMedia.length);
-    setIsZoomed(false);
-    setTimeout(() => setSlideDirection(null), 500);
-  }, [normalizedMedia.length, currentIndex]);
+  // ── Navigation helpers ────────────────────────────────────────────────────
+  const goNext = useCallback(() => {
+    if (items.length === 0) {
+      return;
+    }
+    setIndex(i => (i + 1) % items.length);
+  }, [items.length]);
+  const goPrev = useCallback(() => {
+    if (items.length === 0) {
+      return;
+    }
+    setIndex(i => (i - 1 + items.length) % items.length);
+  }, [items.length]);
 
-  const handlePrevious = useCallback(() => {
-    setPreviousIndex(currentIndex);
-    setSlideDirection('right');
-    setCurrentIndex(
-      prev => (prev - 1 + normalizedMedia.length) % normalizedMedia.length,
-    );
-    setIsZoomed(false);
-    setTimeout(() => setSlideDirection(null), 500);
-  }, [normalizedMedia.length, currentIndex]);
+  // ── Safe close (respects just-opened guard) ───────────────────────────────
+  const handleClose = useCallback(() => {
+    if (justOpenedRef.current) {
+      return;
+    }
+    onClose();
+  }, [onClose]);
 
+  // ── Keyboard ──────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!canRender) {
+      return;
+    }
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleClose();
+      } else if (e.key === 'ArrowRight') {
+        goNext();
+      } else if (e.key === 'ArrowLeft') {
+        goPrev();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [canRender, handleClose, goNext, goPrev]);
+
+  // ── Zoom toggle ───────────────────────────────────────────────────────────
   const toggleZoom = () => {
-    if (normalizedMedia[currentIndex]?.type === 'video') {
-      return;
-    }
     if (isZoomed) {
-      setIsZoomed(false);
-      setZoomLevel(1);
-      setPanPosition({ x: 0, y: 0 });
+      setZoom(1);
+      setPan({ x: 0, y: 0 });
     } else {
-      setIsZoomed(true);
-      setZoomLevel(2);
-      setPanPosition({ x: 0, y: 0 });
+      setZoom(2.5);
     }
   };
 
-  // Calculate distance between two touch points
-  const getTouchDistance = (
-    touch1: React.Touch,
-    touch2: React.Touch,
-  ): number => {
-    const dx = touch2.clientX - touch1.clientX;
-    const dy = touch2.clientY - touch1.clientY;
-    return Math.sqrt(dx * dx + dy * dy);
-  };
-
-  // Handle pinch-to-zoom
-  const handlePinchStart = (e: React.TouchEvent) => {
-    if (
-      normalizedMedia[currentIndex]?.type === 'video' ||
-      e.touches.length !== 2
-    ) {
+  // ── Mouse drag (pan when zoomed) ──────────────────────────────────────────
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (!isZoomed || isVideo) {
       return;
     }
-    e.stopPropagation();
-    setIsPinching(true);
-    setIsPanning(false);
-    const distance = getTouchDistance(e.touches[0], e.touches[1]);
-    pinchStartDistance.current = distance;
-    lastPinchDistance.current = distance;
-    pinchStartZoom.current = zoomLevel;
-  };
-
-  const handlePinchMove = (e: React.TouchEvent) => {
-    if (
-      normalizedMedia[currentIndex]?.type === 'video' ||
-      e.touches.length !== 2 ||
-      !isPinching ||
-      pinchStartDistance.current === 0
-    ) {
-      return;
-    }
-    e.stopPropagation();
     e.preventDefault();
-
-    const distance = getTouchDistance(e.touches[0], e.touches[1]);
-
-    // Calculate zoom based on distance ratio (natural pinch-to-zoom)
-    const scale = distance / pinchStartDistance.current;
-    const newZoom = Math.max(1, Math.min(pinchStartZoom.current * scale, 5));
-
-    setZoomLevel(newZoom);
-    setIsZoomed(newZoom > 1.01);
+    setDragging(true);
+    dragOrigin.current = { x: e.clientX, y: e.clientY };
+    panOrigin.current = { ...pan };
   };
-
-  const handlePinchEnd = () => {
-    setIsPinching(false);
-    pinchStartDistance.current = 0;
-    lastPinchDistance.current = 0;
-    pinchStartZoom.current = zoomLevel;
-  };
-
-  // Handle pan when zoomed
-  const handlePanStart = (e: React.TouchEvent | React.MouseEvent) => {
-    if (
-      !isZoomed ||
-      normalizedMedia[currentIndex]?.type === 'video' ||
-      isPinching
-    ) {
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!dragging) {
       return;
     }
-    e.stopPropagation();
-    setIsPanning(true);
-    if ('touches' in e && e.touches.length === 1) {
-      panStart.current = {
-        x: e.touches[0].clientX - panPosition.x,
-        y: e.touches[0].clientY - panPosition.y,
-      };
-    } else if ('clientX' in e) {
-      panStart.current = {
-        x: e.clientX - panPosition.x,
-        y: e.clientY - panPosition.y,
-      };
-    }
+    setPan({
+      x: panOrigin.current.x + (e.clientX - dragOrigin.current.x),
+      y: panOrigin.current.y + (e.clientY - dragOrigin.current.y),
+    });
   };
+  const onMouseUp = () => setDragging(false);
 
-  const handlePanMove = (e: React.TouchEvent | React.MouseEvent) => {
-    if (
-      !isZoomed ||
-      !isPanning ||
-      normalizedMedia[currentIndex]?.type === 'video' ||
-      isPinching
-    ) {
-      return;
-    }
-    e.stopPropagation();
-    e.preventDefault();
-    if ('touches' in e && e.touches.length === 1) {
-      const newX = e.touches[0].clientX - panStart.current.x;
-      const newY = e.touches[0].clientY - panStart.current.y;
-      setPanPosition({ x: newX, y: newY });
-    } else if ('clientX' in e) {
-      const newX = e.clientX - panStart.current.x;
-      const newY = e.clientY - panStart.current.y;
-      setPanPosition({ x: newX, y: newY });
-    }
-  };
-
-  const handlePanEnd = () => {
-    setIsPanning(false);
-  };
-
-  const togglePlayPause = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
-  const handleVideoPlay = () => setIsPlaying(true);
-  const handleVideoPause = () => setIsPlaying(false);
-
-  // Handle touch events for swipe gestures (only when not zoomed and single touch)
-  const handleTouchStart = (e: React.TouchEvent) => {
+  // ── Touch ─────────────────────────────────────────────────────────────────
+  const onTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
-      handlePinchStart(e);
-      return;
-    }
-    if (isZoomed && !isPinching) {
-      handlePanStart(e);
-      return;
-    }
-    if (!isZoomed && normalizedMedia[currentIndex]?.type !== 'video') {
-      touchStartX.current = e.touches[0].clientX;
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      handlePinchMove(e);
-      return;
-    }
-    if (isZoomed && !isPinching) {
-      handlePanMove(e);
-      return;
-    }
-    if (!isZoomed && normalizedMedia[currentIndex]?.type !== 'video') {
-      touchEndX.current = e.touches[0].clientX;
-    }
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
-      // Still one touch, might be transitioning
-      return;
-    }
-    if (isPinching) {
-      handlePinchEnd();
-    }
-    if (isPanning) {
-      handlePanEnd();
-    }
-    if (isZoomed) {
-      return;
-    }
-    if (normalizedMedia[currentIndex]?.type === 'video') {
-      return;
-    }
-
-    const swipeThreshold = 50;
-    const diff = touchStartX.current - touchEndX.current;
-
-    if (Math.abs(diff) > swipeThreshold) {
-      if (diff > 0) {
-        handleNext();
-      } else {
-        handlePrevious();
+      pinchDist0.current = getTouchDist(e.touches[0], e.touches[1]);
+      pinchZoom0.current = zoom;
+    } else {
+      swipeOrigin.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      };
+      if (isZoomed) {
+        dragOrigin.current = {
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY,
+        };
+        panOrigin.current = { ...pan };
       }
     }
-
-    touchStartX.current = 0;
-    touchEndX.current = 0;
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dist = getTouchDist(e.touches[0], e.touches[1]);
+      const newZoom = Math.max(
+        1,
+        Math.min(5, pinchZoom0.current * (dist / pinchDist0.current)),
+      );
+      setZoom(newZoom);
+      if (newZoom <= 1) {
+        setPan({ x: 0, y: 0 });
+      }
+    } else if (isZoomed && e.touches.length === 1) {
+      setPan({
+        x: panOrigin.current.x + (e.touches[0].clientX - dragOrigin.current.x),
+        y: panOrigin.current.y + (e.touches[0].clientY - dragOrigin.current.y),
+      });
+    }
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (e.changedTouches.length === 1 && !isZoomed) {
+      const dx = e.changedTouches[0].clientX - swipeOrigin.current.x;
+      if (Math.abs(dx) > 50) {
+        if (dx < 0) {
+          goNext();
+        } else {
+          goPrev();
+        }
+      }
+    }
+    if (zoom <= 1) {
+      setPan({ x: 0, y: 0 });
+    }
   };
 
-  if (
-    !isOpen ||
-    !mounted ||
-    normalizedMedia.length === 0 ||
-    !normalizedMedia[currentIndex]
-  ) {
+  if (!canRender || !current) {
     return null;
   }
 
-  const currentMedia = normalizedMedia[currentIndex];
-  const isVideo = currentMedia.type === 'video';
-
-  const lightboxContent = (
+  const portal = (
     <div
-      className="fixed inset-0 z-[9999] bg-black touch-none"
-      onClick={onClose}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      style={{
-        WebkitOverflowScrolling: 'auto',
-        overscrollBehavior: 'contain',
-        touchAction: isZoomed ? 'pan-x pan-y pinch-zoom' : 'none',
+      className="fixed inset-0 z-[9999] bg-black"
+      onClick={e => {
+        if (e.target === e.currentTarget) {
+          handleClose();
+        }
       }}
     >
-      {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent">
-        <div className="flex items-center gap-4">
-          <span className="text-white/70 text-sm font-medium">
-            {currentIndex + 1} / {normalizedMedia.length}
+      {/* ── Top bar ────────────────────────────────────── */}
+      <div
+        className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 bg-gradient-to-b from-black/80 to-transparent"
+        style={{ height: TOPBAR_H }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Left: counter + title */}
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="text-white/60 text-sm font-mono tabular-nums shrink-0">
+            {index + 1}&nbsp;/&nbsp;{items.length}
           </span>
-          {currentMedia.alt && (
-            <span className="text-white text-sm font-medium hidden sm:block">
-              {currentMedia.alt}
+          {current.alt && (
+            <span className="text-white text-sm truncate hidden sm:block">
+              {current.alt}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Zoom Toggle (only for images) */}
+        {/* Right: zoom + close */}
+        <div className="flex items-center gap-1 shrink-0">
           {!isVideo && (
             <button
               onClick={e => {
                 e.stopPropagation();
                 toggleZoom();
               }}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all duration-300 backdrop-blur-sm"
+              className="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/15 transition-colors"
               aria-label={isZoomed ? 'Zoom out' : 'Zoom in'}
             >
               {isZoomed ? (
-                <ZoomOut className="h-5 w-5" />
+                <ZoomOut className="w-5 h-5" />
               ) : (
-                <ZoomIn className="h-5 w-5" />
+                <ZoomIn className="w-5 h-5" />
               )}
             </button>
           )}
-
-          {/* Close Button */}
           <button
             onClick={e => {
               e.stopPropagation();
-              onClose();
+              handleClose();
             }}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all duration-300 backdrop-blur-sm"
-            aria-label="Close"
+            className="p-2 rounded-full text-white/70 hover:text-white hover:bg-white/15 transition-colors"
+            aria-label="Close lightbox"
           >
-            <X className="h-6 w-6" />
+            <X className="w-6 h-6" />
           </button>
         </div>
       </div>
 
-      {/* Main Media Container */}
-      <div
-        className="absolute inset-0 flex items-center justify-center p-4 sm:p-8"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="relative w-full h-full overflow-hidden">
-          {/* Previous Media (sliding out) */}
-          {slideDirection && previousIndex !== currentIndex && (
-            <div
-              key={`prev-${previousIndex}`}
-              className={cn(
-                'absolute inset-0 flex items-center justify-center',
-                slideDirection === 'left' && 'slide-out-left',
-                slideDirection === 'right' && 'slide-out-right',
-              )}
-              style={{
-                backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden',
-              }}
-            >
-              <div className="flex items-center justify-center w-full h-full">
-                {normalizedMedia[previousIndex]?.type === 'video' ? (
-                  <video
-                    src={normalizedMedia[previousIndex].src}
-                    className="max-w-[90vw] max-h-[80vh] w-auto h-auto object-contain"
-                    muted
-                  />
-                ) : (
-                  <img
-                    src={normalizedMedia[previousIndex]?.src || ''}
-                    alt={normalizedMedia[previousIndex]?.alt || ''}
-                    className="max-w-[90vw] max-h-[80vh] w-auto h-auto object-contain"
-                  />
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Current Media (sliding in from appropriate side) */}
-          <div
-            key={`current-${currentIndex}`}
-            ref={imageContainerRef}
-            className={cn(
-              'absolute inset-0 flex items-center justify-center',
-              slideDirection === 'left' && 'slide-in-from-right',
-              slideDirection === 'right' && 'slide-in-from-left',
-              isZoomed && !isVideo && 'cursor-move overflow-auto',
-            )}
-            style={{
-              backfaceVisibility: 'hidden',
-              WebkitBackfaceVisibility: 'hidden',
-              touchAction: isZoomed ? 'pan-x pan-y pinch-zoom' : 'none',
-            }}
-            onMouseDown={handlePanStart}
-            onMouseMove={handlePanMove}
-            onMouseUp={handlePanEnd}
-            onMouseLeave={handlePanEnd}
-          >
-            {isVideo ? (
-              <div className="relative w-full h-full max-w-7xl max-h-[90vh]">
-                <video
-                  ref={videoRef}
-                  src={currentMedia.src}
-                  className="w-full h-full object-contain"
-                  controls
-                  onPlay={handleVideoPlay}
-                  onPause={handleVideoPause}
-                  onClick={e => e.stopPropagation()}
-                />
-                {!isPlaying && (
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="bg-black/50 rounded-full p-4">
-                      <Play className="h-12 w-12 text-white" />
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <ContextMenu>
-                <ContextMenuTrigger asChild>
-                  <div
-                    className="relative max-w-[90vw] max-h-[80vh] w-auto h-auto"
-                    style={{
-                      userSelect: 'none',
-                      WebkitUserSelect: 'none',
-                      WebkitTouchCallout: 'none',
-                      transform: isZoomed
-                        ? `scale(${zoomLevel}) translate(${panPosition.x / zoomLevel}px, ${panPosition.y / zoomLevel}px)`
-                        : 'scale(1) translate(0, 0)',
-                      transformOrigin: 'center center',
-                      transition:
-                        isPanning || isPinching
-                          ? 'none'
-                          : 'transform 0.2s ease-out',
-                    }}
-                    onContextMenu={e => e.preventDefault()}
-                  >
-                    {}
-                    <img
-                      src={currentMedia.src}
-                      alt={currentMedia.alt}
-                      className="max-w-[90vw] max-h-[80vh] w-auto h-auto object-contain select-none"
-                      draggable={false}
-                    />
-                    <div
-                      className="absolute inset-0"
-                      onContextMenu={e => e.preventDefault()}
-                      onDragStart={e => e.preventDefault()}
-                    />
-                  </div>
-                </ContextMenuTrigger>
-                <ContextMenuContent className="w-64">
-                  <ContextMenuItem
-                    disabled
-                    className="text-xs text-muted-foreground"
-                  >
-                    Images are protected by copyright
-                  </ContextMenuItem>
-                  <ContextMenuItem
-                    disabled
-                    className="text-xs text-muted-foreground"
-                  >
-                    © ACOB Lighting Technology Limited
-                  </ContextMenuItem>
-                </ContextMenuContent>
-              </ContextMenu>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation Arrows */}
-      {normalizedMedia.length > 1 && (
-        <>
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              handlePrevious();
-            }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all duration-300 backdrop-blur-sm hover:scale-110"
-            aria-label="Previous"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
-
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              handleNext();
-            }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all duration-300 backdrop-blur-sm hover:scale-110"
-            aria-label="Next"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </button>
-        </>
+      {/* ── Prev arrow ─────────────────────────────────── */}
+      {multi && (
+        <button
+          className="absolute left-0 z-10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+          style={{ top: TOPBAR_H, bottom: thumbbarH, width: ARROW_W }}
+          onClick={e => {
+            e.stopPropagation();
+            goPrev();
+          }}
+          aria-label="Previous"
+        >
+          <ChevronLeft className="w-8 h-8" />
+        </button>
       )}
 
-      {/* Thumbnail Strip */}
-      {normalizedMedia.length > 1 && (
-        <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-black/80 to-transparent p-4">
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide justify-center">
-            {normalizedMedia.map((item, index) => (
-              <button
-                key={index}
-                onClick={e => {
-                  e.stopPropagation();
-                  setCurrentIndex(index);
-                  setIsZoomed(false);
-                }}
-                className={cn(
-                  'relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all duration-300',
-                  index === currentIndex
-                    ? 'border-primary scale-110 shadow-lg shadow-primary/50'
-                    : 'border-white/30 hover:border-white/60 opacity-60 hover:opacity-100',
-                )}
-              >
-                {item.type === 'video' ? (
-                  <div className="relative w-full h-full bg-black/50 flex items-center justify-center">
-                    <Play className="h-6 w-6 text-white" />
-                    <video
-                      src={item.src}
-                      className="absolute inset-0 w-full h-full object-cover opacity-50"
-                      muted
-                    />
-                  </div>
-                ) : (
-                  <Image
-                    src={item.src}
-                    alt={item.alt}
-                    fill
-                    className="object-cover"
-                    sizes="80px"
-                  />
-                )}
-              </button>
-            ))}
-          </div>
+      {/* ── Next arrow ─────────────────────────────────── */}
+      {multi && (
+        <button
+          className="absolute right-0 z-10 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+          style={{ top: TOPBAR_H, bottom: thumbbarH, width: ARROW_W }}
+          onClick={e => {
+            e.stopPropagation();
+            goNext();
+          }}
+          aria-label="Next"
+        >
+          <ChevronRight className="w-8 h-8" />
+        </button>
+      )}
+
+      {/* ── Media area ─────────────────────────────────── */}
+      {/*
+          THIS is the critical piece. The area is defined by explicit pixel
+          offsets so the browser knows its exact size. Then the media element
+          uses w-full h-full object-contain — meaning it fills that box while
+          always showing the full image/video without any cropping.
+      */}
+      <div
+        className="absolute overflow-hidden"
+        style={{
+          top: TOPBAR_H,
+          bottom: thumbbarH,
+          left: arrowW,
+          right: arrowW,
+          cursor: isVideo
+            ? 'default'
+            : isZoomed
+              ? dragging
+                ? 'grabbing'
+                : 'grab'
+              : 'zoom-in',
+        }}
+        onClick={e => {
+          e.stopPropagation();
+        }}
+        onDoubleClick={e => {
+          e.stopPropagation();
+          if (!isVideo) {
+            toggleZoom();
+          }
+        }}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onMouseLeave={onMouseUp}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {isVideo ? (
+          <video
+            ref={videoRef}
+            key={current.src}
+            src={current.src}
+            controls
+            className="lb-media-enter w-full h-full"
+            style={{ objectFit: 'contain', display: 'block' }}
+            onClick={e => e.stopPropagation()}
+          />
+        ) : (
+          <img
+            key={current.src}
+            src={current.src}
+            alt={current.alt}
+            /* w-full h-full fills the explicit-bounds parent;
+               object-contain ensures the full image is visible. */
+            className="lb-media-enter w-full h-full"
+            style={{
+              objectFit: 'contain',
+              display: 'block',
+              transform: isZoomed
+                ? `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`
+                : 'none',
+              transformOrigin: 'center center',
+              transition: dragging ? 'none' : 'transform 0.2s ease',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+            }}
+            draggable={false}
+            onContextMenu={e => e.preventDefault()}
+            onDragStart={e => e.preventDefault()}
+          />
+        )}
+      </div>
+
+      {/* ── Thumbnail strip ────────────────────────────── */}
+      {multi && (
+        <div
+          className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-center gap-2 px-4 bg-gradient-to-t from-black/80 to-transparent overflow-x-auto"
+          style={{ height: THUMBBAR_H }}
+          onClick={e => e.stopPropagation()}
+        >
+          {items.map((item, i) => (
+            <button
+              key={i}
+              onClick={() => setIndex(i)}
+              className={cn(
+                'relative shrink-0 rounded overflow-hidden transition-all duration-200 border-2',
+                i === index
+                  ? 'border-primary opacity-100 scale-110 shadow-lg'
+                  : 'border-transparent opacity-50 hover:opacity-80 hover:scale-105',
+              )}
+              style={{ width: 56, height: 56 }}
+              aria-label={`Go to item ${i + 1}`}
+            >
+              {item.type === 'video' ? (
+                <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+                  <Play className="w-4 h-4 text-white" />
+                </div>
+              ) : (
+                <img
+                  src={item.src}
+                  alt={item.alt}
+                  className="w-full h-full object-cover"
+                />
+              )}
+            </button>
+          ))}
         </div>
       )}
     </div>
   );
 
-  return createPortal(lightboxContent, document.body);
+  return createPortal(portal, document.body);
 }

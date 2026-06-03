@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { client } from '@/sanity/lib/client';
+import { writeClient } from '@/sanity/lib/config';
 import { rateLimit } from '@/lib/utils/rate-limit';
 
 export async function POST(request: NextRequest) {
@@ -16,6 +16,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    if (!process.env.SANITY_API_TOKEN?.trim()) {
+      return NextResponse.json(
+        { error: 'Comment service is not configured on this environment' },
+        { status: 503 },
+      );
+    }
+
     const body = await request.json();
     const { name, email, comment, postId } = body;
 
@@ -64,14 +71,17 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     };
 
-    const result = await client.create(doc);
+    const result = await writeClient.create(doc);
     return NextResponse.json(result, { status: 201 });
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Error creating comment:', error);
-    }
+  } catch (error: unknown) {
+    console.error('Error creating comment:', error);
+    const message =
+      error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: string }).message)
+        : 'Failed to submit comment';
+
     return NextResponse.json(
-      { error: 'Failed to submit comment' },
+      { error: message || 'Failed to submit comment' },
       { status: 500 },
     );
   }

@@ -71,7 +71,9 @@ async function main() {
   });
 
   const filtered = documents.filter(doc => {
-    if (options.force) return true;
+    if (options.force) {
+      return true;
+    }
     return doc.sharepointBackup?.status !== 'synced';
   });
 
@@ -118,4 +120,3 @@ main().catch(error => {
   console.error(error);
   process.exit(1);
 });
-

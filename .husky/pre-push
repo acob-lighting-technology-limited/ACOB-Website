@@ -15,11 +15,11 @@ if [ "$protected_branch" = "$current_branch" ]; then
   exit 1
 fi
 
-echo "Running lint before push..."
-npm run lint
+echo "Running strict lint before push..."
+npm run lint:strict
 
 if [ $? -ne 0 ]; then
-  echo "Lint failed! Push aborted."
+  echo "Strict lint failed! Push aborted."
   exit 1
 fi
 

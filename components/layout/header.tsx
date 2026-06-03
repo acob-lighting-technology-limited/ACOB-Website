@@ -417,6 +417,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [isHeaderHovered, setIsHeaderHovered] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme } = useTheme();
@@ -426,19 +427,22 @@ export function Header() {
   const isChristmas = isChristmasPeriod();
   const use2026Logo = isTemporary2026LogoPeriod();
   const useTallAnniversaryLogo = use2026Logo && !isChristmas;
+  const hasSolidHeader =
+    isScrolled || isHeaderHovered || Boolean(activeDropdown);
+  const logoTheme = hasSolidHeader ? resolvedTheme : 'dark';
 
-  // Default to light logo for SSR to prevent hydration mismatch
+  // Default to hero-safe logo for SSR to prevent hydration mismatch
   const logoSrc = !mounted
     ? isChristmas
-      ? '/images/acob-logo-light-christmas.png'
+      ? '/images/acob-logo-dark-christmas.png'
       : use2026Logo
-        ? `/images/acob-logo-light-2026.png?v=${LOGO_2026_VERSION}`
-        : '/images/acob-logo-light.png'
+        ? `/images/acob-logo-dark-2026.png?v=${LOGO_2026_VERSION}`
+        : '/images/acob-logo-dark.png'
     : isChristmas
-      ? resolvedTheme === 'dark'
+      ? logoTheme === 'dark'
         ? '/images/acob-logo-dark-christmas.png'
         : '/images/acob-logo-light-christmas.png'
-      : resolvedTheme === 'dark'
+      : logoTheme === 'dark'
         ? use2026Logo
           ? `/images/acob-logo-dark-2026.png?v=${LOGO_2026_VERSION}`
           : '/images/acob-logo-dark.png'
@@ -539,15 +543,16 @@ export function Header() {
     <>
       <header
         className={`
-          sticky border-b border-border top-0 z-40 w-full transition-all duration-500 ease-out
-          backdrop-blur-md bg-background/80
+          fixed inset-x-0 top-0 z-40 w-full transition-all duration-500 ease-out
           ${showHeader ? 'translate-y-0' : '-translate-y-full'}
           ${
-            isScrolled
-              ? ' backdrop-blur-xl bg-background/95 shadow-lg  border-border '
-              : ' backdrop-blur-md bg-background/80  border-border '
+            hasSolidHeader
+              ? ' border-b border-border backdrop-blur-xl bg-background/95 shadow-lg '
+              : ' border-b border-transparent bg-transparent '
           }
         `}
+        onMouseEnter={() => setIsHeaderHovered(true)}
+        onMouseLeave={() => setIsHeaderHovered(false)}
       >
         <Container noPadding className="px-4">
           <div
@@ -592,7 +597,13 @@ export function Header() {
                       href={item.href}
                       className={`
                         relative flex items-center space-x-1 h-full font-medium transition-all duration-500 ease-out px-2
-                        ${isActive ? 'text-primary' : 'text-foreground hover:text-primary'}
+                        ${
+                          isActive
+                            ? 'text-primary'
+                            : hasSolidHeader
+                              ? 'text-foreground hover:text-primary'
+                              : 'text-white hover:text-primary'
+                        }
                       `}
                     >
                       <span>{item.name}</span>
@@ -630,12 +641,18 @@ export function Header() {
                   Products
                 </button>
               </Link>
-              <ThemeToggle />
+              <div className={hasSolidHeader ? undefined : 'text-white'}>
+                <ThemeToggle />
+              </div>
             </div>
 
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-2 hover:bg-muted rounded-lg transition-all duration-200 active:scale-90"
+              className={`lg:hidden p-2 rounded-lg transition-all duration-200 active:scale-90 ${
+                hasSolidHeader
+                  ? 'hover:bg-muted'
+                  : 'text-white hover:bg-white/10'
+              }`}
               aria-label="Open mobile menu"
             >
               <Menu className="h-6 w-6" />
