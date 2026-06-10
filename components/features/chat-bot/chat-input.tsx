@@ -1,6 +1,4 @@
-import { Send, StopCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Button, Textarea } from '@/components/ui';
+import { Send, Square } from 'lucide-react';
 
 interface ChatInputProps {
   input: string;
@@ -9,10 +7,13 @@ interface ChatInputProps {
   onStop: () => void;
   isLoading: boolean;
   rateLimitReached: boolean;
+  /** Hide the top divider when the suggestions block already provides one above. */
+  topBorder?: boolean;
 }
 
 /**
- * Chat input form with send/stop buttons and rate limit handling
+ * Chat input — mirrors the ERP ACOBot widget: a rounded pill field with a circular
+ * send (or stop) button.
  */
 export function ChatInput({
   input,
@@ -21,76 +22,60 @@ export function ChatInput({
   onStop,
   isLoading,
   rateLimitReached,
+  topBorder = true,
 }: ChatInputProps) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (!rateLimitReached) {
         const form = document.getElementById('chat-form') as HTMLFormElement;
-        if (form) {
-          const submitEvent = new Event('submit', {
-            bubbles: true,
-            cancelable: true,
-          });
-          form.dispatchEvent(submitEvent);
-        }
+        form?.requestSubmit();
       }
     }
   };
 
   return (
-    <motion.div
-      initial={{ y: 50, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.4, delay: 0.2 }}
-      className="px-4 py-2"
+    <form
+      id="chat-form"
+      onSubmit={onSubmit}
+      className={`border-border bg-background flex items-center gap-2 px-3 py-2.5 ${
+        topBorder ? 'border-t' : ''
+      }`}
     >
-      <form
-        id="chat-form"
-        onSubmit={onSubmit}
-        className="flex items-stretch gap-3 mb-3"
-      >
-        <div className="flex-1 relative bg-card rounded-full flex items-center px-4 py-0 border border-muted-foreground focus-within:border-border focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
-          <Textarea
-            value={input}
-            onChange={onInputChange}
-            placeholder={
-              rateLimitReached ? 'Message limit reached' : 'Type a message...'
-            }
-            className="flex-1 flex text-foreground justify-end !bg-transparent items-end min-h-9 max-h-28 resize-none border-0 focus:ring-0 focus:outline-none text-sm focus-visible:ring-0 placeholder:text-muted-foreground outline-none py-1 rounded-full"
-            rows={1}
-            onKeyDown={handleKeyDown}
-            disabled={isLoading || rateLimitReached}
-            style={{
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}
-          />
-        </div>
+      <textarea
+        value={input}
+        onChange={onInputChange}
+        onKeyDown={handleKeyDown}
+        rows={1}
+        disabled={isLoading || rateLimitReached}
+        placeholder={rateLimitReached ? 'Message limit reached' : 'Ask ACOBot…'}
+        className="bg-muted/50 focus:ring-primary/40 placeholder:text-muted-foreground text-foreground max-h-28 min-h-9 flex-1 resize-none rounded-full px-4 py-2 text-sm outline-none focus:ring-2"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      />
 
-        {isLoading ? (
-          <Button
-            type="button"
-            size="icon"
-            onClick={onStop}
-            className="self-stretch w-10 rounded-full bg-destructive hover:bg-destructive/90 text-destructive-foreground transition-all duration-500 flex-shrink-0"
-            disabled={!isLoading}
-          >
-            <StopCircle className="h-4 w-4" />
-            <span className="sr-only">Stop generation</span>
-          </Button>
-        ) : (
-          <Button
-            type="submit"
-            size="icon"
-            disabled={!input.trim() || rateLimitReached}
-            className="self-stretch min-h-12 w-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-500 flex-shrink-0 disabled:opacity-50"
-          >
-            <Send className="h-4 w-4" />
-            <span className="sr-only">Send message</span>
-          </Button>
-        )}
-      </form>
-    </motion.div>
+      {isLoading ? (
+        <button
+          type="button"
+          onClick={onStop}
+          aria-label="Stop"
+          className="bg-muted text-muted-foreground hover:bg-muted/80 flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors"
+        >
+          <Square className="h-4 w-4" />
+        </button>
+      ) : (
+        <button
+          type="submit"
+          disabled={!input.trim() || rateLimitReached}
+          aria-label="Send"
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-primary-foreground transition-colors ${
+            input.trim() && !rateLimitReached
+              ? 'bg-primary hover:bg-primary/90'
+              : 'bg-muted-foreground/40 cursor-not-allowed'
+          }`}
+        >
+          <Send className="h-4 w-4" />
+        </button>
+      )}
+    </form>
   );
 }

@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const response = NextResponse.next();
   // Inject the current pathname as a reliable header for the root layout
   response.headers.set('x-pathname', request.nextUrl.pathname);

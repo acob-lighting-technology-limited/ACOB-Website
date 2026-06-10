@@ -203,32 +203,46 @@ export function ProjectContent({
   if (useNewStructure && projectContent) {
     const { description, customDescription } = projectContent;
 
-    // Get description text based on template or custom
-    let descriptionText = '';
-    if (description && description !== 'custom') {
-      descriptionText = generateProjectDescription(description, {
-        kwp: project?.impactMetrics?.kwp,
-        systemType: project?.impactMetrics?.systemType,
-        location: project?.location,
-        lga: project?.lga,
-        state: project?.state,
-        beneficiaries: project?.impactMetrics?.beneficiaries,
-        jobsDirect: project?.impactMetrics?.jobsCreatedDirectly,
-        jobsIndirect: project?.impactMetrics?.jobsCreatedIndirectly,
-        annualEnergyOutput: project?.impactMetrics?.annualEnergyOutput,
-        annualCO2Reduction: project?.impactMetrics?.annualCO2Reduction,
-      });
-    }
+    // Get description paragraphs based on template or custom
+    const descriptionParagraphs =
+      description && description !== 'custom'
+        ? generateProjectDescription(description, {
+            kwp: project?.impactMetrics?.kwp,
+            systemType: project?.impactMetrics?.systemType,
+            location: project?.location,
+            lga: project?.lga,
+            state: project?.state,
+            beneficiaries: project?.impactMetrics?.beneficiaries,
+            jobsDirect: project?.impactMetrics?.jobsCreatedDirectly,
+            jobsIndirect: project?.impactMetrics?.jobsCreatedIndirectly,
+            annualEnergyOutput: project?.impactMetrics?.annualEnergyOutput,
+            annualCO2Reduction: project?.impactMetrics?.annualCO2Reduction,
+          })
+        : [];
 
     return (
       <>
         <div className="prose prose-lg max-w-none">
           {/* Render template description */}
-          {description !== 'custom' && descriptionText && (
-            <div
-              className="whitespace-pre-wrap text-foreground/90 dark:text-foreground/70 text-base lg:text-lg leading-relaxed w-full basis-full [&_strong]:font-bold [&_strong]:text-foreground"
-              dangerouslySetInnerHTML={{ __html: descriptionText }}
-            />
+          {description !== 'custom' && descriptionParagraphs.length > 0 && (
+            <div className="text-foreground/90 dark:text-foreground/70 text-base lg:text-lg leading-relaxed w-full basis-full">
+              {descriptionParagraphs.map((paragraph, paragraphIndex) => (
+                <p key={paragraphIndex} className="mb-4 last:mb-0">
+                  {paragraph.map((segment, segmentIndex) =>
+                    segment.bold ? (
+                      <strong
+                        key={segmentIndex}
+                        className="font-bold text-foreground"
+                      >
+                        {segment.text}
+                      </strong>
+                    ) : (
+                      <span key={segmentIndex}>{segment.text}</span>
+                    ),
+                  )}
+                </p>
+              ))}
+            </div>
           )}
 
           {/* Render custom description */}

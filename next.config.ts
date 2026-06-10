@@ -1,11 +1,8 @@
 /** @type {import('next').NextConfig} */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const nextConfig = {
-  // TypeScript and ESLint checks enabled for production safety
-  eslint: {
-    // ESLint errors will now fail the build for better code quality
-    ignoreDuringBuilds: false,
-  },
+  transpilePackages: ['docx', 'exceljs', 'pdf-lib'],
+
   outputFileTracingRoot: process.cwd(),
   images: {
     formats: ['image/webp', 'image/avif'],
@@ -36,6 +33,25 @@ const nextConfig = {
       'date-fns',
     ],
   },
+  turbopack: {
+    resolveAlias: {
+      canvas: { browser: './lib/empty-module.js' },
+      encoding: { browser: './lib/empty-module.js' },
+      'node:fs': { browser: './lib/empty-module.js' },
+      'node:net': { browser: './lib/empty-module.js' },
+      'node:tls': { browser: './lib/empty-module.js' },
+      'node:path': { browser: './lib/empty-module.js' },
+      'node:stream': { browser: './lib/empty-module.js' },
+      'node:crypto': { browser: './lib/empty-module.js' },
+      'node:http': { browser: './lib/empty-module.js' },
+      'node:https': { browser: './lib/empty-module.js' },
+      fs: { browser: './lib/empty-module.js' },
+      net: { browser: './lib/empty-module.js' },
+      tls: { browser: './lib/empty-module.js' },
+      http: { browser: './lib/empty-module.js' },
+      https: { browser: './lib/empty-module.js' },
+    },
+  },
   // Improve build performance
   poweredByHeader: false,
   compress: true,
@@ -44,8 +60,48 @@ const nextConfig = {
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 2,
   },
-  ...(process.env.ANALYZE === 'true' && {
-    webpack: (config: any) => {
+  webpack: (config: any, { isServer }: { isServer: boolean }) => {
+    config.resolve.alias.canvas = false;
+    config.resolve.alias.encoding = false;
+
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        http: false,
+        https: false,
+      };
+
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'node:fs': false,
+        'node:net': false,
+        'node:tls': false,
+        'node:path': false,
+        'node:stream': false,
+        'node:crypto': false,
+        'node:http': false,
+        'node:https': false,
+      };
+
+      config.externals = [
+        ...(config.externals || []),
+        (
+          { request }: { request?: string },
+          callback: (error?: null, result?: string) => void,
+        ) => {
+          if (request && /^node:/.test(request)) {
+            return callback(null, '{}');
+          }
+
+          callback();
+        },
+      ];
+    }
+
+    if (process.env.ANALYZE === 'true') {
       const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
       config.plugins.push(
         new BundleAnalyzerPlugin({
@@ -54,9 +110,10 @@ const nextConfig = {
           openAnalyzer: true,
         }),
       );
-      return config;
-    },
-  }),
+    }
+
+    return config;
+  },
 
   // Security headers
   headers: async () => {

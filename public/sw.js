@@ -1,5 +1,3 @@
-/* eslint-env serviceworker */
-
 // ACOB Lighting Service Worker
 // Provides offline fallback page when the user has no internet connection.
 

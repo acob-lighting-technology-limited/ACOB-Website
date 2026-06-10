@@ -135,6 +135,7 @@ export default [
       'node_modules/',
       '.pnp',
       '.pnp.js',
+      'next-env.d.ts',
 
       // Production builds
       '.next/',
@@ -171,6 +172,16 @@ export default [
       '.DS_Store',
       'Thumbs.db',
     ],
+  },
+  {
+    // Node scripts
+    files: ['scripts/**/*.js', 'scripts/**/*.mjs', 'scripts/**/*.ts'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        setTimeout: 'readonly',
+      },
+    },
   },
   {
     // Test files configuration

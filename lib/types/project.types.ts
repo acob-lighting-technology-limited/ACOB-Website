@@ -49,20 +49,6 @@ export interface ProjectContent {
     | 'description6'
     | 'description7'
     | 'custom';
-  /** Preview text for description 1 */
-  description1Preview?: string;
-  /** Preview text for description 2 */
-  description2Preview?: string;
-  /** Preview text for description 3 */
-  description3Preview?: string;
-  /** Preview text for description 4 */
-  description4Preview?: string;
-  /** Preview text for description 5 */
-  description5Preview?: string;
-  /** Preview text for description 6 */
-  description6Preview?: string;
-  /** Preview text for description 7 */
-  description7Preview?: string;
   /** Custom description using Portable Text */
   customDescription?: PortableTextBlock[];
   /** Project images */

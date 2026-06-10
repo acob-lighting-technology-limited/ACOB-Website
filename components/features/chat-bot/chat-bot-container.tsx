@@ -213,7 +213,7 @@ export function ChatBotContainer({ isOpen, onClose }: ChatBotContainerProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="fixed bottom-2 right-2 sm:bottom-4 sm:right-4 w-[calc(100vw-2rem)] sm:w-[380px] h-[75dvh] sm:h-[80vh] max-h-[600px] rounded-lg overflow-hidden shadow-2xl bg-background border border-border flex flex-col z-50 transition-colors duration-500 chat-container"
+            className="fixed bottom-2 right-2 sm:bottom-4 sm:right-4 w-[calc(100vw-2rem)] sm:w-[400px] h-[75dvh] sm:h-[80vh] max-h-[620px] rounded-2xl overflow-hidden shadow-2xl bg-background border border-border flex flex-col z-50 transition-colors duration-500 chat-container"
             onTouchStart={e => e.stopPropagation()}
             onTouchMove={e => e.stopPropagation()}
           >
@@ -222,10 +222,8 @@ export function ChatBotContainer({ isOpen, onClose }: ChatBotContainerProps) {
             {/* Messages Area */}
             <div
               ref={messagesContainerRef}
-              className="flex-1 overflow-y-auto px-4 py-2 space-y-2 bg-background relative"
+              className="flex-1 overflow-y-auto px-3.5 py-4 space-y-3 bg-muted/30 relative"
               style={{
-                backgroundImage:
-                  "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.02'%3E%3Cpath d='m36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm-16-16v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
                 touchAction: 'pan-y',
                 WebkitOverflowScrolling: 'touch',
                 overscrollBehavior: 'contain',
@@ -246,19 +244,15 @@ export function ChatBotContainer({ isOpen, onClose }: ChatBotContainerProps) {
 
               {/* Welcome Message */}
               {messages.length === 0 && (
-                <div className="flex justify-center my-4">
-                  <div className="bg-muted/50 px-4 py-2 rounded-lg shadow-sm border border-muted-foreground/30">
-                    <p className="text-xs text-muted-foreground text-center">
-                      You&apos;re chatting with <strong>ACOBot</strong> — your
-                      virtual assistant from ACOB Lighting. Have a question?
-                      Just ask — I&apos;m here to help!
-                      <br />
-                      <span className="text-xs text-muted-foreground/70 mt-1 block">
-                        ({MESSAGE_LIMIT - messageCount} messages remaining
-                        today)
-                      </span>
-                    </p>
-                  </div>
+                <div className="border-border bg-card rounded-2xl border p-3.5 text-sm shadow-sm">
+                  <p className="text-foreground">
+                    👋 Hi, I&apos;m <strong>ACOBot</strong> — your virtual
+                    assistant from ACOB Lighting. Ask me anything about our
+                    products, projects or services.
+                  </p>
+                  <span className="text-muted-foreground mt-1 block text-xs">
+                    {MESSAGE_LIMIT - messageCount} messages remaining today
+                  </span>
                 </div>
               )}
 
@@ -302,7 +296,7 @@ export function ChatBotContainer({ isOpen, onClose }: ChatBotContainerProps) {
 
               {/* Typing Indicator */}
               {isLoading && messages[messages.length - 1]?.role === 'user' && (
-                <TypingIndicator />
+                <TypingIndicator label="Searching ACOB info…" />
               )}
 
               {/* Error Message */}
@@ -340,6 +334,7 @@ export function ChatBotContainer({ isOpen, onClose }: ChatBotContainerProps) {
               onStop={stop}
               isLoading={isLoading}
               rateLimitReached={rateLimitReached}
+              topBorder={!(messages.length === 0 && !rateLimitReached)}
             />
           </motion.div>
         </>
