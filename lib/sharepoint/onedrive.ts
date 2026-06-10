@@ -289,9 +289,7 @@ export class OneDriveService {
     }
   }
 
-  private async getItemByPath(
-    itemPath: string,
-  ): Promise<OneDriveItem | null> {
+  private async getItemByPath(itemPath: string): Promise<OneDriveItem | null> {
     const baseUrl = await this.resolveSingleDriveBaseUrl();
     const normalizedPath = normalizeGraphPath(itemPath);
 
@@ -401,9 +399,3 @@ export class OneDriveService {
     return response.json() as Promise<OneDriveUploadResult>;
   }
 }
-
-
-
-
-
-

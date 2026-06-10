@@ -33,8 +33,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormFieldProps>(
 
 FormInput.displayName = 'FormInput';
 
-interface FormTextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface FormTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
 }
@@ -57,8 +56,9 @@ export const FormTextarea = forwardRef<HTMLTextAreaElement, FormTextareaProps>(
 
 FormTextarea.displayName = 'FormTextarea';
 
-interface FormSelectProps
-  extends React.SelectHTMLAttributes<React.ElementRef<'select'>> {
+interface FormSelectProps extends React.SelectHTMLAttributes<
+  React.ElementRef<'select'>
+> {
   label?: string;
   error?: string;
 }

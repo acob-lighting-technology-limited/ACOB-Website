@@ -16,13 +16,16 @@ async function removeNextDirWithRetry(directory, attempts = 8) {
       return;
     } catch (error) {
       const code = String(error?.code || '');
-      const canRetry = code === 'ENOTEMPTY' || code === 'EPERM' || code === 'EBUSY';
+      const canRetry =
+        code === 'ENOTEMPTY' || code === 'EPERM' || code === 'EBUSY';
 
       if (!canRetry || index === attempts - 1) {
         throw error;
       }
 
-      await new Promise((resolveSleep) => setTimeout(resolveSleep, 250 * (index + 1)));
+      await new Promise(resolveSleep =>
+        setTimeout(resolveSleep, 250 * (index + 1)),
+      );
     }
   }
 }

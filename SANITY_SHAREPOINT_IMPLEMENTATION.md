@@ -293,8 +293,6 @@ That means:
 - if a file is attached to a `project`, `product`, or `updatePost`, it is supported
 - if a file exists in Sanity asset storage but is not referenced by one of those document fields, it will not be copied
 
-
-
 ## Files Added / Updated
 
 Primary implementation files:
@@ -307,5 +305,3 @@ Primary implementation files:
 - `sanity/schemaTypes/product.ts`
 - `sanity/schemaTypes/updatePost.ts`
 - `env.example`
-
-
