@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { MessageSquare, X } from 'lucide-react';
+import { Bot, X } from 'lucide-react';
 import { Button } from '@/components/ui';
 import { ChatBotContainer } from './chat-bot-container';
 
@@ -107,7 +107,7 @@ export function ChatBot() {
               {isOpen ? (
                 <X className="h-7 w-7 sm:h-7 sm:w-7" />
               ) : (
-                <MessageSquare className="h-7 w-7 sm:h-7 sm:w-7" />
+                <Bot className="h-7 w-7 sm:h-7 sm:w-7" />
               )}
             </motion.div>
 

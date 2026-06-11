@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui';
 import { suggestedMessages } from '@/lib/data';
 
 interface SuggestedQuestionsProps {
@@ -9,7 +8,7 @@ interface SuggestedQuestionsProps {
 }
 
 /**
- * Suggested question buttons for quick chat interactions
+ * Suggested questions — ERP-style card-chip grid shown just above the input.
  */
 export function SuggestedQuestions({
   onSelect,
@@ -17,25 +16,24 @@ export function SuggestedQuestions({
   rateLimitReached,
 }: SuggestedQuestionsProps) {
   return (
-    <div className="px-4 py-2 bg-transparent">
-      <div className="flex flex-wrap gap-2">
+    <div className="border-border bg-background space-y-2 border-t px-3 pt-3">
+      <p className="text-muted-foreground px-1 text-xs font-medium">
+        Try asking
+      </p>
+      <div className="grid grid-cols-2 gap-2">
         {suggestedMessages.map((msg, index) => (
-          <motion.div
+          <motion.button
             key={index}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.1 }}
+            type="button"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+            onClick={() => onSelect(msg)}
+            disabled={isChatting || rateLimitReached}
+            className="border-border bg-card hover:border-primary/40 hover:bg-accent text-card-foreground flex items-center rounded-xl border p-2.5 text-left text-xs font-medium leading-tight transition-colors disabled:opacity-50"
           >
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onSelect(msg)}
-              className="rounded-full text-xs px-3 py-1 h-auto bg-surface !border border-muted text-muted-foreground hover:bg-muted transition-all duration-500 disabled:opacity-50"
-              disabled={isChatting || rateLimitReached}
-            >
-              {msg}
-            </Button>
-          </motion.div>
+            {msg}
+          </motion.button>
         ))}
       </div>
     </div>

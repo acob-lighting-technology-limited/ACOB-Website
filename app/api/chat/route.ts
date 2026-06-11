@@ -20,6 +20,9 @@ import {
   formatJobsContext,
   createContextMessage,
 } from '@/lib/utils/chat-context-formatter';
+import { searchContent } from '@/lib/utils/chat-content-search';
+import { getCached } from '@/lib/utils/chat-data-cache';
+import { logAcobotWebsiteTurn } from '@/lib/utils/acobot-erp-log';
 import {
   getProjects,
   getUpdatePosts,
@@ -103,6 +106,7 @@ export async function POST(req: NextRequest) {
     // === DYNAMIC CONTEXT INJECTION ===
     // Detect intent from the last user message
     const lastUserMessage = cleanMessages.filter(m => m.role === 'user').pop();
+    let hadContext = false;
 
     if (lastUserMessage) {
       const intent = detectIntent(lastUserMessage.content);
@@ -114,7 +118,7 @@ export async function POST(req: NextRequest) {
         try {
           switch (intent.type) {
             case 'projects': {
-              const allProjects = await getProjects();
+              const allProjects = await getCached('projects', getProjects);
 
               // Filter projects based on detected filters
               let filteredProjects = allProjects;
@@ -155,13 +159,13 @@ export async function POST(req: NextRequest) {
             }
 
             case 'updates': {
-              const updates = await getUpdatePosts();
+              const updates = await getCached('updates', getUpdatePosts);
               contextData = formatUpdatesContext(updates);
               break;
             }
 
             case 'products': {
-              const products = await getProducts();
+              const products = await getCached('products', getProducts);
 
               // Filter products if category detected
               let filteredProducts = products;
@@ -178,7 +182,7 @@ export async function POST(req: NextRequest) {
             }
 
             case 'jobs': {
-              const jobs = await getJobPostings();
+              const jobs = await getCached('jobs', getJobPostings);
               contextData = formatJobsContext(jobs);
               break;
             }
@@ -187,6 +191,7 @@ export async function POST(req: NextRequest) {
           // Inject context into messages if data was found
           if (contextData) {
             cleanMessages.push(createContextMessage(contextData));
+            hadContext = true;
           }
         } catch (sanityError) {
           // Log error but continue with chat (graceful degradation)
@@ -195,16 +200,93 @@ export async function POST(req: NextRequest) {
           }
           // Don't fail the entire request if Sanity fetch fails
         }
+      } else {
+        // === GENERAL / UNCLASSIFIED QUERY FALLBACK ===
+        // Keyword-based intent detection couldn't classify this query (e.g. it
+        // asks about a named event, partnership, or topic with no matching
+        // keyword). Search across ALL content for relevant items, and if
+        // nothing matches, fall back to the latest updates so the bot can still
+        // answer "what's new" style questions.
+        try {
+          const [updates, projects, products, jobs] = await Promise.all([
+            getCached('updates', getUpdatePosts),
+            getCached('projects', getProjects),
+            getCached('products', getProducts),
+            getCached('jobs', getJobPostings),
+          ]);
+
+          const matches = searchContent(lastUserMessage.content, {
+            updates,
+            projects,
+            products,
+            jobs,
+          });
+
+          const sections: string[] = [];
+
+          if (matches.topScore > 0) {
+            if (matches.updates.length) {
+              sections.push(formatUpdatesContext(matches.updates));
+            }
+            if (matches.projects.length) {
+              sections.push(formatProjectsContext(matches.projects));
+            }
+            if (matches.products.length) {
+              sections.push(formatProductsContext(matches.products));
+            }
+            if (matches.jobs.length) {
+              sections.push(formatJobsContext(matches.jobs));
+            }
+          }
+
+          // Baseline: no specific match → give the bot the latest updates so it
+          // has recent, accurate context instead of guessing.
+          const contextData = sections.length
+            ? sections.join('\n\n')
+            : formatUpdatesContext(updates);
+
+          if (contextData) {
+            cleanMessages.push(createContextMessage(contextData));
+            hadContext = true;
+          }
+        } catch (sanityError) {
+          if (process.env.NODE_ENV === 'development') {
+            console.error(
+              'Error fetching Sanity data for general query:',
+              sanityError,
+            );
+          }
+          // Graceful degradation: continue without injected context
+        }
       }
     }
     // === END DYNAMIC CONTEXT INJECTION ===
 
     // Use Vercel AI SDK with Groq (streaming for useChat compatibility)
+    const MODEL_ID = 'openai/gpt-oss-120b';
+    const ipAddress =
+      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
+    const userAgent = req.headers.get('user-agent');
+
     const result = await streamText({
-      model: groq('llama-3.1-8b-instant'),
+      model: groq(MODEL_ID),
       messages: cleanMessages,
       maxTokens: 1000,
       temperature: 0.7,
+      onFinish: async ({ text }) => {
+        if (!lastUserMessage) {
+          return;
+        }
+        // Best-effort: mirror this turn into the ERP's acobot_logs (source=website).
+        await logAcobotWebsiteTurn({
+          question: lastUserMessage.content,
+          answer: text,
+          hadContext,
+          model: MODEL_ID,
+          ipAddress,
+          userAgent,
+        });
+      },
     });
 
     return result.toDataStreamResponse();
