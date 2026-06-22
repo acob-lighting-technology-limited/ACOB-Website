@@ -117,6 +117,42 @@ This repository contains confidential and proprietary information. Access is res
 
 This project is **NOT** open source. All rights are reserved by ACOB Lighting Technology Limited. No part of this repository may be reproduced, distributed, or transmitted in any form or by any means without prior written permission.
 
+## 💻 Development Setup
+
+For authorized developers setting up the project locally:
+
+### Prerequisites
+
+- Node.js (v18+ or v20+ recommended)
+- npm
+
+### Installation
+
+Clone the repository and install dependencies:
+
+```bash
+npm install
+```
+
+### Running the Application
+
+To start the Next.js development server:
+
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:3000`.
+
+### Code Quality & Standards
+
+Before committing, ensure your code complies with the project standards:
+
+- **Linting:** `npm run lint` or `npm run lint:fix`
+- **Formatting:** `npm run format`
+- **Type Checking:** `npm run type-check`
+- **Tests:** `npm run test`
+
 ---
 
 ## 👥 For Authorized Team Members
