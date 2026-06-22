@@ -117,6 +117,64 @@ This repository contains confidential and proprietary information. Access is res
 
 This project is **NOT** open source. All rights are reserved by ACOB Lighting Technology Limited. No part of this repository may be reproduced, distributed, or transmitted in any form or by any means without prior written permission.
 
+## 💻 Development Setup
+
+For authorized developers setting up the project locally:
+
+### Prerequisites
+
+- Node.js (v18+ or v20+ recommended)
+- npm
+
+### Installation
+
+Clone the repository and install dependencies:
+
+```bash
+npm install
+```
+
+### Running the Application
+
+To start the Next.js development server:
+
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:3000`.
+
+### Code Quality & Standards
+
+Before committing, ensure your code complies with the project standards:
+
+- **Linting:** `npm run lint` or `npm run lint:fix`
+- **Formatting:** `npm run format`
+- **Type Checking:** `npm run type-check`
+- **Tests:** `npm run test`
+
+### Commit Guidelines
+
+We enforce the Conventional Commits specification. Commit messages must follow this format:
+
+```
+type: description (lowercase, max 72 chars)
+```
+
+Allowed types:
+
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation only changes
+- `style`: Changes that do not affect the meaning of the code (white-space, formatting, etc.)
+- `refactor`: A code change that neither fixes a bug nor adds a feature
+- `perf`: A code change that improves performance
+- `test`: Adding missing tests or correcting existing tests
+- `chore`: Changes to the build process or auxiliary tools and libraries
+- `ci`: Changes to CI configuration files and scripts
+- `build`: Changes that affect the build system or external dependencies
+- `revert`: Reverts a previous commit
+
 ---
 
 ## 👥 For Authorized Team Members
