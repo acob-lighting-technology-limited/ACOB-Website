@@ -149,12 +149,13 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://vitals.vercel-insights.com",
+              // Next.js dev mode requires unsafe-eval; production does not.
+              `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''} https://va.vercel-scripts.com https://vitals.vercel-insights.com`,
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https://cdn.sanity.io https://res.cloudinary.com https://www.acoblighting.com",
               "media-src 'self' data: blob: https://cdn.sanity.io https://res.cloudinary.com",
-              "connect-src 'self' https://api.resend.com https://api.openrouter.ai https://api.groq.com https://*.sanity.io https://vitals.vercel-insights.com https://va.vercel-scripts.com",
+              "connect-src 'self' https://api.resend.com https://api.groq.com https://*.sanity.io https://vitals.vercel-insights.com https://va.vercel-scripts.com",
               "frame-src 'self' https://www.google.com https://maps.google.com https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",

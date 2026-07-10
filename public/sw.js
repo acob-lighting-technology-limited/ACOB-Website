@@ -1,14 +1,16 @@
 // ACOB Lighting Service Worker
 // Provides offline fallback page when the user has no internet connection.
 
-const CACHE_NAME = 'acob-offline-v1';
+const CACHE_NAME = 'acob-offline-v2';
 const OFFLINE_URL = '/offline.html';
 
-// Assets to pre-cache for offline use
+// Assets to pre-cache for offline use.
+// NOTE: cache.addAll rejects if ANY asset 404s, which silently blocks the
+// whole service worker from installing — only list files that exist.
 const PRECACHE_ASSETS = [
     OFFLINE_URL,
     '/favicon.ico',
-    '/images/ACOB-logo.png',
+    '/images/acob-logo-dark.png',
 ];
 
 // Install: pre-cache the offline page and essential assets

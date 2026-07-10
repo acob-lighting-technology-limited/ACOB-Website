@@ -82,7 +82,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate messages
+    // Caps guard against runaway token costs on the upstream model.
+    const MAX_MESSAGES = 30;
+    const MAX_CONTENT_LENGTH = 4000;
+
+    if (messages.length > MAX_MESSAGES) {
+      return createErrorResponse(
+        ApiErrorCode.BAD_REQUEST,
+        `Too many messages: maximum is ${MAX_MESSAGES}`,
+        400,
+      );
+    }
+
+    // Validate messages. Only user/assistant roles are accepted — the system
+    // channel is reserved for server-injected context.
+    const ALLOWED_ROLES = ['user', 'assistant'] as const;
     for (let i = 0; i < messages.length; i++) {
       const msg = messages[i];
 
@@ -90,6 +104,25 @@ export async function POST(req: NextRequest) {
         return createErrorResponse(
           ApiErrorCode.VALIDATION_ERROR,
           `Invalid message at index ${i}: must have 'role' and 'content'`,
+          400,
+        );
+      }
+
+      if (
+        typeof msg.content !== 'string' ||
+        !ALLOWED_ROLES.includes(msg.role)
+      ) {
+        return createErrorResponse(
+          ApiErrorCode.VALIDATION_ERROR,
+          `Invalid message at index ${i}: role must be 'user' or 'assistant' and content must be a string`,
+          400,
+        );
+      }
+
+      if (msg.content.length > MAX_CONTENT_LENGTH) {
+        return createErrorResponse(
+          ApiErrorCode.VALIDATION_ERROR,
+          `Message at index ${i} exceeds the ${MAX_CONTENT_LENGTH}-character limit`,
           400,
         );
       }

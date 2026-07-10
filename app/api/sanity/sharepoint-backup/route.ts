@@ -3,18 +3,8 @@ import {
   backupSanityDocumentAssets,
   isSharePointBackupEnabled,
 } from '@/lib/sharepoint/sanity-backup';
-
-function getWebhookSecret(request: NextRequest): string | null {
-  const authorization = request.headers.get('authorization');
-  if (authorization?.startsWith('Bearer ')) {
-    return authorization.slice('Bearer '.length).trim();
-  }
-
-  return (
-    request.headers.get('x-sanity-webhook-secret') ||
-    request.nextUrl.searchParams.get('secret')
-  );
-}
+import { authorizeWebhookRequest } from '@/lib/utils/webhook-auth';
+import { rateLimit } from '@/lib/utils/rate-limit';
 
 function getDocumentId(payload: Record<string, unknown>): string | null {
   const ids =
@@ -47,10 +37,21 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const configuredSecret = process.env.SANITY_WEBHOOK_SECRET?.trim();
-  const providedSecret = getWebhookSecret(request);
+  if (rateLimit(request)) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': '60' } },
+    );
+  }
 
-  if (configuredSecret && providedSecret !== configuredSecret) {
+  const auth = authorizeWebhookRequest(request);
+  if (auth === 'unconfigured') {
+    return NextResponse.json(
+      { error: 'Webhook secret is not configured on this environment' },
+      { status: 503 },
+    );
+  }
+  if (auth === 'unauthorized') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

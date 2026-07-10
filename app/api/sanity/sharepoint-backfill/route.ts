@@ -4,6 +4,8 @@ import {
   isSharePointBackupEnabled,
   listBackfillCandidates,
 } from '@/lib/sharepoint/sanity-backup';
+import { authorizeWebhookRequest } from '@/lib/utils/webhook-auth';
+import { rateLimit } from '@/lib/utils/rate-limit';
 
 type SupportedDocumentType = 'project' | 'product' | 'updatePost';
 
@@ -13,13 +15,30 @@ const SUPPORTED_TYPES: SupportedDocumentType[] = [
   'updatePost',
 ];
 
-function getSecret(request: NextRequest): string | null {
-  const authorization = request.headers.get('authorization');
-  if (authorization?.startsWith('Bearer ')) {
-    return authorization.slice('Bearer '.length).trim();
+/**
+ * Shared gate for both handlers: rate limit first, then webhook auth that
+ * fails closed when no secret is configured.
+ */
+function rejectUnauthorized(request: NextRequest): NextResponse | null {
+  if (rateLimit(request)) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': '60' } },
+    );
   }
 
-  return request.nextUrl.searchParams.get('secret');
+  const auth = authorizeWebhookRequest(request);
+  if (auth === 'unconfigured') {
+    return NextResponse.json(
+      { error: 'Webhook secret is not configured on this environment' },
+      { status: 503 },
+    );
+  }
+  if (auth === 'unauthorized') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  return null;
 }
 
 function parseTypes(value: string | null): SupportedDocumentType[] {
@@ -81,11 +100,9 @@ async function resolveTargets(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const configuredSecret = process.env.SANITY_WEBHOOK_SECRET?.trim();
-  const providedSecret = getSecret(request);
-
-  if (configuredSecret && providedSecret !== configuredSecret) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const rejection = rejectUnauthorized(request);
+  if (rejection) {
+    return rejection;
   }
 
   const targetInfo = await resolveTargets(request);
@@ -109,11 +126,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const configuredSecret = process.env.SANITY_WEBHOOK_SECRET?.trim();
-  const providedSecret = getSecret(request);
-
-  if (configuredSecret && providedSecret !== configuredSecret) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const rejection = rejectUnauthorized(request);
+  if (rejection) {
+    return rejection;
   }
 
   const targetInfo = await resolveTargets(request);

@@ -47,15 +47,7 @@ export async function getProjects(): Promise<Project[]> {
           url,
           metadata
         },
-        impactMetrics,
-        comments[]{
-          _key,
-          author,
-          email,
-          commentContent,
-          createdAt,
-          isApproved
-        }
+        impactMetrics
       }
     `);
 
@@ -146,15 +138,7 @@ export async function getProjectsPaginated({
       isFeatured,
       featuredRank,
       "projectImage": projectImage.asset->url,
-      impactMetrics,
-      comments[]{
-        _key,
-        author,
-        email,
-        commentContent,
-        createdAt,
-        isApproved
-      }
+      impactMetrics
     }`;
 
     // Get total count for pagination
@@ -257,15 +241,7 @@ export async function getProject(slug: string): Promise<Project | null> {
         isFeatured,
         featuredRank,
         "projectImage": projectImage.asset->url,
-        impactMetrics,
-        comments[]{
-          _key,
-          author,
-          email,
-          commentContent,
-          createdAt,
-          isApproved
-        }
+        impactMetrics
       }
     `,
       { slug },
@@ -318,15 +294,7 @@ export async function getFeaturedProjects(): Promise<Project[]> {
         isFeatured,
         orderRank,
         "projectImage": projectImage.asset->url,
-        impactMetrics,
-        comments[]{
-          _key,
-          author,
-          email,
-          commentContent,
-          createdAt,
-          isApproved
-        }
+        impactMetrics
       }
     `);
 
@@ -373,15 +341,7 @@ export async function getProjectsByCategory(
         latitude,
         longitude,
         "projectImage": projectImage.asset->url,
-        impactMetrics,
-        comments[]{
-          _key,
-          author,
-          email,
-          commentContent,
-          createdAt,
-          isApproved
-        }
+        impactMetrics
       }
     `,
       { category },
@@ -503,7 +463,7 @@ export async function getRecentProjectImages(limit: number = 5) {
         "projectImage": projectImage.asset->url
       }
     `,
-      { limit: limit - 1 },
+      { limit },
     );
     return projects;
   } catch (error) {
