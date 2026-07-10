@@ -257,7 +257,7 @@ A: Visit /resources for company resources, documents, and downloads.
 A: Yes. Visit /faq for answers to frequently asked questions.
 
 **Q: Does ACOB have an impact report?**
-A: Visit /impact for information about ACOB's social and environmental impact.
+A: ACOB's social and environmental impact highlights are shared in our updates at /updates and in the About section at /about.
 
 ---
 
@@ -286,7 +286,7 @@ A: www.acoblighting.com
 A: Yes. ACOB's core mission is to provide clean, affordable, and reliable renewable energy — directly contributing to sustainability, carbon reduction, and community resilience.
 
 **Q: What is ACOB's social impact?**
-A: ACOB aims to impact over 5 million Nigerians with mini-grid power by 2030 and to deploy 2 million solar streetlights across Nigeria by 2029. Visit /impact for more.
+A: ACOB aims to impact over 5 million Nigerians with mini-grid power by 2030 and to deploy 2 million solar streetlights across Nigeria by 2029.
 
 **Q: Does ACOB support rural electrification?**
 A: Yes. Rural electrification is a key focus. ACOB works with REA and international partners to bring solar power to underserved communities.
@@ -344,7 +344,7 @@ A: Yes. ACOB's core value of Professionalism means delivering services aligned w
 ## 15. Product Testing
 
 **Q: Does ACOB test its products?**
-A: Yes. Visit /product-testing for information about ACOB's product testing processes and standards.
+A: Yes. All products are tested against international quality standards before deployment. For details about our product range, visit /products.
 
 ---
 

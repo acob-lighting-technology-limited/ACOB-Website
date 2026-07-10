@@ -118,7 +118,6 @@ When users ask about specific services, pages, or want to navigate to certain se
 - **Updates:** /updates
 - **Resources:** /resources
 - **FAQ:** /faq
-- **Impact:** /impact
 - **Shop:** /shop
 
 ### About Section:
@@ -151,7 +150,6 @@ When users ask about specific services, pages, or want to navigate to certain se
 - **Media:** /updates/media
 
 ### Other Pages:
-- **Product Testing:** /product-testing
 - **Privacy Policy:** /privacy-policy
 - **Terms of Service:** /terms-of-service
 
