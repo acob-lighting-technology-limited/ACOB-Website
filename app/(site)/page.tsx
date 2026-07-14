@@ -6,10 +6,10 @@ import { ServicesSection } from '@/components/sections/services-section';
 import { ProjectsSection } from '@/components/sections/projects-section';
 import { UpdatesSection } from '@/components/sections/updates-section';
 import {
-  getProjects,
+  getProjectsForListing,
   getFeaturedProjects,
   getUpdatePosts,
-} from '@/sanity/lib/client';
+} from '@/sanity/lib/queries';
 import {
   ANNIVERSARY_2026,
   isAnniversaryYear2026,
@@ -95,7 +95,7 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   // Fetch data server-side
   const [projects, featuredProjects, posts] = await Promise.all([
-    getProjects(),
+    getProjectsForListing(),
     getFeaturedProjects(),
     getUpdatePosts(),
   ]);

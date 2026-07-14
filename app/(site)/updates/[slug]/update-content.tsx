@@ -8,7 +8,7 @@ import {
   type PortableTextComponentProps,
 } from '@portabletext/react';
 import { Lightbox } from '@/components/ui/lightbox';
-import { urlFor } from '@/sanity/lib/client';
+import { urlFor } from '@/sanity/lib/queries';
 
 interface UpdateContentProps {
   content: PortableTextBlock[];

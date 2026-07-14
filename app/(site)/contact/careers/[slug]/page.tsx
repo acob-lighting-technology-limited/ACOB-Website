@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getJobPosting } from '@/sanity/lib/client';
+import { getJobPosting } from '@/sanity/lib/queries';
 import { CONTACT_INFO } from '@/lib/constants/app.constants';
 
 interface JobPostingPageProps {

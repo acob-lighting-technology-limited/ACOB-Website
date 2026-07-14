@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, MapPin } from 'lucide-react';
 import { notFound } from 'next/navigation';
-import { getProjectsPaginated } from '@/sanity/lib/client';
+import { getProjectsPaginated } from '@/sanity/lib/queries';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Hero } from '@/components/ui/hero';

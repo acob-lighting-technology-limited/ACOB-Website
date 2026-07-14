@@ -6,7 +6,7 @@ import {
   getUpdatePost,
   getApprovedCommentsForPost,
   getRelatedUpdatePosts,
-} from '@/sanity/lib/client';
+} from '@/sanity/lib/queries';
 import { notFound } from 'next/navigation';
 import type { UpdatePost, Comment } from '@/lib/types';
 import { Container } from '@/components/ui/container';

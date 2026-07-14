@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { client } from '@/sanity/lib/client';
+import { client } from '@/sanity/lib/queries';
 import { Container } from '@/components/ui/container';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Badge } from '@/components/ui/badge';

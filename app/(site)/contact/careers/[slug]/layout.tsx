@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getJobPosting } from '@/sanity/lib/client';
+import { getJobPosting } from '@/sanity/lib/queries';
 import { getOgImageUrl } from '@/lib/utils/og-image';
 
 export async function generateMetadata({

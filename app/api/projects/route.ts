@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getProjectsPaginated } from '@/sanity/lib/client';
+import { getProjectsPaginated } from '@/sanity/lib/queries';
 
 export async function GET(request: NextRequest) {
   try {

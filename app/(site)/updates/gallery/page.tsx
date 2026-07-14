@@ -2,7 +2,7 @@ import { Container } from '@/components/ui/container';
 import { Hero } from '@/components/ui/hero';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { GalleryClient } from './gallery-client';
-import { getProjectsForGallery, urlFor } from '@/sanity/lib/client';
+import { getProjectsForGallery, urlFor } from '@/sanity/lib/queries';
 import type { Project } from '@/lib/types';
 import type { PortableTextBlock } from '@portabletext/types';
 

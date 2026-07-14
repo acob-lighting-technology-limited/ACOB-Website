@@ -33,6 +33,7 @@ export {
 
 export {
   getProjects,
+  getProjectsForListing,
   getProjectsPaginated,
   getProject,
   getFeaturedProjects,

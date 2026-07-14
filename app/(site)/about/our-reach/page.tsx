@@ -19,7 +19,7 @@ import { Hero } from '@/components/ui/hero';
 import { SectionHeader } from '@/components/ui/section-header';
 import { NigeriaReachSection } from '@/components/sections/nigeria-reach-section';
 import { COMPANY_INFO } from '@/lib/constants';
-import { getProjects } from '@/sanity/lib/client';
+import { getProjectsForListing } from '@/sanity/lib/queries';
 
 export const metadata: Metadata = {
   title: 'Our Reach | ACOB Lighting',
@@ -82,7 +82,7 @@ const reachDetails = [
 ];
 
 export default async function OurReachPage() {
-  const projects = await getProjects();
+  const projects = await getProjectsForListing();
 
   const breadcrumbItems = [
     { label: 'Home', href: '/' },

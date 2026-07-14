@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { ProjectsGridSkeleton } from '@/components/ui/projects-grid-skeleton';
-import { getProjectsPaginated } from '@/sanity/lib/client';
+import { getProjectsPaginated } from '@/sanity/lib/queries';
 import ProjectsClient from './projects-client';
 
 // Revalidate every 10 minutes (600 seconds)

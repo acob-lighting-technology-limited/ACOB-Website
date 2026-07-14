@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getProject } from '@/sanity/lib/client';
+import { getProject } from '@/sanity/lib/queries';
 import { getOgImageUrl } from '@/lib/utils/og-image';
 
 export async function generateMetadata({

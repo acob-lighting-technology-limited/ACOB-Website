@@ -1,5 +1,3 @@
-'use client';
-
 import { Container } from '@/components/ui/container';
 import { Hero } from '@/components/ui/hero';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
@@ -18,8 +16,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { whyWorkItems, contactLinks } from '@/lib/data/contact-data';
-import { getJobPostings } from '@/sanity/lib/client';
-import { useEffect, useState } from 'react';
+import { getJobPostings } from '@/sanity/lib/queries';
 import { FadeIn } from '@/components/animations/FadeIn';
 import { CONTACT_INFO } from '@/lib/constants/app.constants';
 
@@ -31,29 +28,16 @@ const iconMap = {
   Heart,
 };
 
-export default function CareersPage() {
+export const revalidate = 300;
+
+export default async function CareersPage() {
   const breadcrumbItems = [
     { label: 'Home', href: '/' },
     { label: 'Contact', href: '/contact' },
     { label: 'Careers' },
   ];
 
-  const [jobPostings, setJobPostings] = useState<
-    Array<{
-      _id: string;
-      title: string;
-      department?: string;
-      location?: string;
-      employmentType?: string;
-      description?: string;
-      applicationDeadline?: string;
-      slug: { current: string };
-    }>
-  >([]);
-
-  useEffect(() => {
-    getJobPostings().then(setJobPostings);
-  }, []);
+  const jobPostings = await getJobPostings();
 
   return (
     <>

@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getUpdatePostsPaginated } from '@/sanity/lib/client';
+import { getUpdatePostsPaginated } from '@/sanity/lib/queries';
 import { getOgImageUrl } from '@/lib/utils/og-image';
 import type { UpdatePost } from '@/lib/types';
 

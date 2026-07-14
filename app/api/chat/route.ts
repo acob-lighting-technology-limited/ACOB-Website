@@ -28,7 +28,7 @@ import {
   getUpdatePosts,
   getProducts,
   getJobPostings,
-} from '@/sanity/lib/client';
+} from '@/sanity/lib/queries';
 
 export async function POST(req: NextRequest) {
   // Apply rate limiting

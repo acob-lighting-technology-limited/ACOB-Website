@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getProjects } from '@/sanity/lib/client';
+import { getProjects } from '@/sanity/lib/queries';
 import type { Project } from '@/lib/types';
 
 export interface RandomImage {

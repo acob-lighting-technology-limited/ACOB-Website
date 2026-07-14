@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { UpdatesGridSkeleton } from '@/components/ui/updates-grid-skeleton';
-import { getUpdatePostsPaginated } from '@/sanity/lib/client';
+import { getUpdatePostsPaginated } from '@/sanity/lib/queries';
 import UpdatesClient from './updates-client';
 
 interface UpdatesPageProps {

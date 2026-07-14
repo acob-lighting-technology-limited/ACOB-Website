@@ -8,7 +8,7 @@ import {
 } from '@portabletext/react';
 import type { PortableTextBlock } from '@portabletext/types';
 import { Lightbox } from '@/components/ui/lightbox';
-import { urlFor } from '@/sanity/lib/client';
+import { urlFor } from '@/sanity/lib/queries';
 import type {
   ProjectContent as ProjectContentType,
   Project,

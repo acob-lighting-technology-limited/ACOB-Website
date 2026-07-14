@@ -8,7 +8,7 @@ import {
   getProjects,
   getProject,
   getProjectsPaginated,
-} from '@/sanity/lib/client';
+} from '@/sanity/lib/queries';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Hero } from '@/components/ui/hero';

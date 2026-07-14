@@ -6,7 +6,7 @@ import { ChatBot } from '@/components/features/chat-bot';
 import { ChatErrorBoundary } from '@/components/error-boundary/error-boundary';
 import { SkipNavigation } from '@/components/ui/skip-navigation';
 import { AnnouncementBanner } from '@/components/ui/announcement-banner';
-import { getJobPostings, getProducts } from '@/sanity/lib/client';
+import { getJobPostings, getProducts } from '@/sanity/lib/queries';
 
 export const revalidate = 300;
 

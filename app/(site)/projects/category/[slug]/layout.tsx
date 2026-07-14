@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getProjectsPaginated } from '@/sanity/lib/client';
+import { getProjectsPaginated } from '@/sanity/lib/queries';
 import { getOgImageUrl } from '@/lib/utils/og-image';
 import type { Project } from '@/lib/types';
 

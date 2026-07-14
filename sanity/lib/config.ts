@@ -13,18 +13,23 @@ import type { SanityImageSource } from '@sanity/image-url/lib/types/types';
 // ENVIRONMENT VARIABLES
 // ============================================================================
 
-const DEFAULT_SANITY_PROJECT_ID = 'x16t7huo';
-const DEFAULT_SANITY_DATASET = 'production';
+function requireEnv(value: string | undefined, name: string): string {
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return value;
+}
 
-const projectId =
+const projectId = requireEnv(
   process.env.SANITY_STUDIO_PROJECT_ID ||
-  process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ||
-  DEFAULT_SANITY_PROJECT_ID;
+    process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
+  'NEXT_PUBLIC_SANITY_PROJECT_ID',
+);
 
-const dataset =
-  process.env.SANITY_STUDIO_DATASET ||
-  process.env.NEXT_PUBLIC_SANITY_DATASET ||
-  DEFAULT_SANITY_DATASET;
+const dataset = requireEnv(
+  process.env.SANITY_STUDIO_DATASET || process.env.NEXT_PUBLIC_SANITY_DATASET,
+  'NEXT_PUBLIC_SANITY_DATASET',
+);
 
 const token = process.env.SANITY_API_TOKEN?.trim() || undefined;
 

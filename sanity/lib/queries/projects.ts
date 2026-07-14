@@ -10,6 +10,48 @@ import { PAGINATION } from '@/lib/constants/app.constants';
 import type { Project, PaginatedResponse } from '@/lib/types';
 
 // ============================================================================
+// SHARED PROJECTIONS
+// ============================================================================
+
+/**
+ * Core field set shared by the full-detail project queries
+ * (getProjects, getProjectsPaginated, getFeaturedProjects, getProjectsForGallery).
+ */
+const PROJECT_CORE_FIELDS = `
+  _id,
+  title,
+  excerpt,
+  slug,
+  category,
+  projectDate,
+  content,
+  projectContent,
+  location,
+  lga,
+  state,
+  latitude,
+  longitude,
+  isFeatured,
+  featuredRank,
+  "projectImage": projectImage.asset->url,
+  impactMetrics
+`;
+
+/** Trimmed field set for card/listing surfaces that don't need full content. */
+const PROJECT_LISTING_FIELDS = `
+  _id,
+  title,
+  excerpt,
+  slug,
+  category,
+  location,
+  state,
+  latitude,
+  longitude,
+  "projectImage": projectImage.asset->url
+`;
+
+// ============================================================================
 // GET ALL PROJECTS
 // ============================================================================
 
@@ -27,27 +69,11 @@ export async function getProjects(): Promise<Project[]> {
   try {
     const projects = await client.fetch(`
       *[_type == "project"] | order(projectDate desc, _createdAt desc) {
-        _id,
-        title,
-        excerpt,
-        slug,
-        category,
-        projectDate,
-        content,
-        projectContent,
-        location,
-        lga,
-        state,
-        latitude,
-        longitude,
-        isFeatured,
-        featuredRank,
-        "projectImage": projectImage.asset->url,
+        ${PROJECT_CORE_FIELDS},
         "images": content[].asset->{
           url,
           metadata
-        },
-        impactMetrics
+        }
       }
     `);
 
@@ -55,6 +81,40 @@ export async function getProjects(): Promise<Project[]> {
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.error('Error fetching projects from Sanity:', error);
+    }
+    return [];
+  }
+}
+
+// ============================================================================
+// GET PROJECTS FOR LISTING (trimmed fields for card/grid surfaces)
+// ============================================================================
+
+/**
+ * Get all projects with only the fields needed for card/listing surfaces
+ * (title, slug, excerpt, category, state, image). Use this instead of
+ * getProjects() on pages that only render project cards — it avoids
+ * shipping full content blocks and impact metrics that aren't rendered.
+ *
+ * @returns Array of projects with trimmed fields
+ *
+ * @example
+ * ```typescript
+ * const projects = await getProjectsForListing();
+ * ```
+ */
+export async function getProjectsForListing(): Promise<Project[]> {
+  try {
+    const projects = await client.fetch(`
+      *[_type == "project"] | order(projectDate desc, _createdAt desc) {
+        ${PROJECT_LISTING_FIELDS}
+      }
+    `);
+
+    return projects;
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error fetching projects for listing from Sanity:', error);
     }
     return [];
   }
@@ -122,23 +182,7 @@ export async function getProjectsPaginated({
 
     // Complete the query with ordering and pagination
     query += `] | order(projectDate desc, _createdAt desc)[${offset}...${offset + limit}] {
-      _id,
-      title,
-      excerpt,
-      slug,
-      category,
-      projectDate,
-      content,
-      projectContent,
-      location,
-      lga,
-      state,
-      latitude,
-      longitude,
-      isFeatured,
-      featuredRank,
-      "projectImage": projectImage.asset->url,
-      impactMetrics
+      ${PROJECT_CORE_FIELDS}
     }`;
 
     // Get total count for pagination
@@ -278,23 +322,8 @@ export async function getFeaturedProjects(): Promise<Project[]> {
   try {
     const projects = await client.fetch(`
       *[_type == "project" && isFeatured == true] | order(orderRank)[0...10] {
-        _id,
-        title,
-        excerpt,
-        slug,
-        category,
-        projectDate,
-        content,
-        projectContent,
-        location,
-        lga,
-        state,
-        latitude,
-        longitude,
-        isFeatured,
-        orderRank,
-        "projectImage": projectImage.asset->url,
-        impactMetrics
+        ${PROJECT_CORE_FIELDS},
+        orderRank
       }
     `);
 
@@ -493,24 +522,7 @@ export async function getProjectsForGallery(): Promise<Project[]> {
   try {
     const projects = await client.fetch(`
       *[_type == "project"] | order(projectDate desc, _createdAt desc) {
-        _id,
-        title,
-        excerpt,
-        slug,
-        category,
-        projectDate,
-        content,
-        projectContent,
-        location,
-        lga,
-        state,
-        latitude,
-        longitude,
-        isFeatured,
-        featuredRank,
-        "projectImage": projectImage.asset->url,
-        "galleryImages": content[].asset->url,
-        impactMetrics
+        ${PROJECT_CORE_FIELDS}
       }
     `);
 

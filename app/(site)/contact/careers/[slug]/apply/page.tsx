@@ -2,7 +2,7 @@ import { Container } from '@/components/ui/container';
 import { Hero } from '@/components/ui/hero';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { JobApplicationForm } from '@/components/job-application-form';
-import { getJobPosting } from '@/sanity/lib/client';
+import { getJobPosting } from '@/sanity/lib/queries';
 import { notFound } from 'next/navigation';
 
 interface ApplyPageProps {
