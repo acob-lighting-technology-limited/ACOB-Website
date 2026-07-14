@@ -1,8 +1,6 @@
 /** @type {import('next').NextConfig} */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const nextConfig = {
-  transpilePackages: ['docx', 'exceljs', 'pdf-lib'],
-
   outputFileTracingRoot: process.cwd(),
   images: {
     formats: ['image/webp', 'image/avif'],
