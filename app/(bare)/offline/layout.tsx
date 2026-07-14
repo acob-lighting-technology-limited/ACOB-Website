@@ -1,5 +1,5 @@
+import type React from 'react';
 import type { Metadata } from 'next';
-import '../../app/globals.css';
 
 export const metadata: Metadata = {
   title: 'Offline | ACOB',
@@ -12,9 +12,5 @@ export default function OfflineLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  );
+  return children;
 }

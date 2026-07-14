@@ -1,6 +1,6 @@
 import type React from 'react';
 
-export default function StudioLayout({
+export default function BareLayout({
   children,
 }: {
   children: React.ReactNode;

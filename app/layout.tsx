@@ -7,14 +7,8 @@ import { Plus_Jakarta_Sans } from 'next/font/google';
 import { Providers } from '@/components/providers/session-provider';
 import { QueryProvider } from '@/providers/query-provider';
 import { NProgressProvider } from '@/components/providers/nprogress-provider';
-import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
-import { ScrollToTop } from '@/components/ui/scroll-to-top';
 import { Toaster } from 'sonner';
-import { ChatBot } from '@/components/features/chat-bot';
-import { headers } from 'next/headers';
 
-import { ChatErrorBoundary } from '@/components/error-boundary/error-boundary';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { StructuredData } from '@/components/seo/structured-data';
@@ -88,19 +82,11 @@ export const metadata: Metadata = {
   // If you need GSC verification later, add: verification: { google: 'your-actual-code' }
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const headersList = await headers();
-  const pathname = headersList.get('x-pathname') || '';
-
-  // Routes that should not have header and footer
-  const isStudioRoute = pathname.startsWith('/studio');
-  const isOfflineRoute = pathname.startsWith('/offline');
-  const shouldHideLayout = isStudioRoute || isOfflineRoute;
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${plusJakarta.className} ${plusJakarta.variable}`}>
@@ -117,30 +103,9 @@ export default async function RootLayout({
                   theme="system"
                   richColors
                 />
-                <div className="flex min-h-screen flex-col w-full bg-background  transition-colors duration-500 selection:bg-primary selection:text-primary-foreground ">
-                  {!shouldHideLayout && <Header />}
-                  <main
-                    id="main-content"
-                    className={
-                      shouldHideLayout
-                        ? 'flex-1'
-                        : 'flex-1 border-b border-b-muted'
-                    }
-                  >
-                    {children}
-                  </main>
-                  {!shouldHideLayout && <Footer />}
-                  {!shouldHideLayout && (
-                    <div className="z-50 fixed -bottom-2 right-0 flex flex-col gap-2 items-center w-16 h-32 sm:w-20 sm:h-40">
-                      <ScrollToTop />
-                      <ChatErrorBoundary>
-                        <ChatBot />
-                      </ChatErrorBoundary>
-                    </div>
-                  )}
-                  <Analytics />
-                  <SpeedInsights />
-                </div>
+                {children}
+                <Analytics />
+                <SpeedInsights />
               </ImageProtectionProvider>
             </NProgressProvider>
           </QueryProvider>
