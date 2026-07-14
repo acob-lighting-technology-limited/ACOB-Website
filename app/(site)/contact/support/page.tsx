@@ -1,5 +1,3 @@
-'use client';
-
 import { Container } from '@/components/ui/container';
 import { Hero } from '@/components/ui/hero';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
@@ -14,13 +12,12 @@ import {
 
 import Link from 'next/link';
 
-import {
-  supportMethods,
-  faqItems,
-  contactLinks,
-} from '@/lib/data/support-data';
+import { supportMethods, faqItems } from '@/lib/data/support-data';
 import { FadeIn } from '@/components/animations/FadeIn';
-import { CONTACT_INFO } from '@/lib/constants/app.constants';
+import {
+  QuickContact,
+  MoreContactOptions,
+} from '@/components/contact/contact-sidebar';
 
 export default function SupportPage() {
   const breadcrumbItems = [
@@ -188,70 +185,8 @@ export default function SupportPage() {
 
           {/* Sidebar */}
           <div className="space-y-4 md:space-y-6 sticky top-20 self-start">
-            {/* Quick Contact */}
-            <Card className="!border-t-2 !border-t-primary border border-border">
-              <CardContent className="p-4 md:p-5 lg:p-6">
-                <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">
-                  Quick Contact
-                </h3>
-                <div className="space-y-2.5 md:space-y-3">
-                  <div className="p-2.5 md:p-3 rounded-lg bg-muted/30 border border-border">
-                    <p className="text-xs text-muted-foreground mb-1">Phone</p>
-                    <a
-                      href={`tel:${CONTACT_INFO.phone.primary.replace(/\s/g, '')}`}
-                      className="text-xs md:text-sm font-semibold text-primary hover:underline block"
-                    >
-                      {CONTACT_INFO.phone.primary}
-                    </a>
-                  </div>
-                  <div className="p-2.5 md:p-3 rounded-lg bg-muted/30 border border-border">
-                    <p className="text-xs text-muted-foreground mb-1">Email</p>
-                    <div className="space-y-1">
-                      <a
-                        href={`mailto:${CONTACT_INFO.email.support}`}
-                        className="text-xs md:text-sm font-semibold text-primary hover:underline block break-all"
-                      >
-                        {CONTACT_INFO.email.support}
-                      </a>
-                      <a
-                        href={`mailto:${CONTACT_INFO.email.secondary}`}
-                        className="text-xs md:text-sm font-semibold text-primary hover:underline block break-all"
-                      >
-                        {CONTACT_INFO.email.secondary}
-                      </a>
-                    </div>
-                  </div>
-                  <div className="p-2.5 md:p-3 rounded-lg bg-muted/30 border border-border">
-                    <p className="text-xs text-muted-foreground mb-1">
-                      Business Hours
-                    </p>
-                    <p className="text-xs md:text-sm font-semibold">
-                      Mon - Fri: 8AM - 5PM
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* More Contact Options */}
-            <Card className="border border-border">
-              <CardContent className="p-4 md:p-5 lg:p-6">
-                <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">
-                  More Contact Options
-                </h3>
-                <div className="space-y-2">
-                  {contactLinks.map(({ href, label }) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      className="block p-2.5 md:p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors duration-500 text-xs md:text-sm font-medium border border-border"
-                    >
-                      {label}
-                    </Link>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <QuickContact emailAudience="support" phones="primary" showHours />
+            <MoreContactOptions excludeHref="/contact/support" />
           </div>
         </div>
       </Container>

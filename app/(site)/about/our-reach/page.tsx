@@ -18,7 +18,7 @@ import { Container } from '@/components/ui/container';
 import { Hero } from '@/components/ui/hero';
 import { SectionHeader } from '@/components/ui/section-header';
 import { NigeriaReachSection } from '@/components/sections/nigeria-reach-section';
-import { COMPANY_INFO } from '@/lib/constants';
+import { COMPANY_STATS } from '@/lib/constants/app.constants';
 import { getProjectsForListing } from '@/sanity/lib/queries';
 
 export const metadata: Metadata = {
@@ -33,14 +33,14 @@ const reachHighlights = [
   {
     icon: MapPin,
     label: 'Communities Served',
-    value: `${COMPANY_INFO.stats.communitiesServed}+`,
+    value: `${COMPANY_STATS.communitiesServed}+`,
     description:
       'Communities with delivered clean energy and lighting infrastructure.',
   },
   {
     icon: Grid3x3,
     label: 'Installed Capacity',
-    value: `${COMPANY_INFO.stats.totalCapacityMW}MW+`,
+    value: `${COMPANY_STATS.totalCapacityMW}MW+`,
     description:
       'Combined deployed capacity powering productive use and essential services.',
   },
@@ -54,7 +54,7 @@ const reachHighlights = [
   {
     icon: Zap,
     label: 'Installed Projects',
-    value: `${COMPANY_INFO.stats.projectsCompleted}+`,
+    value: `${COMPANY_STATS.projectsCompleted}+`,
     description:
       'Completed projects delivered across communities, institutions, and commercial sites.',
   },

@@ -11,7 +11,7 @@ import { Container } from '@/components/ui/container';
 import { Hero } from '@/components/ui/hero';
 import { aboutLeadershipQuotes } from '@/lib/data/about-overview-data';
 import { CoreValuesSection } from '@/components/sections/core-values-section';
-import { COMPANY_INFO } from '@/lib/constants';
+import { COMPANY_STATS } from '@/lib/constants/app.constants';
 import {
   ANNIVERSARY_2026,
   isAnniversaryYear2026,
@@ -123,17 +123,17 @@ export default function OurStoryPage() {
                     {
                       icon: Users,
                       label: 'Staff Strength',
-                      value: `${COMPANY_INFO.stats.staffStrength}+`,
+                      value: `${COMPANY_STATS.staffStrength}+`,
                     },
                     {
                       icon: MapPin,
                       label: 'Communities Served',
-                      value: `${COMPANY_INFO.stats.communitiesServed}+`,
+                      value: `${COMPANY_STATS.communitiesServed}+`,
                     },
                     {
                       icon: Briefcase,
                       label: 'Projects Commissioned',
-                      value: `${COMPANY_INFO.stats.projectsCompleted}+`,
+                      value: `${COMPANY_STATS.projectsCompleted}+`,
                     },
                   ].map((item, index) => {
                     const Icon = item.icon;

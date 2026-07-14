@@ -45,28 +45,28 @@ const strategicPillars = [
   },
 ];
 
-import { COMPANY_INFO } from '@/lib/constants';
+import { COMPANY_STATS } from '@/lib/constants/app.constants';
 
 const missionMetrics = [
   {
     icon: Users,
     label: 'People to Impact',
-    value: `${(COMPANY_INFO.stats.peopleToImpact / 1000000).toFixed(0)}M+`,
+    value: `${(COMPANY_STATS.peopleToImpact / 1000000).toFixed(0)}M+`,
   },
   {
     icon: Lightbulb,
     label: 'All-in-One Streetlights',
-    value: `${(COMPANY_INFO.stats.streetlights / 1000000).toFixed(0)}M`,
+    value: `${(COMPANY_STATS.streetlights / 1000000).toFixed(0)}M`,
   },
   {
     icon: Grid3x3,
     label: 'Mini-Grid Deployments',
-    value: `${COMPANY_INFO.stats.miniGridDeployments}+`,
+    value: `${COMPANY_STATS.miniGridDeployments}+`,
   },
   {
     icon: Zap,
     label: 'Renewable Energy Capacity',
-    value: `${COMPANY_INFO.stats.renewableEnergyCapacityMW} MW`,
+    value: `${COMPANY_STATS.renewableEnergyCapacityMW} MW`,
   },
 ];
 
