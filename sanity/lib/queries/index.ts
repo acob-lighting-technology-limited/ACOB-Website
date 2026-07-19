@@ -37,12 +37,12 @@ export {
   getProjectsPaginated,
   getProject,
   getFeaturedProjects,
-  getProjectsByCategory,
+  getProjectsByCategoryPaginated,
+  getProjectsBySubcategoryPaginated,
   getRelatedProjects,
   getUniqueProjectStates,
   getRecentProjectImages,
-  getProjectsForGallery,
-  testSanityConnection,
+  getProjectGalleryImages,
 } from './projects';
 
 // ============================================================================
