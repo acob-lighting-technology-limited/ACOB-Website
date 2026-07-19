@@ -166,9 +166,11 @@ export async function POST(req: NextRequest) {
 
               if (intent.filters?.category) {
                 filteredProjects = filteredProjects.filter((p: Project) =>
-                  p.category
-                    ?.toLowerCase()
-                    .includes(intent.filters!.category!.toLowerCase()),
+                  p.categories?.some(c =>
+                    c
+                      .toLowerCase()
+                      .includes(intent.filters!.category!.toLowerCase()),
+                  ),
                 );
               }
 
