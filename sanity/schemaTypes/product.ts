@@ -107,6 +107,10 @@ export const productType = defineType({
               type: 'string',
               title: 'Alternative text',
               description: 'Describe the image for accessibility',
+              validation: Rule =>
+                Rule.required().error(
+                  'Alt text is required for SEO and accessibility.',
+                ),
             },
           ],
           validation: Rule => Rule.required(),
@@ -129,6 +133,10 @@ export const productType = defineType({
                   type: 'string',
                   title: 'Alternative text',
                   description: 'Describe the image for accessibility',
+                  validation: Rule =>
+                    Rule.required().error(
+                      'Alt text is required for SEO and accessibility.',
+                    ),
                 },
               ],
             },
@@ -151,6 +159,10 @@ export const productType = defineType({
                   type: 'string',
                   title: 'Alternative text',
                   description: 'Describe the video for accessibility',
+                  validation: Rule =>
+                    Rule.required().error(
+                      'Alt text is required for accessibility.',
+                    ),
                 },
               ],
             },

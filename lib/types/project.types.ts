@@ -5,7 +5,8 @@
  */
 
 import type { PortableTextBlock } from '@portabletext/types';
-import type { SanityImage, SanitySlug } from './sanity.types';
+import type { SanitySlug } from './sanity.types';
+import type { SEOMetadata } from './update.types';
 
 // ============================================================================
 // PROJECT IMPACT METRICS
@@ -29,6 +30,16 @@ export interface ProjectImpactMetrics {
   annualCO2Reduction?: number;
   /** Annual energy output in kWh */
   annualEnergyOutput?: number;
+  /** Battery storage capacity in kWh */
+  bess?: number;
+  /** Percentage of diesel generator reduction */
+  dieselReduc?: number;
+  /** Percentage of operational energy cost savings */
+  costSavings?: number;
+  /** Percentage of patient care increment */
+  patientCareInc?: number;
+  /** Percentage of system energy uptime */
+  uptime?: number;
 }
 
 // ============================================================================
@@ -36,25 +47,26 @@ export interface ProjectImpactMetrics {
 // ============================================================================
 
 /**
- * Project content structure (new format)
+ * Structured content block for a project (description template + media)
  */
 export interface ProjectContent {
-  /** Description type selector */
-  description?:
-    | 'description1'
-    | 'description2'
-    | 'description3'
-    | 'description4'
-    | 'description5'
-    | 'description6'
-    | 'description7'
-    | 'custom';
-  /** Custom description using Portable Text */
-  customDescription?: PortableTextBlock[];
-  /** Project images */
+  /** Description template name (e.g., 'description1', 'custom') */
+  template?: string;
+  /** Description template name (alias used by components) */
+  description?: string;
+  /** Raw custom narrative text */
+  narrative?: string;
+  /** Custom description text (alias used by components) */
+  customDescription?: string;
+  /** Portable Text body */
+  body?: PortableTextBlock[];
+  /** Images and videos attached to this content block */
   images?: Array<{
     _type?: string;
-    asset: { url: string };
+    asset: {
+      url: string;
+      metadata?: { dimensions?: { width?: number; height?: number } };
+    };
     alt?: string;
     title?: string;
   }>;
@@ -96,18 +108,35 @@ export interface Project {
   title: string;
   /** Short excerpt/summary */
   excerpt?: string;
-  /** Full description */
-  description?: string;
   /** URL slug */
   slug: SanitySlug;
-  /** Project category (e.g., "Mini-Grid", "Street Lighting") */
-  category: string;
+  /** Project categories (referenced dynamic categories) */
+  categories: string[];
+  /** Primary category slug (legacy single-value shortcut) */
+  category?: string;
+  /** Sub-category within one of the categories (e.g., "isolated", "residential") */
+  subcategory?: string;
   /** Project completion/start date */
+  publishedAt?: string;
+  /** Legacy projectDate for compatibility */
   projectDate?: string;
-  /** Legacy content (Portable Text) - will be deprecated */
-  content?: PortableTextBlock[];
-  /** New structured content */
+  /** Legacy projectImage for compatibility */
+  projectImage?: string;
+  /** Legacy description field (use excerpt instead) */
+  description?: string;
+  /** Description template name (e.g., 'description1', 'custom') */
+  descriptionTemplate?: string;
+  /** Structured project content (description + media) */
   projectContent?: ProjectContent;
+  /** Custom description narrative (Portable Text) */
+  content?: PortableTextBlock[];
+  /** Project images and videos gallery */
+  gallery?: Array<{
+    _type?: string;
+    asset: { url: string };
+    alt?: string;
+    title?: string;
+  }>;
   /** Project location (city/area) */
   location: string;
   /** Local Government Area */
@@ -118,20 +147,24 @@ export interface Project {
   latitude?: number;
   /** Longitude for the homepage map marker */
   longitude?: number;
-  /** Main project image URL */
-  projectImage: string;
-  /** Sanity image references (for compatibility) */
-  images?: SanityImage[];
-  /** Gallery images extracted from content */
-  galleryImages?: string[];
+  /** Main project cover image URL */
+  coverImage?: string;
   /** Whether project is featured */
   isFeatured?: boolean;
   /** Featured ranking (lower = higher priority) */
   featuredRank?: number;
   /** Project impact metrics */
   impactMetrics?: ProjectImpactMetrics;
+  /** Custom metrics specific to this project */
+  customMetrics?: Array<{
+    label: string;
+    value: string;
+    icon?: string;
+  }>;
   /** Project comments */
   comments?: ProjectComment[];
+  /** SEO settings */
+  seo?: SEOMetadata;
   /** Creation timestamp */
   _createdAt: string;
   /** Last update timestamp */

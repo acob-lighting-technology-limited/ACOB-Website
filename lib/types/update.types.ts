@@ -5,7 +5,37 @@
  */
 
 import type { PortableTextBlock } from '@portabletext/types';
-import type { SanitySlug, SanityImageUrl } from './sanity.types';
+import type { SanitySlug } from './sanity.types';
+
+// ============================================================================
+// TAXONOMY TYPES
+// ============================================================================
+
+export interface Author {
+  _id: string;
+  name: string;
+  avatar?: string;
+  bio?: string;
+}
+
+export interface Category {
+  _id: string;
+  title: string;
+  slug: SanitySlug;
+  description?: string;
+}
+
+export interface Tag {
+  _id: string;
+  title: string;
+  slug: SanitySlug;
+}
+
+export interface SEOMetadata {
+  metaTitle?: string;
+  metaDescription?: string;
+  shareImage?: any;
+}
 
 // ============================================================================
 // UPDATE POST
@@ -27,14 +57,20 @@ export interface UpdatePost {
   excerpt: string;
   /** Publication date */
   publishedAt: string;
-  /** Author name */
-  author: string;
-  /** Post category */
+  /** Author name or reference */
+  author: string | Author;
+  /** Post primary category slug (legacy compatibility) */
   category?: string;
-  /** Post tags */
+  /** Post categories as slug array (from GROQ projection) */
+  categories: string[];
+  /** Post tags as slug array (from GROQ projection) */
   tags?: string[];
-  /** Featured image URL */
+  /** Featured cover image URL (legacy name, maps to coverImage) */
   featuredImage?: string;
+  /** Featured cover image URL */
+  coverImage?: string;
+  /** SEO metadata */
+  seo?: SEOMetadata;
   /** Creation timestamp */
   _createdAt: string;
   /** Last update timestamp */
@@ -66,10 +102,10 @@ export interface BlogPost {
     /** Author name */
     name: string;
     /** Author image */
-    image?: SanityImageUrl;
+    image?: any;
   };
   /** Main post image */
-  mainImage?: SanityImageUrl;
+  mainImage?: any;
   /** Post categories */
   categories: string[];
   /** Creation timestamp */

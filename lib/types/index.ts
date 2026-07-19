@@ -41,7 +41,14 @@ export type {
 // UPDATE/BLOG TYPES
 // ============================================================================
 
-export type { UpdatePost, BlogPost } from './update.types';
+export type {
+  Author,
+  Category,
+  Tag,
+  SEOMetadata,
+  UpdatePost,
+  BlogPost,
+} from './update.types';
 
 // ============================================================================
 // PRODUCT TYPES
