@@ -25,13 +25,21 @@ export async function getRandomProjectImages(
     const allImages: RandomImage[] = [];
 
     projects.forEach((project: Project) => {
-      // Note: images from getProjects() have url and metadata structure directly
+      // Add coverImage
+      if (project.projectImage) {
+        allImages.push({
+          url: project.projectImage,
+          alt: `${project.title} - ${project.location}`,
+          projectTitle: project.title,
+        });
+      }
+      // Add gallery images
       if (
-        project.images &&
-        Array.isArray(project.images) &&
-        project.images.length > 0
+        project.gallery &&
+        Array.isArray(project.gallery) &&
+        project.gallery.length > 0
       ) {
-        (project.images as any[]).forEach((image: FetchableImage) => {
+        (project.gallery as any[]).forEach((image: FetchableImage) => {
           const imageUrl = image?.url || image?.asset?.url;
           if (imageUrl) {
             allImages.push({
@@ -83,13 +91,17 @@ export async function getRandomBackgroundImage(): Promise<string> {
     const allImages: string[] = [];
 
     projects.forEach((project: Project) => {
-      // Note: images from getProjects() have url and metadata structure directly
+      // Add coverImage
+      if (project.projectImage) {
+        allImages.push(project.projectImage);
+      }
+      // Add gallery images
       if (
-        project.images &&
-        Array.isArray(project.images) &&
-        project.images.length > 0
+        project.gallery &&
+        Array.isArray(project.gallery) &&
+        project.gallery.length > 0
       ) {
-        (project.images as any[]).forEach((image: FetchableImage) => {
+        (project.gallery as any[]).forEach((image: FetchableImage) => {
           const imageUrl = image?.url || image?.asset?.url;
           if (imageUrl) {
             allImages.push(imageUrl);

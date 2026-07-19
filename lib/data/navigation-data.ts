@@ -1,4 +1,132 @@
-export const navigationItems = [
+export interface NavSubSubItem {
+  name: string;
+  href: string;
+  description?: string;
+  icon?: string;
+}
+
+export interface NavSubItem {
+  name: string;
+  href: string;
+  description: string;
+  icon: string;
+  subItems?: NavSubSubItem[];
+}
+
+export interface NavItem {
+  name: string;
+  href: string;
+  subItems: NavSubItem[];
+}
+
+const projectSubItems: NavSubItem[] = [
+  {
+    name: 'Rural Electrification',
+    href: '/projects/category/rural-electrification',
+    description: 'Bringing power to remote communities',
+    icon: 'Home',
+  },
+  {
+    name: 'Mini-Grids',
+    href: '/projects/category/mini-grids',
+    description: 'Community solar mini-grid systems',
+    icon: 'Battery',
+    subItems: [
+      {
+        name: 'Isolated',
+        href: '/projects/category/mini-grids/isolated',
+        description: 'Standalone off-grid mini-grids',
+        icon: 'Home',
+      },
+      {
+        name: 'Interconnected',
+        href: '/projects/category/mini-grids/interconnected',
+        description: 'Grid-connected mini-grids',
+        icon: 'Handshake',
+      },
+    ],
+  },
+  {
+    name: 'Commercial Installations',
+    href: '/projects/category/commercial-installations',
+    description: 'Solar solutions for buildings',
+    icon: 'Building2',
+    subItems: [
+      {
+        name: 'Residential',
+        href: '/projects/category/commercial-installations/residential',
+        description: 'Homes and residential estates',
+        icon: 'Home',
+      },
+      {
+        name: 'Commercial',
+        href: '/projects/category/commercial-installations/commercial',
+        description: 'Businesses and offices',
+        icon: 'Building2',
+      },
+    ],
+  },
+  {
+    name: 'Street Lighting',
+    href: '/projects/category/street-lighting',
+    description: 'Public lighting infrastructure projects',
+    icon: 'Lightbulb',
+  },
+  {
+    name: 'Healthcare Projects',
+    href: '/projects/category/healthcare-projects',
+    description: 'Powering hospitals and clinics',
+    icon: 'Heart',
+    subItems: [
+      {
+        name: 'Primary Healthcare',
+        href: '/projects/category/healthcare-projects/primary',
+        description: 'Clinics and primary health centres',
+        icon: 'Stethoscope',
+      },
+      {
+        name: 'Secondary Healthcare',
+        href: '/projects/category/healthcare-projects/secondary',
+        description: 'General and referral hospitals',
+        icon: 'Hospital',
+      },
+      {
+        name: 'Tertiary Healthcare',
+        href: '/projects/category/healthcare-projects/tertiary',
+        description: 'Teaching and specialist hospitals',
+        icon: 'Building2',
+      },
+    ],
+  },
+  {
+    name: 'Productive Use of Energy (PUE)',
+    href: '/projects/category/pue',
+    description: 'Productive use of energy projects',
+    icon: 'Zap',
+    subItems: [
+      {
+        name: 'EV Charging',
+        href: '/projects/category/pue/ev-charging',
+        description: 'Electric vehicle charging stations',
+        icon: 'Battery',
+      },
+      {
+        name: 'Irrigation',
+        href: '/projects/category/pue/irrigation',
+        description: 'Solar-powered irrigation systems',
+        icon: 'Sun',
+      },
+      {
+        name: 'CNG',
+        href: '/projects/category/pue/cng',
+        description: 'Compressed natural gas solutions',
+        icon: 'Package',
+      },
+    ],
+  },
+];
+
+export const navigationItems: NavItem[] = [
   {
     name: 'About Us',
     href: '/about',
@@ -56,78 +184,53 @@ export const navigationItems = [
     href: '/services',
     subItems: [
       {
-        name: 'Mini-Grid Solutions',
+        name: 'Rural Mini-Grid Utilities',
         href: '/services/mini-grid-solutions',
         description: 'Scalable power solutions for communities',
         icon: 'Zap',
-        // icon: 'https://www.svgrepo.com/download/477730/solar-battery-4.svg',
       },
       {
-        name: 'Captive Power Solutions',
+        name: 'Commercial & Industrial Captive Solar',
         href: '/services/captive-power-solutions',
         description: 'Dedicated power systems for businesses',
         icon: 'Lightbulb',
-        // icon: 'https://www.svgrepo.com/download/490592/bulb-lighting.svg',
       },
       {
-        name: 'Professional Energy Audit',
+        name: 'Healthcare Solarization & Infrastructure',
+        href: '/services/healthcare-solarization',
+        description: 'Powering hospitals and clinical sites',
+        icon: 'Heart',
+      },
+      {
+        name: 'Productive Use of Energy (PUE)',
+        href: '/services/productive-use-of-energy',
+        description: 'Irrigation, EV charging, and clean tech',
+        icon: 'Battery',
+      },
+      {
+        name: 'Commercial Energy Auditing & Optimization',
         href: '/services/professional-energy-audit',
         description: 'Comprehensive energy efficiency analysis',
         icon: 'BarChart3',
-        // icon: 'https://www.svgrepo.com/download/140671/seo-monitoring.svg',
       },
       {
-        name: 'Engineering Procurement & Construction',
-        href: '/services/engineering-procurement-construction',
-        description: 'End-to-end project delivery services',
-        icon: 'Settings',
-        // icon: 'https://www.svgrepo.com/download/435849/energy-distribution.svg',
-      },
-      {
-        name: 'Streetlighting Infrastructure',
+        name: 'Smart Streetlighting Infrastructure',
         href: '/services/streetlighting-infrastructure',
         description: 'Public lighting and infrastructure projects',
         icon: 'Wrench',
-        // icon: 'https://www.svgrepo.com/download/340556/license-maintenance-draft.svg',
       },
       {
-        name: 'Operations and Maintenance',
+        name: 'Operations & Maintenance (O&M) Utilities',
         href: '/services/operations-and-maintenance',
         description: '24/7 monitoring and proactive maintenance services',
         icon: 'Shield',
-        // icon: 'https://www.svgrepo.com/download/340556/license-maintenance-draft.svg',
       },
     ],
   },
   {
     name: 'Projects',
     href: '/projects',
-    subItems: [
-      {
-        name: 'Rural Electrification',
-        href: '/projects/category/rural-electrification',
-        description: 'Projects bringing power to remote areas',
-        icon: 'Home',
-      },
-      {
-        name: 'Commercial Installations',
-        href: '/projects/category/commercial-installations',
-        description: 'Solar solutions for businesses',
-        icon: 'Building2',
-      },
-      {
-        name: 'Street Lighting',
-        href: '/projects/category/street-lighting',
-        description: 'Public lighting infrastructure projects',
-        icon: 'Lightbulb',
-      },
-      {
-        name: 'Healthcare Projects',
-        href: '/projects/category/healthcare-projects',
-        description: 'Powering hospitals and clinics',
-        icon: 'Heart',
-      },
-    ],
+    subItems: projectSubItems,
   },
   {
     name: 'Updates & Media',

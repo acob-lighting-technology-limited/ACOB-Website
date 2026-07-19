@@ -75,14 +75,13 @@ export async function getAllProjectImages(): Promise<StaticImage[]> {
         });
       }
 
-      // Add content images if available
-      // Note: images from getProjects() have url and metadata structure
+      // Add gallery images if available
       if (
-        project.images &&
-        Array.isArray(project.images) &&
-        project.images.length > 0
+        project.gallery &&
+        Array.isArray(project.gallery) &&
+        project.gallery.length > 0
       ) {
-        (project.images as any[]).forEach((image: FetchableImage) => {
+        (project.gallery as any[]).forEach((image: FetchableImage) => {
           const imageUrl = image?.url || image?.asset?.url;
           if (imageUrl) {
             allImages.push({

@@ -225,7 +225,7 @@ export function searchContent(
     content.projects,
     p => p.title ?? '',
     p =>
-      [p.excerpt, p.description, p.category, p.location, p.state, p.lga]
+      [p.excerpt, p.categories?.join(' '), p.location, p.state, p.lga]
         .filter(Boolean)
         .join(' '),
     5,
