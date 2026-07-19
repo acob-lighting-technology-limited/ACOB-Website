@@ -36,22 +36,36 @@ export function ProjectContent({
   const contentMedia = useMemo(() => {
     if (useNewStructure && projectContent?.images) {
       return (projectContent.images ?? [])
-        .filter(item => item?.asset?.url)
-        .map(item => {
-          const url = item.asset.url!;
-          const isVideo =
-            (item as { _type?: string })._type === 'file' ||
-            (item as { _type?: string })._type === 'video' ||
-            !!url.match(/\.(mp4|webm|ogg|mov)$/i);
-          return {
-            src: url,
-            alt:
-              (item as { title?: string }).title ||
-              item.alt ||
-              (isVideo ? 'Project video' : 'Project image'),
-            type: (isVideo ? 'video' : 'image') as 'image' | 'video',
-          };
-        });
+        .filter(
+          (item: {
+            asset?: { url?: string };
+            alt?: string;
+            title?: string;
+            _type?: string;
+          }) => item?.asset?.url,
+        )
+        .map(
+          (item: {
+            asset: { url: string };
+            alt?: string;
+            title?: string;
+            _type?: string;
+          }) => {
+            const url = item.asset.url!;
+            const isVideo =
+              (item as { _type?: string })._type === 'file' ||
+              (item as { _type?: string })._type === 'video' ||
+              !!url.match(/\.(mp4|webm|ogg|mov)$/i);
+            return {
+              src: url,
+              alt:
+                (item as { title?: string }).title ||
+                item.alt ||
+                (isVideo ? 'Project video' : 'Project image'),
+              type: (isVideo ? 'video' : 'image') as 'image' | 'video',
+            };
+          },
+        );
     }
     if (content) {
       const images: Array<{
@@ -201,23 +215,37 @@ export function ProjectContent({
 
   // Render new content structure
   if (useNewStructure && projectContent) {
-    const { description, customDescription } = projectContent;
+    const rawDescription = projectContent.description;
+    const isHealthcare =
+      Array.isArray(project?.categories) &&
+      project.categories.includes('healthcare-projects');
+    const description =
+      rawDescription || (isHealthcare ? 'healthcare1' : 'description1');
+    const { customDescription } = projectContent;
 
     // Get description paragraphs based on template or custom
     const descriptionParagraphs =
       description && description !== 'custom'
-        ? generateProjectDescription(description, {
-            kwp: project?.impactMetrics?.kwp,
-            systemType: project?.impactMetrics?.systemType,
-            location: project?.location,
-            lga: project?.lga,
-            state: project?.state,
-            beneficiaries: project?.impactMetrics?.beneficiaries,
-            jobsDirect: project?.impactMetrics?.jobsCreatedDirectly,
-            jobsIndirect: project?.impactMetrics?.jobsCreatedIndirectly,
-            annualEnergyOutput: project?.impactMetrics?.annualEnergyOutput,
-            annualCO2Reduction: project?.impactMetrics?.annualCO2Reduction,
-          })
+        ? generateProjectDescription(
+            description as Parameters<typeof generateProjectDescription>[0],
+            {
+              kwp: project?.impactMetrics?.kwp,
+              systemType: project?.impactMetrics?.systemType,
+              location: project?.location,
+              lga: project?.lga,
+              state: project?.state,
+              beneficiaries: project?.impactMetrics?.beneficiaries,
+              jobsDirect: project?.impactMetrics?.jobsCreatedDirectly,
+              jobsIndirect: project?.impactMetrics?.jobsCreatedIndirectly,
+              annualEnergyOutput: project?.impactMetrics?.annualEnergyOutput,
+              annualCO2Reduction: project?.impactMetrics?.annualCO2Reduction,
+              bess: project?.impactMetrics?.bess,
+              dieselReduc: project?.impactMetrics?.dieselReduc,
+              costSavings: project?.impactMetrics?.costSavings,
+              patientCareInc: project?.impactMetrics?.patientCareInc,
+              uptime: project?.impactMetrics?.uptime,
+            },
+          )
         : [];
 
     return (
@@ -247,74 +275,86 @@ export function ProjectContent({
 
           {/* Render custom description */}
           {description === 'custom' && customDescription && (
-            <PortableText value={customDescription} components={components} />
+            <p className="text-foreground/90 dark:text-foreground/70 text-base lg:text-lg leading-relaxed">
+              {customDescription}
+            </p>
           )}
         </div>
 
         {/* Render images and videos in grid */}
         {projectContent.images && projectContent.images.length > 0 && (
           <div className="mt-6 flex flex-wrap -mx-2">
-            {projectContent.images.map((item, index) => {
-              if (!item?.asset?.url) {
-                return null;
-              }
+            {projectContent.images.map(
+              (
+                item: {
+                  asset?: { url?: string };
+                  alt?: string;
+                  title?: string;
+                  _type?: string;
+                },
+                index: number,
+              ) => {
+                if (!item?.asset?.url) {
+                  return null;
+                }
 
-              const url = item.asset.url;
-              const isVideo =
-                (item as { _type?: string })._type === 'file' ||
-                (item as { _type?: string })._type === 'video' ||
-                url.match(/\.(mp4|webm|ogg|mov)$/i);
-              const mediaTitle =
-                (item as { title?: string }).title ||
-                item.alt ||
-                (isVideo ? 'Project video' : 'Project image');
+                const url = item.asset.url;
+                const isVideo =
+                  (item as { _type?: string })._type === 'file' ||
+                  (item as { _type?: string })._type === 'video' ||
+                  url.match(/\.(mp4|webm|ogg|mov)$/i);
+                const mediaTitle =
+                  (item as { title?: string }).title ||
+                  item.alt ||
+                  (isVideo ? 'Project video' : 'Project image');
 
-              return (
-                <div
-                  key={index}
-                  className="inline-block w-1/2 lg:w-1/3 px-2 my-4"
-                >
-                  <button
-                    onClick={() => handleImageClick(index)}
-                    className="relative w-full aspect-[4/3] group cursor-zoom-in overflow-hidden rounded-lg"
+                return (
+                  <div
+                    key={index}
+                    className="inline-block w-1/2 lg:w-1/3 px-2 my-4"
                   >
-                    {isVideo ? (
-                      <>
-                        <video
-                          src={url}
-                          className="rounded-lg object-cover w-full h-full transition-all duration-300 group-hover:shadow-2xl group-hover:scale-[1.02]"
-                          controls={false}
-                          muted
-                          playsInline
-                          aria-label={mediaTitle}
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 rounded-lg flex items-center justify-center">
-                          <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-sm font-medium bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm">
-                            Click to expand
-                          </span>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <Image
-                          src={url}
-                          alt={mediaTitle}
-                          width={800}
-                          height={600}
-                          sizes="(max-width: 1024px) 50vw, 33vw"
-                          className="rounded-lg object-cover w-full h-full transition-all duration-300 group-hover:shadow-2xl group-hover:scale-[1.02]"
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 rounded-lg flex items-center justify-center">
-                          <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-sm font-medium bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm">
-                            Click to expand
-                          </span>
-                        </div>
-                      </>
-                    )}
-                  </button>
-                </div>
-              );
-            })}
+                    <button
+                      onClick={() => handleImageClick(index)}
+                      className="relative w-full aspect-[4/3] group cursor-zoom-in overflow-hidden rounded-lg"
+                    >
+                      {isVideo ? (
+                        <>
+                          <video
+                            src={url}
+                            className="rounded-lg object-cover w-full h-full transition-all duration-300 group-hover:shadow-2xl group-hover:scale-[1.02]"
+                            controls={false}
+                            muted
+                            playsInline
+                            aria-label={mediaTitle}
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 rounded-lg flex items-center justify-center">
+                            <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-sm font-medium bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm">
+                              Click to expand
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <Image
+                            src={url}
+                            alt={mediaTitle}
+                            width={800}
+                            height={600}
+                            sizes="(max-width: 1024px) 50vw, 33vw"
+                            className="rounded-lg object-cover w-full h-full transition-all duration-300 group-hover:shadow-2xl group-hover:scale-[1.02]"
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 rounded-lg flex items-center justify-center">
+                            <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-sm font-medium bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm">
+                              Click to expand
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                );
+              },
+            )}
           </div>
         )}
 

@@ -2,7 +2,7 @@ import { Container } from '@/components/ui/container';
 import { Hero } from '@/components/ui/hero';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { GalleryClient } from './gallery-client';
-import { getProjectsForGallery, urlFor } from '@/sanity/lib/queries';
+import { getProjects, urlFor } from '@/sanity/lib/queries';
 import type { Project } from '@/lib/types';
 import type { PortableTextBlock } from '@portabletext/types';
 
@@ -14,7 +14,7 @@ export default async function GalleryPage() {
   ];
 
   // Fetch projects with gallery images
-  const projects = await getProjectsForGallery();
+  const projects = await getProjects();
 
   // Convert kebab-case to title case
   const formatCategoryName = (category: string) => {
@@ -29,8 +29,8 @@ export default async function GalleryPage() {
   const seenUrls = new Set<string>(); // Track unique URLs to avoid duplicates
 
   projects.forEach((project: Project) => {
-    const categoryName = project.category
-      ? formatCategoryName(project.category)
+    const categoryName = project.categories?.[0]
+      ? formatCategoryName(project.categories[0])
       : 'Solar Projects';
 
     // Add the main project image

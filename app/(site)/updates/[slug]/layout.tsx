@@ -36,7 +36,11 @@ export async function generateMetadata({
       type: 'article',
       url: `https://www.acoblighting.com/updates/${slug}`,
       publishedTime: post.publishedAt,
-      authors: [post.author],
+      authors: [
+        typeof post.author === 'string'
+          ? post.author
+          : (post.author as any)?.name || 'ACOB Lighting',
+      ],
       images: [
         {
           url: ogImage,

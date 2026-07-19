@@ -18,6 +18,8 @@ import { ShareCopy } from '@/components/updates/share-copy';
 import { ProjectContent } from './project-content';
 import { ImpactMetrics } from '@/components/projects/impact-metrics';
 import { StateProjectsView } from './state-projects-view';
+import { CATEGORY_INFO } from '@/lib/constants/project-categories';
+import { getCalculatedImpactMetrics } from '@/lib/utils';
 
 interface ProjectPageProps {
   params: Promise<{
@@ -27,35 +29,29 @@ interface ProjectPageProps {
 
 // Slug to Sanity state value mapping
 const stateMapping: Record<string, string> = {
-  abuja: 'FCT',
-  edo: 'Edo',
-  delta: 'Delta',
-  rivers: 'Rivers',
-  kogi: 'Kogi',
-  nasarawa: 'Nasarawa',
   jigawa: 'Jigawa',
+  borno: 'Borno',
+  nasarawa: 'Nasarawa',
   kaduna: 'Kaduna',
   kano: 'Kano',
-  ogun: 'Ogun',
+  kogi: 'Kogi',
+  rivers: 'Rivers',
   enugu: 'Enugu',
-  borno: 'Borno',
-  ondo: 'Ondo',
+  delta: 'Delta',
 };
 
 // Display name mapping
 const stateDisplayMapping: Record<string, string> = {
-  abuja: 'Abuja (FCT)',
-  edo: 'Edo State',
-  delta: 'Delta State',
-  rivers: 'Rivers State',
-  kogi: 'Kogi State',
-  nasarawa: 'Nasarawa State',
   jigawa: 'Jigawa State',
+  borno: 'Borno State',
+  nasarawa: 'Nasarawa State',
   kaduna: 'Kaduna State',
   kano: 'Kano State',
-  ogun: 'Ogun State',
+  kogi: 'Kogi State',
+  rivers: 'Rivers State',
   enugu: 'Enugu State',
-  borno: 'Borno State',
+  delta: 'Delta State',
+  abuja: 'Abuja (FCT)',
   ondo: 'Ondo State',
 };
 
@@ -73,6 +69,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   // 1. Try to fetch a single project
   const project = await getProject(slug);
+
+  if (project) {
+    project.impactMetrics = getCalculatedImpactMetrics(
+      project,
+      project.impactMetrics,
+    );
+  }
 
   // 2. If no project, check if it's a state slug
   if (!project) {
@@ -96,11 +99,46 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     notFound();
   }
 
-  // Fetch all projects and filter out the current one to show related projects
+  // Fetch all projects and calculate relevance score to filter related projects
   const allProjects = await getProjects();
+  const currentCategories =
+    project.categories || (project.category ? [project.category] : []);
+  const currentSubcategory = project.subcategory;
+
   const relatedProjects = allProjects
     .filter((p: Project) => p.slug.current !== slug)
-    .slice(0, 3); // Show only 3 related projects
+    .map((p: Project) => {
+      let score = 0;
+      const pCategories = p.categories || (p.category ? [p.category] : []);
+
+      // Share category matching
+      const sharedCategories = pCategories.filter(cat =>
+        currentCategories.includes(cat),
+      );
+      score += sharedCategories.length * 10;
+
+      // Subcategory matching
+      if (p.subcategory && p.subcategory === currentSubcategory) {
+        score += 5;
+      }
+
+      return { project: p, score };
+    })
+    .sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      // Fallback: Newer projects first
+      const dateA = a.project.projectDate
+        ? new Date(a.project.projectDate).getTime()
+        : 0;
+      const dateB = b.project.projectDate
+        ? new Date(b.project.projectDate).getTime()
+        : 0;
+      return dateB - dateA;
+    })
+    .map(item => item.project)
+    .slice(0, 3);
   const breadcrumbItems = [
     { label: 'Home', href: '/' },
     { label: 'Projects', href: '/projects' },
@@ -126,7 +164,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 Project Overview
               </h2>
               <p className="text-muted-foreground dark:text-foreground/80 leading-relaxed text-lg">
-                {project.description}
+                {project.description || project.excerpt}
               </p>
 
               {/* Project Location */}
@@ -213,10 +251,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                         </span>
                       </div>
                     )}
-                    {relatedProject.category && (
+                    {relatedProject.categories?.[0] && (
                       <div className="absolute top-3 left-3">
                         <Badge className="text-[10px] uppercase tracking-wide shadow">
-                          {relatedProject.category}
+                          {CATEGORY_INFO[relatedProject.categories[0]]?.title ??
+                            relatedProject.categories[0]}
                         </Badge>
                       </div>
                     )}

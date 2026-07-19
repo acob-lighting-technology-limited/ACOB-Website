@@ -156,7 +156,11 @@ export function UpdatesSection({ posts }: UpdatesSectionProps) {
                     <CardContent className="flex flex-1 flex-col p-4 sm:p-6">
                       {/* Date and Author */}
                       <div className="flex items-center text-xs text-muted-foreground mb-3">
-                        <span>{post.author}</span>
+                        <span>
+                          {typeof post.author === 'string'
+                            ? post.author
+                            : (post.author as any)?.name || 'ACOB Lighting'}
+                        </span>
                         <span className="mx-2">•</span>
                         <span>{formatDate(post.publishedAt)}</span>
                       </div>
@@ -235,7 +239,11 @@ export function UpdatesSection({ posts }: UpdatesSectionProps) {
                 <CardContent className="flex flex-1 flex-col p-4 sm:p-6">
                   {/* Date and Author */}
                   <div className="flex items-center text-xs text-muted-foreground mb-3">
-                    <span>{post.author}</span>
+                    <span>
+                      {typeof post.author === 'string'
+                        ? post.author
+                        : (post.author as any)?.name || 'ACOB Lighting'}
+                    </span>
                     <span className="mx-2">•</span>
                     <span>{formatDate(post.publishedAt)}</span>
                   </div>

@@ -108,7 +108,11 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
             <div className="flex items-center text-sm text-muted-foreground flex-wrap gap-2 pt-8 border-t">
               <span>{new Date(post.publishedAt).toLocaleDateString()}</span>
               <span>•</span>
-              <span>{post.author}</span>
+              <span>
+                {typeof post.author === 'string'
+                  ? post.author
+                  : (post.author as any)?.name || 'ACOB Lighting'}
+              </span>
               {post.category && (
                 <>
                   <span>•</span>

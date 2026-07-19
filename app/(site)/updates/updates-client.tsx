@@ -280,7 +280,12 @@ export default function UpdatesClient({
                           {post.author && (
                             <>
                               <User className="h-3.5 w-3.5 mr-1" />
-                              <span>{post.author}</span>
+                              <span>
+                                {typeof post.author === 'string'
+                                  ? post.author
+                                  : (post.author as any)?.name ||
+                                    'ACOB Lighting'}
+                              </span>
                             </>
                           )}
                           {post.author && post.publishedAt && (

@@ -2,29 +2,7 @@ import { Metadata } from 'next';
 import { getProjectsPaginated } from '@/sanity/lib/queries';
 import { getOgImageUrl } from '@/lib/utils/og-image';
 import type { Project } from '@/lib/types';
-
-const categoryInfo: Record<string, { title: string; description: string }> = {
-  'rural-electrification': {
-    title: 'Rural Electrification',
-    description:
-      'Projects bringing reliable solar power to off-grid communities across Nigeria.',
-  },
-  'commercial-installations': {
-    title: 'Commercial Installations',
-    description:
-      'Solar solutions for businesses, industries, and commercial facilities.',
-  },
-  'street-lighting': {
-    title: 'Street Lighting',
-    description:
-      'Public lighting infrastructure projects illuminating communities.',
-  },
-  'healthcare-projects': {
-    title: 'Healthcare Projects',
-    description:
-      'Powering hospitals, clinics, and healthcare facilities with reliable solar energy.',
-  },
-};
+import { CATEGORY_INFO } from '@/lib/constants/project-categories';
 
 export async function generateMetadata({
   params,
@@ -32,7 +10,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const info = categoryInfo[slug];
+  const info = CATEGORY_INFO[slug];
 
   if (!info) {
     return {
@@ -45,7 +23,7 @@ export async function generateMetadata({
   const result = await getProjectsPaginated({ page: 1, limit: 6 });
   const projects = result.projects;
   const categoryProject = projects.find(
-    (p: Project) => p.category === slug && p.projectImage,
+    (p: Project) => p.categories?.includes(slug) && p.projectImage,
   );
 
   const ogImage = categoryProject?.projectImage

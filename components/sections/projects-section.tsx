@@ -25,8 +25,8 @@ interface ProjectsSectionProps {
   projects: Project[];
 }
 
-export function ProjectsSection({ projects }: ProjectsSectionProps) {
-  const displayProjects = projects.slice(0, 3);
+export function ProjectsSection({ projects = [] }: ProjectsSectionProps) {
+  const displayProjects = Array.isArray(projects) ? projects.slice(0, 3) : [];
   const hasProjects = displayProjects.length > 0;
   const [api, setApi] = useState<CarouselApi>();
 
@@ -190,9 +190,7 @@ export function ProjectsSection({ projects }: ProjectsSectionProps) {
                             {project.title}
                           </h3>
                           <p className="text-sm md:text-base text-muted-foreground line-clamp-3">
-                            {project.excerpt ||
-                              project.description ||
-                              'Project details coming soon.'}
+                            {project.excerpt || 'Project details coming soon.'}
                           </p>
                         </div>
 
@@ -265,9 +263,7 @@ export function ProjectsSection({ projects }: ProjectsSectionProps) {
                         {project.title}
                       </h3>
                       <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                        {project.excerpt ||
-                          project.description ||
-                          'Project details coming soon.'}
+                        {project.excerpt || 'Project details coming soon.'}
                       </p>
                     </div>
 
