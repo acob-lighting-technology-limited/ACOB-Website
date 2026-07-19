@@ -20,14 +20,13 @@ import {
   type CarouselApi,
 } from '@/components/ui/carousel';
 import Image from 'next/image';
-
 // Local component imports
 import { MaskText } from '../animations/MaskText';
 import { FadeIn } from '../animations/FadeIn';
 
 // Data imports
 import { servicesData } from '@/lib/data';
-
+import { LucideIcons } from '@/lib/data/lucide-icons';
 const ServicesSection = React.memo(function ServicesSection() {
   const primaryServices = useMemo(() => servicesData.slice(0, 3), []);
   const additionalServices = useMemo(() => servicesData.slice(3, 6), []);
@@ -127,16 +126,31 @@ const ServicesSection = React.memo(function ServicesSection() {
                 delay={index * 0.15}
                 direction="up"
               >
-                <div className="group flex items-start gap-4 rounded-2xl border border-border bg-card/80 p-4 shadow-sm backdrop-blur supports-[backdrop-filter]:backdrop-blur-xl transition-all duration-500 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+                <Link
+                  href={`/services/${service.slug}`}
+                  className="group flex items-start gap-4 rounded-2xl border border-border bg-card/80 p-4 shadow-sm backdrop-blur supports-[backdrop-filter]:backdrop-blur-xl transition-all duration-500 hover:border-primary/30 hover:shadow-lg hover:-translate-y-1 cursor-pointer text-left"
+                >
                   <div className="relative rounded-full bg-primary/10 p-3 overflow-hidden transition-all duration-500 flex items-center justify-center group-hover:bg-primary group-hover:scale-110 h-16 w-16 flex-shrink-0">
                     <div className="absolute inset-0 bg-primary transform scale-0 transition-transform duration-500 ease-out group-hover:scale-100 rounded-full origin-center" />
-                    <Image
-                      src={service.icon || service.image || '/placeholder.svg'}
-                      alt={service.title}
-                      width={24}
-                      height={24}
-                      className="object-contain relative z-10 transition-all duration-500 group-hover:brightness-0 group-hover:invert"
-                    />
+                    {(() => {
+                      const IconComponent = service.icon
+                        ? LucideIcons[service.icon]
+                        : null;
+                      if (IconComponent) {
+                        return (
+                          <IconComponent className="h-6 w-6 relative z-10 transition-all duration-500 text-primary group-hover:text-primary-foreground group-hover:scale-110" />
+                        );
+                      }
+                      return (
+                        <Image
+                          src={service.image || '/placeholder.svg'}
+                          alt={service.title}
+                          width={24}
+                          height={24}
+                          className="object-contain relative z-10 transition-all duration-500 group-hover:brightness-0 group-hover:invert"
+                        />
+                      );
+                    })()}
                   </div>
                   <div className="space-y-2 flex-1">
                     <h4 className="text-base md:text-lg font-semibold text-foreground">
@@ -146,7 +160,7 @@ const ServicesSection = React.memo(function ServicesSection() {
                       {service.excerpt}
                     </p>
                   </div>
-                </div>
+                </Link>
               </FadeIn>
             ))}
           </div>

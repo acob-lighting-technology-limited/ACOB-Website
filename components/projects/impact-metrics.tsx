@@ -1,7 +1,18 @@
 'use client';
 
 import { ProjectImpactMetrics } from '@/lib/types';
-import { Users, Briefcase, Leaf, Zap, TrendingUp } from 'lucide-react';
+import {
+  Users,
+  Briefcase,
+  Leaf,
+  Zap,
+  TrendingUp,
+  Battery,
+  Fuel,
+  DollarSign,
+  Activity,
+  Clock,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface ImpactMetricsProps {
@@ -165,6 +176,75 @@ export function ImpactMetrics({ metrics }: ImpactMetricsProps) {
       textColor:
         'text-amber-600 dark:text-amber-400 group-hover:text-amber-700 dark:group-hover:text-amber-300',
       show: !!metrics.annualEnergyOutput,
+    },
+    {
+      icon: (
+        <Battery className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600 dark:text-indigo-400 group-hover:text-white transition-colors duration-500" />
+      ),
+      label: 'Battery Storage (BESS)',
+      value: metrics.bess,
+      unit: 'kWh',
+      color:
+        'bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800',
+      iconColor: 'bg-indigo-600 dark:bg-indigo-500',
+      textColor:
+        'text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 dark:group-hover:text-indigo-300',
+      show: !!metrics.bess,
+    },
+    {
+      icon: (
+        <Fuel className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 dark:text-red-400 group-hover:text-white transition-colors duration-500" />
+      ),
+      label: 'Diesel Displacement',
+      value: metrics.dieselReduc,
+      unit: '%',
+      color: 'bg-red-50 dark:bg-red-950/50 border-red-200 dark:border-red-800',
+      iconColor: 'bg-red-600 dark:bg-red-500',
+      textColor:
+        'text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300',
+      show: !!metrics.dieselReduc,
+    },
+    {
+      icon: (
+        <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600 dark:text-yellow-400 group-hover:text-white transition-colors duration-500" />
+      ),
+      label: 'Energy Cost Savings',
+      value: metrics.costSavings,
+      unit: '%',
+      color:
+        'bg-yellow-50 dark:bg-yellow-950/50 border-yellow-200 dark:border-yellow-800',
+      iconColor: 'bg-yellow-600 dark:bg-yellow-500',
+      textColor:
+        'text-yellow-600 dark:text-yellow-400 group-hover:text-yellow-700 dark:group-hover:text-yellow-300',
+      show: !!metrics.costSavings,
+    },
+    {
+      icon: (
+        <Activity className="h-5 w-5 sm:h-6 sm:w-6 text-rose-600 dark:text-rose-400 group-hover:text-white transition-colors duration-500" />
+      ),
+      label: 'Patient Care Increment',
+      value: metrics.patientCareInc,
+      unit: '%',
+      color:
+        'bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800',
+      iconColor: 'bg-rose-600 dark:bg-rose-500',
+      textColor:
+        'text-rose-600 dark:text-rose-400 group-hover:text-rose-700 dark:group-hover:text-rose-300',
+      show: !!metrics.patientCareInc,
+    },
+    {
+      icon: (
+        <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-cyan-600 dark:text-cyan-400 group-hover:text-white transition-colors duration-500" />
+      ),
+      label: 'System Uptime',
+      value: metrics.uptime,
+      unit: '%',
+      color:
+        'bg-cyan-50 dark:bg-cyan-950/50 border-cyan-200 dark:border-cyan-800',
+      iconColor: 'bg-cyan-600 dark:bg-cyan-500',
+      textColor:
+        'text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-700 dark:group-hover:text-cyan-300',
+      show: !!metrics.uptime,
     },
   ].filter(metric => metric.show);
 

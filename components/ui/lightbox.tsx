@@ -437,12 +437,7 @@ export function Lightbox({
                 : 'none',
               transformOrigin: 'center center',
               transition: dragging ? 'none' : 'transform 0.2s ease',
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
             }}
-            draggable={false}
-            onContextMenu={e => e.preventDefault()}
-            onDragStart={e => e.preventDefault()}
           />
         )}
       </div>

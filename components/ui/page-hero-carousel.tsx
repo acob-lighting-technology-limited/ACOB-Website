@@ -225,9 +225,7 @@ export const PageHeroCarousel = React.memo(function PageHeroCarousel({
                         sizes="100vw"
                         placeholder="blur"
                         blurDataURL={getBlurDataURL()}
-                        style={{ pointerEvents: 'none' }}
-                        data-no-protection="true"
-                        draggable={false}
+                        style={{ objectPosition: 'center' }}
                       />
                     </div>
                     {/* Dark overlay */}

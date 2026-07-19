@@ -22,11 +22,12 @@ export const ROUTE_MAP = {
   'mini-grid': '/services/mini-grid-solutions',
   'captive power': '/services/captive-power-solutions',
   'energy audit': '/services/professional-energy-audit',
-  epc: '/services/engineering-procurement-construction',
-  'engineering procurement': '/services/engineering-procurement-construction',
-  streetlighting: '/services/streetlighting-infrastructure-project-development',
-  'street lighting':
-    '/services/streetlighting-infrastructure-project-development',
+  healthcare: '/services/healthcare-solarization',
+  'healthcare solarization': '/services/healthcare-solarization',
+  pue: '/services/productive-use-of-energy',
+  'productive use': '/services/productive-use-of-energy',
+  streetlighting: '/services/streetlighting-infrastructure',
+  'street lighting': '/services/streetlighting-infrastructure',
 
   // Contact section
   quote: '/contact/quote',

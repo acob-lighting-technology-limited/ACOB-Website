@@ -6,6 +6,7 @@ interface ProjectData {
   location?: string;
   state?: string;
   category?: string;
+  subcategory?: string;
   impactMetrics?: {
     kwp?: number;
     systemType?: string;
@@ -18,7 +19,7 @@ interface ProjectData {
  * Generate project title from project data
  */
 export function generateProjectTitle(data: ProjectData): string {
-  const { location, impactMetrics, state, category } = data;
+  const { location, impactMetrics, state, category, subcategory } = data;
   const kwp = impactMetrics?.kwp;
   const systemType = impactMetrics?.systemType;
 
@@ -30,20 +31,39 @@ export function generateProjectTitle(data: ProjectData): string {
     'rural-electrification': 'Rural Electrification',
     'commercial-installations': 'Commercial Installation',
     'street-lighting': 'Street Lighting',
-    'healthcare-projects': 'Healthcare Project',
+    'healthcare-projects': 'Healthcare Projects',
   };
 
-  const categoryLabel = categoryLabels[category] || category;
+  const subcategoryLabels: Record<string, string> = {
+    primary: 'Primary Healthcare',
+    secondary: 'Secondary Healthcare',
+    tertiary: 'Tertiary Healthcare',
+    isolated: 'Isolated Mini-Grids',
+    interconnected: 'Interconnected Mini-Grids',
+  };
+
+  const detailLabel =
+    subcategory && subcategoryLabels[subcategory]
+      ? subcategoryLabels[subcategory]
+      : categoryLabels[category] || category;
+
   const stateLabel = state.toUpperCase() === 'FCT' ? 'FCT' : `${state} State`;
 
-  return `${location} Community ${kwp} kWp ${systemType} Project for ${categoryLabel}, ${stateLabel}, Nigeria`;
+  const isHealthcare = category === 'healthcare-projects';
+  const nameLabel = isHealthcare
+    ? location.toLowerCase().includes('hospital')
+      ? location
+      : `${location} General Hospital`
+    : `${location} Community`;
+
+  return `${nameLabel} ${kwp} kWp ${systemType} Project for ${detailLabel}, ${stateLabel}, Nigeria`;
 }
 
 /**
  * Generate project excerpt from project data
  */
 export function generateProjectExcerpt(data: ProjectData): string {
-  const { location, impactMetrics, state } = data;
+  const { location, impactMetrics, state, category } = data;
   const kwp = impactMetrics?.kwp;
   const systemType = impactMetrics?.systemType;
   const beneficiaries = impactMetrics?.beneficiaries;
@@ -54,10 +74,18 @@ export function generateProjectExcerpt(data: ProjectData): string {
   }
 
   const stateLabel = state.toUpperCase() === 'FCT' ? 'FCT' : `${state} State`;
-  let excerpt = `A ${kwp} kWp ${systemType} project in ${location} Community, ${stateLabel}`;
+  const isHealthcare = category === 'healthcare-projects';
+  const nameLabel = isHealthcare
+    ? location.toLowerCase().includes('hospital')
+      ? location
+      : `${location} General Hospital`
+    : `${location} Community`;
+
+  let excerpt = `A ${kwp} kWp ${systemType} project at ${nameLabel}, ${stateLabel}`;
 
   if (beneficiaries) {
-    excerpt += `, providing clean energy to ${beneficiaries.toLocaleString()}+ beneficiaries`;
+    const unit = isHealthcare ? 'patients' : 'beneficiaries';
+    excerpt += `, providing clean energy to ${beneficiaries.toLocaleString()}+ ${unit}`;
   }
 
   if (annualEnergyOutput) {

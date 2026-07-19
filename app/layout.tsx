@@ -12,7 +12,7 @@ import { Toaster } from 'sonner';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { StructuredData } from '@/components/seo/structured-data';
-import { ImageProtectionProvider } from '@/components/providers/image-protection-provider';
+
 import { FaviconSwitcher } from '@/components/favicon-switcher';
 import { ServiceWorkerRegistration } from '@/components/providers/service-worker-registration';
 
@@ -96,17 +96,15 @@ export default function RootLayout({
           <QueryProvider>
             <FaviconSwitcher />
             <NProgressProvider>
-              <ImageProtectionProvider>
-                <Toaster
-                  closeButton
-                  position="bottom-right"
-                  theme="system"
-                  richColors
-                />
-                {children}
-                <Analytics />
-                <SpeedInsights />
-              </ImageProtectionProvider>
+              <Toaster
+                closeButton
+                position="bottom-right"
+                theme="system"
+                richColors
+              />
+              {children}
+              <Analytics />
+              <SpeedInsights />
             </NProgressProvider>
           </QueryProvider>
         </Providers>

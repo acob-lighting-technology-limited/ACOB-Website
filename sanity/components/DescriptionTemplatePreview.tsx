@@ -13,6 +13,9 @@ const TEMPLATE_VALUES: DescriptionTemplate[] = [
   'description5',
   'description6',
   'description7',
+  'healthcare1',
+  'healthcare2',
+  'healthcare3',
 ];
 
 function isTemplate(value: unknown): value is DescriptionTemplate {
@@ -42,6 +45,11 @@ export function DescriptionTemplatePreview(props: StringInputProps) {
         jobsCreatedIndirectly?: number;
         annualEnergyOutput?: number;
         annualCO2Reduction?: number;
+        bess?: number;
+        dieselReduc?: number;
+        costSavings?: number;
+        patientCareInc?: number;
+        uptime?: number;
       }
     | undefined;
 
@@ -57,6 +65,11 @@ export function DescriptionTemplatePreview(props: StringInputProps) {
         jobsIndirect: impactMetrics?.jobsCreatedIndirectly,
         annualEnergyOutput: impactMetrics?.annualEnergyOutput,
         annualCO2Reduction: impactMetrics?.annualCO2Reduction,
+        bess: impactMetrics?.bess,
+        dieselReduc: impactMetrics?.dieselReduc,
+        costSavings: impactMetrics?.costSavings,
+        patientCareInc: impactMetrics?.patientCareInc,
+        uptime: impactMetrics?.uptime,
       })
     : [];
 

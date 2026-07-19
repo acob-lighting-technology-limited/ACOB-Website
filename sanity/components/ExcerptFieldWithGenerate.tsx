@@ -8,6 +8,9 @@ import {
 export function ExcerptFieldWithGenerate(props: TextInputProps) {
   const location = useFormValue(['location']) as string | undefined;
   const state = useFormValue(['state']) as string | undefined;
+  const categories = useFormValue(['categories']) as string[] | undefined;
+  const subcategory = useFormValue(['subcategory']) as string | undefined;
+  const category = categories?.[0];
   const impactMetrics = useFormValue(['impactMetrics']) as
     | {
         kwp?: number;
@@ -20,6 +23,7 @@ export function ExcerptFieldWithGenerate(props: TextInputProps) {
   const canGenerate = canGenerateExcerpt({
     location,
     state,
+    category,
     impactMetrics,
   });
 
@@ -27,6 +31,8 @@ export function ExcerptFieldWithGenerate(props: TextInputProps) {
     const generated = generateProjectExcerpt({
       location,
       state,
+      category,
+      subcategory,
       impactMetrics,
     });
     if (generated) {
