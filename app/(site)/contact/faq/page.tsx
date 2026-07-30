@@ -5,25 +5,31 @@ import { FAQSection } from '@/components/faq/faq-section';
 import { CONTACT_INFO } from '@/lib/constants/app.constants';
 
 export default function FAQPage() {
-  const breadcrumbItems = [{ label: 'Home', href: '/' }, { label: 'FAQ' }];
+  const breadcrumbItems = [
+    { label: 'Home', href: '/' },
+    { label: 'Contact Us', href: '/contact' },
+    { label: 'FAQ' },
+  ];
 
   return (
     <>
       <Hero
         title="Frequently Asked Questions"
-        description="Get answers to common questions about solar energy systems"
-        image="/images/services/solar-installation.webp"
+        description="Your Questions, Answered."
+        image="/images/contact/faq-hero.webp"
+        titleSize="display"
       />
 
-      <Container className="px-4 py-12">
-        <Breadcrumb items={breadcrumbItems} className="mb-8" />
+      <Container className="px-4 py-8">
+        <Breadcrumb items={breadcrumbItems} className="mb-8 md:mb-12" />
 
-        <div className="mb-12 text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold mb-4">
-            Everything You Need to Know About Solar Energy
-          </h2>
-          <p className="text-muted-foreground text-lg">
-            Can't find your question? Contact our support team at{' '}
+        {/* Standfirst */}
+        <div className="max-w-[68ch]">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-primary">
+            Solar energy & company, explained
+          </span>
+          <p className="mt-4 text-xl font-medium leading-relaxed text-foreground md:text-2xl">
+            Can&apos;t find your question? Contact our support team at{' '}
             <a
               href={`mailto:${CONTACT_INFO.email.support}`}
               className="text-primary hover:underline"
@@ -37,10 +43,13 @@ export default function FAQPage() {
             >
               {CONTACT_INFO.phone.primary}
             </a>
+            .
           </p>
         </div>
 
-        <FAQSection />
+        <div className="mt-12 md:mt-16">
+          <FAQSection />
+        </div>
       </Container>
     </>
   );

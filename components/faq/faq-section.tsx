@@ -28,22 +28,22 @@ export function FAQSection() {
   });
 
   return (
-    <div className="space-y-8">
-      {/* Search and Filter */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+    <div>
+      {/* Search and filter */}
+      <div className="flex flex-col items-center justify-between gap-4 border-t-[3px] border-foreground pt-8 md:flex-row">
         <div className="relative w-full md:w-96">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Search FAQs..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="h-11 border-2 bg-background pl-10 transition-all duration-300 focus:border-primary"
             aria-label="Search FAQs"
           />
         </div>
 
-        <div className="flex flex-wrap gap-2 justify-center">
+        <div className="flex flex-wrap justify-center gap-2">
           <Button
             variant={selectedCategory === 'All' ? 'default' : 'outline'}
             onClick={() => setSelectedCategory('All')}
@@ -64,33 +64,41 @@ export function FAQSection() {
         </div>
       </div>
 
-      {/* Results Count */}
-      <div className="text-sm text-muted-foreground">
+      {/* Result count */}
+      <div className="mt-6 text-sm text-muted-foreground">
         Showing {filteredFAQs.length} question
         {filteredFAQs.length !== 1 && 's'}
         {selectedCategory !== 'All' && ` in ${selectedCategory}`}
       </div>
 
-      {/* FAQ Accordion */}
+      {/* FAQ accordion */}
       {filteredFAQs.length > 0 ? (
-        <Accordion type="single" collapsible className="w-full space-y-4">
+        <Accordion
+          type="single"
+          collapsible
+          className="mt-4 w-full border-t border-border"
+        >
           {filteredFAQs.map((faq, index) => (
             <AccordionItem
               key={index}
               value={`item-${index}`}
-              className="border rounded-lg px-6 bg-card"
+              className="border-b border-border"
             >
-              <AccordionTrigger className="hover:no-underline py-4">
-                <div className="flex items-start gap-3 text-left">
-                  <span className="text-primary font-semibold text-sm mt-1">
+              <AccordionTrigger className="py-5 text-left hover:no-underline">
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 text-sm font-extrabold text-primary">
                     Q.
                   </span>
-                  <span className="font-medium">{faq.question}</span>
+                  <span className="text-base font-bold text-foreground md:text-lg">
+                    {faq.question}
+                  </span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="pl-8 pr-4 pb-4 text-muted-foreground leading-relaxed">
+              <AccordionContent className="max-w-[68ch] pb-5 pl-7 leading-relaxed text-muted-foreground">
                 <div className="flex items-start gap-3">
-                  <span className="text-primary font-semibold text-sm">A.</span>
+                  <span className="text-sm font-extrabold text-primary">
+                    A.
+                  </span>
                   <p>{faq.answer}</p>
                 </div>
               </AccordionContent>
@@ -98,8 +106,8 @@ export function FAQSection() {
           ))}
         </Accordion>
       ) : (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground text-lg mb-4">
+        <div className="mt-4 rounded-xl border border-dashed border-border py-12 text-center">
+          <p className="mb-4 text-lg text-muted-foreground">
             No FAQs found matching your search.
           </p>
           <Button
@@ -115,16 +123,22 @@ export function FAQSection() {
       )}
 
       {/* Contact CTA */}
-      <div className="mt-12 p-8 bg-primary/5 rounded-lg border border-primary/20 text-center">
-        <h3 className="text-2xl font-bold mb-2">Still have questions?</h3>
-        <p className="text-muted-foreground mb-6">
-          Our solar energy experts are here to help you make the right decision
+      <div className="mt-16 bg-primary px-6 py-10 text-center text-primary-foreground md:px-12 md:py-14">
+        <h3 className="text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">
+          Still have questions?
+        </h3>
+        <p className="mx-auto mt-3 max-w-[52ch] text-primary-foreground/90">
+          Our solar energy experts are here to help you make the right decision.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button asChild>
+        <div className="mt-6 flex flex-col justify-center gap-4 sm:flex-row">
+          <Button asChild variant="secondary">
             <a href="/contact/quote">Request a Quote</a>
           </Button>
-          <Button variant="outline" asChild>
+          <Button
+            asChild
+            variant="outline"
+            className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+          >
             <a href="/contact/support">Contact Support</a>
           </Button>
         </div>

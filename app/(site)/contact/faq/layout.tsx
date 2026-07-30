@@ -2,20 +2,20 @@ import { Metadata } from 'next';
 import { getOgImageUrl } from '@/lib/utils/og-image';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const ogImage = getOgImageUrl('/images/services/mini-grid-solutions.webp');
+  const ogImage = getOgImageUrl('/images/contact/faq-hero.webp');
 
   return {
     title: 'Frequently Asked Questions - Solar Energy FAQs | ACOB Lighting',
     description:
-      'Find answers to common questions about solar energy systems, installation, costs, maintenance, and more. Expert guidance from ACOB Lighting Technology Limited.',
+      'Find answers to common questions about ACOB Lighting, solar energy systems, installation, costs, maintenance, and clean energy solutions in Nigeria.',
     keywords:
-      'solar energy FAQ, solar panel questions, solar installation guide, solar system costs, solar maintenance, renewable energy questions, Nigeria solar FAQ',
+      'ACOB Lighting FAQ, solar energy FAQ, solar panel questions, solar installation guide, solar system costs, solar maintenance, renewable energy questions, Nigeria solar FAQ',
     openGraph: {
       title: 'Frequently Asked Questions - ACOB Lighting Technology Limited',
       description:
-        'Get answers to your solar energy questions from Nigerian renewable energy experts.',
+        'Get answers to your solar energy and company questions from Nigerian renewable energy experts.',
       type: 'website',
-      url: 'https://acoblighting.com/faq',
+      url: 'https://acoblighting.com/contact/faq',
       images: [
         {
           url: ogImage,
@@ -29,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       title: 'Frequently Asked Questions - ACOB Lighting Technology Limited',
       description:
-        'Get answers to your solar energy questions from Nigerian renewable energy experts.',
+        'Get answers to your solar energy and company questions from Nigerian renewable energy experts.',
       images: [ogImage],
     },
   };
