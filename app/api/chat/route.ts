@@ -23,6 +23,7 @@ import {
 import { searchContent } from '@/lib/utils/chat-content-search';
 import { getCached } from '@/lib/utils/chat-data-cache';
 import { logAcobotWebsiteTurn } from '@/lib/utils/acobot-erp-log';
+import { getAcobSystemPrompt } from '@/lib/data';
 import {
   getProjects,
   getUpdatePosts,
@@ -128,13 +129,19 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Clean messages to remove unsupported properties
-    const cleanMessages = messages.map(
-      (msg: { role: string; content: string }) => ({
+    // Clean messages to remove unsupported properties. The persona/system
+    // prompt is injected server-side (authoritative) rather than trusted from
+    // the client — the request body only ever carries user/assistant turns.
+    const cleanMessages = [
+      {
+        role: 'system' as const,
+        content: getAcobSystemPrompt().content,
+      },
+      ...messages.map((msg: { role: string; content: string }) => ({
         role: msg.role as 'user' | 'assistant' | 'system',
         content: msg.content,
-      }),
-    );
+      })),
+    ];
 
     // === DYNAMIC CONTEXT INJECTION ===
     // Detect intent from the last user message

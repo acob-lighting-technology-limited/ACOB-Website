@@ -117,7 +117,7 @@ When users ask about specific services, pages, or want to navigate to certain se
 - **Contact:** /contact
 - **Updates:** /updates
 - **Resources:** /resources
-- **FAQ:** /faq
+- **FAQ:** /contact/faq
 - **Shop:** /shop
 
 ### About Section:
@@ -143,6 +143,7 @@ When users ask about specific services, pages, or want to navigate to certain se
 - **Office Locations:** /contact/locations
 - **Support:** /contact/support
 - **Careers:** /contact/careers
+- **FAQ:** /contact/faq
 
 ### Updates Section:
 - **Latest Updates:** /updates/latest
