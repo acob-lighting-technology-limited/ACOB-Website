@@ -92,7 +92,10 @@ export function NigeriaReachSection({
 }: NigeriaReachSectionProps) {
   const router = useRouter();
   const svgContainerRef = useRef<HTMLDivElement>(null);
-  const hasAnimatedRef = useRef(false);
+  // Set once the SVG markup is injected and styled. The colour animation waits
+  // on this so it never races ahead of the async SVG fetch (which would leave
+  // active states grey when the page loads slowly).
+  const [svgReady, setSvgReady] = useState(false);
   const hqPos = projectPoint(HQ_COORDS.lat, HQ_COORDS.lng);
   const projectsWithCoordinates = useMemo(
     () =>
@@ -366,6 +369,7 @@ export function NigeriaReachSection({
         });
 
         svg.appendChild(hqGroup);
+        setSvgReady(true);
       } catch (error) {
         console.error('Failed to load Nigeria SVG:', error);
       }
@@ -375,6 +379,7 @@ export function NigeriaReachSection({
 
     return () => {
       isCancelled = true;
+      setSvgReady(false);
 
       if (svgContainerRef.current) {
         svgContainerRef.current.innerHTML = '';
@@ -390,29 +395,42 @@ export function NigeriaReachSection({
   ]);
 
   useEffect(() => {
-    if (inView && !hasAnimatedRef.current && svgContainerRef.current) {
-      hasAnimatedRef.current = true;
-      const svg = svgContainerRef.current.querySelector('svg');
-      if (!svg) {
+    // Wait until BOTH the section is in view AND the SVG has been injected.
+    // Guarding on svgReady (rather than a fire-once ref) makes this self-heal:
+    // if the SVG loads after the section scrolls into view — or is re-injected
+    // — the active states still get coloured instead of being stranded grey.
+    if (!inView || !svgReady || !svgContainerRef.current) {
+      return;
+    }
+
+    const svg = svgContainerRef.current.querySelector('svg');
+    if (!svg) {
+      return;
+    }
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    activeProjectStates.forEach((project, index) => {
+      const path = svg.querySelector(`#${project.id}`) as HTMLElement | null;
+      if (!path) {
         return;
       }
+      path.setAttribute('fill', INACTIVE_COLOR);
+      timers.push(
+        setTimeout(
+          () => {
+            path.style.transition = 'fill 0.4s ease-out';
+            path.setAttribute('fill', ACTIVE_COLOR);
+            path.setAttribute('data-active', 'true');
+          },
+          100 + index * 100,
+        ),
+      );
+    });
 
-      activeProjectStates.forEach((project, index) => {
-        const path = svg.querySelector(`#${project.id}`) as HTMLElement | null;
-        if (path) {
-          path.setAttribute('fill', INACTIVE_COLOR);
-          setTimeout(
-            () => {
-              path.style.transition = 'fill 0.4s ease-out';
-              path.setAttribute('fill', ACTIVE_COLOR);
-              path.setAttribute('data-active', 'true');
-            },
-            100 + index * 100,
-          );
-        }
-      });
-    }
-  }, [activeProjectStates, inView]);
+    return () => {
+      timers.forEach(clearTimeout);
+    };
+  }, [activeProjectStates, inView, svgReady]);
 
   return (
     <section

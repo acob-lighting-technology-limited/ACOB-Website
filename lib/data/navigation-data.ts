@@ -132,6 +132,12 @@ export const navigationItems: NavItem[] = [
     href: '/about',
     subItems: [
       {
+        name: 'The Journey',
+        href: '/journey',
+        description: 'A cinematic decade of impact, 2016–2026',
+        icon: 'Sparkles',
+      },
+      {
         name: 'Our Story',
         href: '/about/our-story',
         description: 'Learn about our journey and how we started',
@@ -298,6 +304,12 @@ export const navigationItems: NavItem[] = [
         description: 'Join our team',
         icon: 'Briefcase',
         // icon: 'https://www.svgrepo.com/download/483991/career-2.svg',
+      },
+      {
+        name: 'FAQ',
+        href: '/contact/faq',
+        description: 'Frequently asked questions & answers',
+        icon: 'HelpCircle',
       },
     ],
   },

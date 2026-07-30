@@ -20,6 +20,7 @@ const PROJECT_CORE_FIELDS = `
   _id,
   title,
   excerpt,
+  description,
   slug,
   categories,
   tags,
@@ -30,19 +31,9 @@ const PROJECT_CORE_FIELDS = `
   content,
   gallery[] {
     ...,
-    _type == "file" => {
-      ...,
-      "asset": asset->{
-        url,
-        _ref
-      }
-    },
-    _type == "video" => {
-      ...,
-      "asset": asset->{
-        url,
-        _ref
-      }
+    "asset": asset->{
+      url,
+      _ref
     }
   },
   location,

@@ -11,6 +11,7 @@ import { ChevronDown, ChevronRight, Menu, X, Package } from 'lucide-react';
 import { navigationItems } from '@/lib/data/navigation-data';
 import { LucideIcons } from '@/lib/data/lucide-icons';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSiteReveal } from '@/components/loader/site-reveal-provider';
 import {
   isChristmasPeriod,
   isTemporary2026LogoPeriod,
@@ -209,7 +210,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
           className="absolute top-full left-2 mt-2 grid w-[720px] grid-cols-[300px_1fr] overflow-hidden rounded-xl border-[0.5px] border-border bg-popover shadow-2xl"
         >
           {/* Left rail: categories */}
-          <div className="border-r-[0.5px] border-border bg-muted/30 p-2">
+          <div className="border-r-[0.5px] border-border bg-muted/30 p-2 rounded-lg">
             {item.subItems.map((subItem, index) => {
               const IconComponent = LucideIcons[subItem.icon];
               const isActive = isSubItemActive(subItem.href);
@@ -703,6 +704,7 @@ export function Header() {
           ? `/images/acob-logo-light-2026.png?v=${LOGO_2026_VERSION}`
           : '/images/acob-logo-light.png';
   const [showHeader, setShowHeader] = useState(true);
+  const { revealed } = useSiteReveal();
   const [lastScrollY, setLastScrollY] = useState(0);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const headerRef = useRef<HTMLElement>(null);
@@ -718,6 +720,20 @@ export function Header() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // The header lives in the shared (site) layout, which Next.js does NOT
+  // remount between page navigations — only `pathname` changes. isScrolled
+  // otherwise only updates from a 'scroll' event, so if the previous page
+  // left it "solid" (or "transparent") and the new page's actual scroll
+  // position disagrees, the header can show the wrong state until the user
+  // scrolls again. Resync directly against window.scrollY on every route
+  // change so each page always starts from its own real scroll position.
+  useEffect(() => {
+    const currentScrollY = window.scrollY;
+    setIsScrolled(currentScrollY > 10);
+    setLastScrollY(currentScrollY);
+    setShowHeader(true);
+  }, [pathname]);
 
   // The announcement banner sits in normal flow above this fixed header. Pin the
   // header's top to the banner's current bottom edge so it renders just below the
@@ -768,6 +784,17 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
+      // Ignore scroll events fired by a body-scroll-lock (chat bot / mobile
+      // menu). Those set body to position:fixed with a negative top, which
+      // momentarily resets window.scrollY to 0 — without this guard the header
+      // would read 0 and drop to its transparent (at-top) state even when the
+      // page is scrolled down behind the overlay. Freeze the scrolled state
+      // while locked; it recomputes when the lock is released and scroll is
+      // restored.
+      if (document.body.style.position === 'fixed') {
+        return;
+      }
+
       const currentScrollY = window.scrollY;
       const scrollDifference = Math.abs(currentScrollY - lastScrollY);
 
@@ -846,7 +873,7 @@ export function Header() {
         ref={headerRef}
         className={`
           fixed inset-x-0 top-0 z-40 w-full transition-all duration-500 ease-out
-          ${showHeader ? 'translate-y-0' : '-translate-y-full'}
+          ${showHeader && revealed ? 'translate-y-0' : '-translate-y-full'}
           ${
             hasSolidHeader
               ? ' border-b border-border backdrop-blur-xl bg-background/95 shadow-lg '

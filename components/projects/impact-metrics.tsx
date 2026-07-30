@@ -50,20 +50,16 @@ const MetricBadge = ({
       className="w-full sm:flex-1"
     >
       <div
-        className={`group relative rounded-xl border-2 ${color} ${textColor} p-4 sm:p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-1`}
+        className={`group relative rounded-xl border-2 ${color} ${textColor} p-4 sm:p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg`}
       >
         <div className="flex items-center gap-3 sm:gap-4">
           {/* Icon */}
-          <div
-            className={
-              'relative w-10 h-10 sm:w-12 sm:h-12 rounded-full p-2 overflow-hidden transition-all duration-500 flex items-center justify-center flex-shrink-0 bg-background/50 group-hover:scale-110'
-            }
-          >
+          <div className="relative flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-background/50 p-2 transition-all duration-500 group-hover:scale-110 sm:h-12 sm:w-12">
             {/* Animated fill effect */}
             <div
-              className={`absolute inset-0 ${iconColor} transform scale-0 transition-transform duration-500 ease-out group-hover:scale-100 rounded-full origin-center`}
+              className={`absolute inset-0 origin-center scale-0 rounded-full transform transition-transform duration-500 ease-out group-hover:scale-100 ${iconColor}`}
             />
-            <div className="relative z-10 w-full h-full flex items-center justify-center">
+            <div className="relative z-10 flex h-full w-full items-center justify-center">
               {icon}
             </div>
           </div>
@@ -255,8 +251,10 @@ export function ImpactMetrics({ metrics }: ImpactMetricsProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-foreground flex items-center gap-2">
-          <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+        <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+          By the numbers
+        </span>
+        <h2 className="mt-2 mb-4 text-2xl font-extrabold uppercase tracking-tight text-foreground sm:mb-6 sm:text-3xl">
           Project Impact
         </h2>
       </motion.div>

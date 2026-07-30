@@ -42,7 +42,7 @@ export function AnnouncementBanner({
       icon: Award,
       message: ANNIVERSARY_2026.title,
       details: `${ANNIVERSARY_2026.period} • ${ANNIVERSARY_2026.tagline}`,
-      link: '/about/our-story',
+      link: '/journey',
       linkText: 'Explore the journey →',
       storageKey: ANNIVERSARY_STORAGE_KEY,
     });

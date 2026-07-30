@@ -38,6 +38,8 @@ export default [
         HTMLParagraphElement: 'readonly',
         HTMLHeadingElement: 'readonly',
         HTMLLinkElement: 'readonly',
+        HTMLAudioElement: 'readonly',
+        Audio: 'readonly',
         SVGSVGElement: 'readonly',
         Element: 'readonly',
         Node: 'readonly',

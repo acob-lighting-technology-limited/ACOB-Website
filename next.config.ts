@@ -173,6 +173,11 @@ const nextConfig = {
         destination: '/about/profile',
         permanent: true,
       },
+      {
+        source: '/faq',
+        destination: '/contact/faq',
+        permanent: true,
+      },
     ];
   },
 };

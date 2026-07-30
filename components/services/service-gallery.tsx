@@ -38,7 +38,7 @@ export function ServiceGallery({ images, serviceTitle }: ServiceGalleryProps) {
             <div key={index} className="inline-block w-1/2 lg:w-1/3 px-2 my-4">
               <button
                 onClick={() => handleImageClick(index)}
-                className="relative w-full aspect-[4/3] group cursor-zoom-in overflow-hidden rounded-lg"
+                className="group relative aspect-[4/3] w-full cursor-zoom-in overflow-hidden border border-border rounded-lg"
               >
                 <Image
                   src={imageSrc}
@@ -46,10 +46,10 @@ export function ServiceGallery({ images, serviceTitle }: ServiceGalleryProps) {
                   width={800}
                   height={600}
                   sizes="(max-width: 1024px) 50vw, 33vw"
-                  className="rounded-lg object-cover w-full h-full transition-all duration-300 group-hover:shadow-2xl group-hover:scale-[1.02]"
+                  className="h-full w-full object-cover transition-all duration-300 group-hover:scale-[1.02] group-hover:shadow-2xl rounded-lg"
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 rounded-lg flex items-center justify-center">
-                  <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-sm font-medium bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all duration-300 group-hover:bg-black/20 rounded-lg">
+                  <span className="bg-black/50 px-4 py-2 text-sm font-medium text-white opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100 rounded-full">
                     Click to expand
                   </span>
                 </div>

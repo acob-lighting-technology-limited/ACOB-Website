@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useCallback, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
@@ -35,6 +34,13 @@ interface CategoryUpdatesClientProps {
   breadcrumbItems: Array<{ label: string; href?: string }>;
   category: string;
   categoryTitle: string;
+}
+
+function authorName(author: UpdatePost['author']): string {
+  if (typeof author === 'string') {
+    return author;
+  }
+  return (author as { name?: string })?.name || 'ACOB Lighting';
 }
 
 export default function CategoryUpdatesClient({
@@ -72,19 +78,16 @@ export default function CategoryUpdatesClient({
 
   const fetchPage = useCallback(
     async (search: string, page: number) => {
-      // Cancel any in-flight request
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      // Immediately show loading + scroll to top
       setIsLoading(true);
       setError(null);
       window.scrollTo({ top: 0, behavior: 'instant' });
 
-      // Update URL without Next.js navigation
       const urlParams = new URLSearchParams();
       if (search.trim()) {
         urlParams.set('search', search);
@@ -174,28 +177,29 @@ export default function CategoryUpdatesClient({
       <Hero
         image={heroImages}
         title={categoryTitle}
-        description={`Latest ${categoryTitle.toLowerCase()} updates and news from ACOB Lighting`}
+        description={`${categoryTitle} Updates.`}
+        titleSize="display"
       />
 
       <Container className="px-4 py-8">
-        {/* Breadcrumb with Search */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        {/* Breadcrumb + Search */}
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <Breadcrumb items={breadcrumbItems} />
-
-          <div className="relative w-full sm:w-auto sm:min-w-[400px] flex gap-2">
+          <div className="relative flex w-full gap-2 sm:w-auto sm:min-w-[400px]">
             <div className="relative flex-1">
               <Input
                 placeholder="Search updates..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="h-11 pl-10 pr-10 bg-background border-2 focus:border-primary transition-all duration-300"
+                className="h-11 border-2 bg-background pl-10 pr-10 transition-all duration-300 focus:border-primary"
               />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               {searchQuery && (
                 <button
                   onClick={handleClearSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 transition-colors hover:bg-muted"
+                  aria-label="Clear search"
                 >
                   <X className="h-4 w-4 text-muted-foreground" />
                 </button>
@@ -206,66 +210,80 @@ export default function CategoryUpdatesClient({
               size="lg"
               className="h-11 px-6"
             >
-              <Search className="h-4 w-4 mr-2" />
+              <Search className="mr-2 h-4 w-4" />
               Search
             </Button>
           </div>
         </div>
 
-        {/* Search Results Info */}
+        {/* Standfirst */}
+        <div className="max-w-[62ch]">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-primary">
+            {categoryTitle}
+          </span>
+          <p className="mt-4 text-xl font-medium leading-relaxed text-foreground md:text-2xl">
+            Latest {categoryTitle.toLowerCase()} updates and news from ACOB
+            Lighting.
+          </p>
+        </div>
+
+        {/* Search result count */}
         {searchQuery && hasSearched && !isLoading && (
-          <div className="mb-4">
-            <div className="flex items-center justify-between text-sm text-muted-foreground bg-card border border-border rounded-md px-3 py-2">
-              <p>
-                <span className="font-medium text-foreground">
-                  {pagination.totalCount}
-                </span>{' '}
-                update{pagination.totalCount !== 1 ? 's' : ''} found for{' '}
-                <span className="font-medium text-foreground">
-                  &ldquo;{searchQuery}&rdquo;
-                </span>
-              </p>
-              <button
-                onClick={handleClearSearch}
-                className="text-xs hover:text-foreground transition-colors flex items-center gap-1"
-              >
-                <X className="h-3 w-3" />
-                Clear
-              </button>
-            </div>
+          <div className="mt-8 flex items-center justify-between border-t border-border pt-4 text-sm text-muted-foreground">
+            <p>
+              <span className="font-semibold text-foreground">
+                {pagination.totalCount}
+              </span>{' '}
+              update{pagination.totalCount !== 1 ? 's' : ''} found for{' '}
+              <span className="font-semibold text-foreground">
+                &ldquo;{searchQuery}&rdquo;
+              </span>
+            </p>
+            <button
+              onClick={handleClearSearch}
+              className="flex items-center gap-1 text-xs font-semibold transition-colors hover:text-primary"
+            >
+              <X className="h-3 w-3" />
+              Clear
+            </button>
           </div>
         )}
 
-        {/* Updates Grid */}
+        {/* Grid */}
         {isLoading ? (
-          <CardSkeleton count={PAGE_LIMIT} />
+          <div className="mt-10">
+            <CardSkeleton count={PAGE_LIMIT} />
+          </div>
         ) : posts.length === 0 ? (
-          <Card className="border-2 border-dashed">
-            <CardContent className="p-12 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
-                <Search className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-2xl font-semibold mb-2">No updates found</h3>
-              <p className="text-muted-foreground mb-6">
-                Try adjusting your search terms or browse all updates.
-              </p>
-              <Button onClick={handleClearSearch}>
-                <X className="mr-2 h-4 w-4" />
-                View All Updates
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="mt-10 border border-dashed border-border p-12 text-center">
+            <Search className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
+            <h3 className="mb-2 text-2xl font-bold tracking-tight">
+              No updates found
+            </h3>
+            <p className="mb-6 text-muted-foreground">
+              Try adjusting your search terms or browse all updates.
+            </p>
+            <Button onClick={handleClearSearch}>
+              <X className="mr-2 h-4 w-4" />
+              View All Updates
+            </Button>
+          </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
               {posts.map((post: UpdatePost, index: number) => (
-                <FadeIn key={post._id} delay={index * 0.05} direction="up">
+                <FadeIn
+                  key={post._id}
+                  delay={index * 0.05}
+                  direction="up"
+                  className="h-full"
+                >
                   <Link
                     href={`/updates/${post.slug.current}`}
-                    className="group"
+                    className="group block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   >
-                    <Card className="h-full overflow-hidden border-border bg-card hover:border-primary/30 hover:shadow-2xl transition-all duration-500">
-                      <div className="aspect-[16/9] overflow-hidden relative bg-muted">
+                    <article className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-500 group-hover:-translate-y-1 group-hover:border-primary/40 group-hover:shadow-lg">
+                      <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
                         {post.featuredImage ? (
                           <Image
                             src={applySanityImagePreset(
@@ -275,64 +293,50 @@ export default function CategoryUpdatesClient({
                             alt={post.title}
                             fill
                             className="object-cover transition-transform duration-500 group-hover:scale-105"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <span className="text-muted-foreground text-sm">
+                          <div className="flex h-full w-full items-center justify-center bg-muted">
+                            <span className="text-sm text-muted-foreground">
                               No image
                             </span>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/70" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                         {post.category && (
-                          <div className="absolute bottom-4 left-4 right-4 z-10 text-sm font-medium uppercase tracking-wide text-white/90">
+                          <span className="absolute bottom-3 left-3 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-white/90">
                             {post.category}
-                          </div>
+                          </span>
                         )}
                       </div>
 
-                      <CardContent className="flex flex-1 flex-col p-4 sm:p-6">
-                        <div className="flex items-center text-xs text-muted-foreground mb-3">
+                      <div className="flex flex-1 flex-col p-4 md:p-5">
+                        <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.7rem] text-muted-foreground">
                           {post.author && (
-                            <>
-                              <User className="h-3.5 w-3.5 mr-1" />
-                              <span>
-                                {typeof post.author === 'string'
-                                  ? post.author
-                                  : (post.author as any)?.name ||
-                                    'ACOB Lighting'}
-                              </span>
-                            </>
-                          )}
-                          {post.author && post.publishedAt && (
-                            <span className="mx-2">&bull;</span>
+                            <span className="flex items-center gap-1">
+                              <User className="h-3 w-3" />
+                              {authorName(post.author)}
+                            </span>
                           )}
                           {post.publishedAt && (
-                            <>
-                              <Calendar className="h-3.5 w-3.5 mr-1" />
-                              <span>{formatDate(post.publishedAt)}</span>
-                            </>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {formatDate(post.publishedAt)}
+                            </span>
                           )}
                         </div>
-
-                        <div className="space-y-3 flex-1">
-                          <h3 className="text-lg font-bold mb-3 text-foreground line-clamp-3 group-hover:text-primary transition-colors duration-300">
-                            {post.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
-                            {post.excerpt}
-                          </p>
-                        </div>
-
-                        <div className="mt-auto pt-6">
-                          <div className="flex items-center text-sm font-medium text-primary group-hover:gap-2 transition-all duration-300">
-                            Read More
-                            <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform duration-300" />
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        <h3 className="text-base font-extrabold tracking-tight text-foreground line-clamp-2 md:text-lg">
+                          {post.title}
+                        </h3>
+                        <p className="mt-2 flex-1 text-xs leading-relaxed text-muted-foreground line-clamp-3 md:text-sm">
+                          {post.excerpt}
+                        </p>
+                        <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-primary md:text-sm">
+                          Read more
+                          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1 md:h-4 md:w-4" />
+                        </span>
+                      </div>
+                    </article>
                   </Link>
                 </FadeIn>
               ))}
@@ -341,7 +345,7 @@ export default function CategoryUpdatesClient({
             {/* Pagination */}
             {pagination.totalPages > 1 && (
               <div className="mt-12">
-                <div className="text-sm text-center text-muted-foreground mb-6">
+                <div className="mb-6 text-center text-sm text-muted-foreground">
                   Showing{' '}
                   <span className="font-medium text-foreground">
                     {(pagination.currentPage - 1) * pagination.limit + 1}

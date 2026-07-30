@@ -28,6 +28,7 @@ import {
   Handshake,
   Stethoscope,
   Hospital,
+  HelpCircle,
 } from 'lucide-react';
 
 // Lucide icon mapping
@@ -64,4 +65,5 @@ export const LucideIcons: Record<
   Handshake,
   Stethoscope,
   Hospital,
+  HelpCircle,
 };

@@ -1,6 +1,5 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Resource } from '@/lib/data/resources-data';
@@ -50,63 +49,58 @@ export function ResourceCard({ resource, featured }: ResourceCardProps) {
   };
 
   const handleDownload = () => {
-    // In production, this would trigger actual download
     window.open(resource.downloadUrl, '_blank');
   };
 
   return (
-    <Card
-      className={`group hover:shadow-lg transition-all duration-300 ${
-        featured ? 'border-2 border-primary' : ''
+    <div
+      className={`group flex h-full flex-col border p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg ${
+        featured ? 'border-2 border-primary' : 'border-border'
       }`}
     >
-      <CardContent className="p-6 flex flex-col h-full">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div
-            className={`p-3 rounded-lg ${categoryColors[resource.category]}`}
-          >
-            <Icon className="h-6 w-6" aria-hidden="true" />
-          </div>
-          {featured && (
-            <Badge className="gap-1">
-              <Star className="h-3 w-3" />
-              Featured
-            </Badge>
-          )}
+      {/* Header */}
+      <div className="mb-4 flex items-start justify-between">
+        <div className={`p-3 ${categoryColors[resource.category]} rounded-lg`}>
+          <Icon className="h-6 w-6" aria-hidden="true" />
         </div>
-
-        {/* Content */}
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold mb-2 line-clamp-2">
-            {resource.title}
-          </h3>
-          <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
-            {resource.description}
-          </p>
-        </div>
-
-        {/* Metadata */}
-        <div className="flex items-center gap-2 mb-4 text-sm">
-          <Badge
-            variant="secondary"
-            className={fileTypeColors[resource.fileType]}
-          >
-            {resource.fileType}
+        {featured && (
+          <Badge className="gap-1">
+            <Star className="h-3 w-3" />
+            Featured
           </Badge>
-          <span className="text-muted-foreground">{resource.fileSize}</span>
-        </div>
+        )}
+      </div>
 
-        {/* Action */}
-        <Button
-          onClick={handleDownload}
-          className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-          aria-label={`Download ${resource.title}`}
+      {/* Content */}
+      <div className="flex-1">
+        <h3 className="mb-2 text-lg font-extrabold tracking-tight text-foreground line-clamp-2">
+          {resource.title}
+        </h3>
+        <p className="mb-4 text-sm leading-relaxed text-muted-foreground line-clamp-3">
+          {resource.description}
+        </p>
+      </div>
+
+      {/* Metadata */}
+      <div className="mb-4 flex items-center gap-2 text-sm">
+        <Badge
+          variant="secondary"
+          className={fileTypeColors[resource.fileType]}
         >
-          <Download className="mr-2 h-4 w-4" />
-          Download
-        </Button>
-      </CardContent>
-    </Card>
+          {resource.fileType}
+        </Badge>
+        <span className="text-muted-foreground">{resource.fileSize}</span>
+      </div>
+
+      {/* Action */}
+      <Button
+        onClick={handleDownload}
+        className="w-full transition-colors group-hover:bg-primary group-hover:text-primary-foreground"
+        aria-label={`Download ${resource.title}`}
+      >
+        <Download className="mr-2 h-4 w-4" />
+        Download
+      </Button>
+    </div>
   );
 }

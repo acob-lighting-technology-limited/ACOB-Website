@@ -74,6 +74,14 @@
     --surface-muted: 240 4% 96%; /* zinc-50 */
     --surface-muted-foreground: 240 4% 46%; /* zinc-500 */
 
+    /* Intro loader — its own tokens so the wordmark can be tuned per theme
+       without dragging the rest of the palette with it. */
+    --loader-surface: 0 0% 100%; /* white, cleaner than the page zinc-50 */
+    --loader-ink: 240 5% 4%; /* zinc-950 */
+    --loader-accent: 120 100% 25%; /* brand green-700 */
+    --loader-sub: 240 4% 46%; /* zinc-500 */
+    --loader-gold: 40 68% 42%; /* deep gold, holds up on white */
+
     /* Scrollbar colors for light mode */
     --scroll-track: 240 4% 96%; /* zinc-50 */
     --scroll-thumb: 240 5% 4%; /* zinc-950 */
@@ -126,6 +134,14 @@
     --surface-foreground: 240 4% 96%; /* zinc-50 */
     --surface-muted: 240 5% 16%; /* zinc-900 */
     --surface-muted-foreground: 240 5% 64%; /* zinc-400 */
+
+    /* Intro loader — brand green-700 is far too dark to read against a
+       zinc-950 panel, so dark mode gets a lifted, more luminous green. */
+    --loader-surface: 240 6% 6%; /* a touch deeper than the page */
+    --loader-ink: 0 0% 100%; /* white */
+    --loader-accent: 132 62% 52%; /* lifted green */
+    --loader-sub: 240 5% 64%; /* zinc-400 */
+    --loader-gold: 43 90% 62%; /* lifted gold for the dark panel */
 
     /* Scrollbar colors for dark mode */
     --scroll-track: 240 5% 4%; /* zinc-950 */
@@ -205,6 +221,15 @@ body::-webkit-scrollbar-corner,
 }
 
 /* Custom animations */
+@keyframes journeySegmentFill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
 @keyframes smoothZoom {
   0% {
     transform: scale(1);
@@ -233,6 +258,25 @@ body::-webkit-scrollbar-corner,
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Entrance animations are held while the intro loader covers the page, then
+   released together as the curtain lifts.
+
+   These are CSS animations on mount, so without this they run their whole
+   course behind the loader and the content is simply *there* when the curtain
+   clears — no entrance at all. The homepage hero is built entirely from
+   `animate-fade-in-up`, which is why it looked static while routes using the
+   framer-driven Hero animated correctly.
+
+   `opacity-0` on the elements plus a paused animation keeps them hidden until
+   the attribute is dropped, at which point they play in their staggered order. */
+html[data-loader-active] .hero-slide-zoom,
+html[data-loader-active] .animate-fade-in-up,
+html[data-loader-active] .animate-slideInLeft,
+html[data-loader-active] .animate-slideInRight {
+  animation-play-state: paused;
+  -webkit-animation-play-state: paused;
 }
 
 /* Lightbox slide animations */

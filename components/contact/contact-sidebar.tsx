@@ -1,8 +1,25 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { CONTACT_INFO } from '@/lib/constants/app.constants';
 import { contactLinks } from '@/lib/data/contact-data';
+
+/** A labelled row inside a sidebar block: small uppercase label + value(s). */
+function InfoRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="py-3.5">
+      <div className="text-[0.66rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+        {label}
+      </div>
+      <div className="mt-1.5">{children}</div>
+    </div>
+  );
+}
 
 interface QuickContactProps {
   /** Which email address to lead with (secondary email is always shown too). */
@@ -13,7 +30,7 @@ interface QuickContactProps {
   showHours?: boolean;
 }
 
-/** "Quick Contact" sidebar card — phone/email, optionally address/hours. */
+/** "Quick Contact" sidebar block — phone/email, optionally address/hours. */
 export function QuickContact({
   emailAudience = 'general',
   phones = 'both',
@@ -28,69 +45,67 @@ export function QuickContact({
         : CONTACT_INFO.email.general;
 
   return (
-    <Card className="!border-t-2 !border-t-primary border border-border">
-      <CardContent className="p-4 md:p-5 lg:p-6">
-        <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">
+    <section>
+      <div className="border-t-2 border-foreground pt-4">
+        <h2 className="text-sm font-bold uppercase tracking-[0.18em] text-foreground">
           Quick Contact
-        </h3>
-        <div className="space-y-2.5 md:space-y-3">
-          <div className="p-2.5 md:p-3 rounded-lg bg-muted/30 border border-border">
-            <p className="text-xs text-muted-foreground mb-1">Phone</p>
-            <div className="space-y-1">
+        </h2>
+      </div>
+
+      <div className="mt-2 divide-y divide-border border-b border-border">
+        <InfoRow label="Phone">
+          <div className="flex flex-col gap-0.5">
+            <a
+              href={`tel:${CONTACT_INFO.phone.primary.replace(/\s/g, '')}`}
+              className="block text-sm font-semibold tabular-nums text-foreground transition-colors hover:text-primary"
+            >
+              {CONTACT_INFO.phone.primary}
+            </a>
+            {phones === 'both' && (
               <a
-                href={`tel:${CONTACT_INFO.phone.primary.replace(/\s/g, '')}`}
-                className="text-xs md:text-sm font-semibold text-primary hover:underline block"
+                href={`tel:${CONTACT_INFO.phone.secondary.replace(/\s/g, '')}`}
+                className="block text-sm font-semibold tabular-nums text-foreground transition-colors hover:text-primary"
               >
-                {CONTACT_INFO.phone.primary}
+                {CONTACT_INFO.phone.secondary}
               </a>
-              {phones === 'both' && (
-                <a
-                  href={`tel:${CONTACT_INFO.phone.secondary.replace(/\s/g, '')}`}
-                  className="text-xs md:text-sm font-semibold text-primary hover:underline block"
-                >
-                  {CONTACT_INFO.phone.secondary}
-                </a>
-              )}
-            </div>
+            )}
           </div>
-          <div className="p-2.5 md:p-3 rounded-lg bg-muted/30 border border-border">
-            <p className="text-xs text-muted-foreground mb-1">Email</p>
-            <div className="space-y-1">
-              <a
-                href={`mailto:${primaryEmail}`}
-                className="text-xs md:text-sm font-semibold text-primary hover:underline block break-all"
-              >
-                {primaryEmail}
-              </a>
-              <a
-                href={`mailto:${CONTACT_INFO.email.secondary}`}
-                className="text-xs md:text-sm font-semibold text-primary hover:underline block break-all"
-              >
-                {CONTACT_INFO.email.secondary}
-              </a>
-            </div>
+        </InfoRow>
+
+        <InfoRow label="Email">
+          <div className="flex flex-col gap-0.5">
+            <a
+              href={`mailto:${primaryEmail}`}
+              className="block break-all text-sm font-semibold text-foreground transition-colors hover:text-primary"
+            >
+              {primaryEmail}
+            </a>
+            <a
+              href={`mailto:${CONTACT_INFO.email.secondary}`}
+              className="block break-all text-sm font-semibold text-foreground transition-colors hover:text-primary"
+            >
+              {CONTACT_INFO.email.secondary}
+            </a>
           </div>
-          {showAddress && (
-            <div className="p-2.5 md:p-3 rounded-lg bg-muted/30 border border-border">
-              <p className="text-xs text-muted-foreground mb-1">Address</p>
-              <p className="text-xs md:text-sm font-semibold leading-relaxed">
-                {CONTACT_INFO.address.full}
-              </p>
-            </div>
-          )}
-          {showHours && (
-            <div className="p-2.5 md:p-3 rounded-lg bg-muted/30 border border-border">
-              <p className="text-xs text-muted-foreground mb-1">
-                Business Hours
-              </p>
-              <p className="text-xs md:text-sm font-semibold">
-                {CONTACT_INFO.workHours.weekdays}
-              </p>
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+        </InfoRow>
+
+        {showAddress && (
+          <InfoRow label="Address">
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {CONTACT_INFO.address.full}
+            </p>
+          </InfoRow>
+        )}
+
+        {showHours && (
+          <InfoRow label="Business Hours">
+            <p className="text-sm font-medium text-foreground">
+              {CONTACT_INFO.workHours.weekdays}
+            </p>
+          </InfoRow>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -99,31 +114,35 @@ interface MoreContactOptionsProps {
   excludeHref?: string;
 }
 
-/** "More Contact Options" sidebar card — links to the other contact sub-pages. */
+/** "More Contact Options" sidebar block — links to the other contact pages. */
 export function MoreContactOptions({ excludeHref }: MoreContactOptionsProps) {
   const links = contactLinks.filter(link => link.href !== excludeHref);
 
   return (
-    <Card className="border border-border">
-      <CardContent className="p-4 md:p-5 lg:p-6">
-        <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">
+    <section>
+      <div className="border-t-2 border-foreground pt-4">
+        <h2 className="text-sm font-bold uppercase tracking-[0.18em] text-foreground">
           More Contact Options
-        </h3>
-        <div className="space-y-2">
-          {links.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className="block p-2.5 md:p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors duration-500 text-xs md:text-sm font-medium border border-border group"
-            >
-              <div className="flex items-center justify-between">
-                <span>{label}</span>
-                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-500" />
-              </div>
-            </Link>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+        </h2>
+      </div>
+
+      <div className="mt-2 border-b border-border">
+        {links.map(({ href, label }, i) => (
+          <Link
+            key={href}
+            href={href}
+            className="group -mx-2 flex items-center gap-3 border-t border-border px-2 py-3.5 transition-colors first:border-t-0 hover:bg-muted/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <span className="text-xs font-bold tabular-nums text-primary">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <span className="flex-1 text-sm font-semibold text-foreground transition-colors group-hover:text-primary">
+              {label}
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-primary transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
