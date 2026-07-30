@@ -1,18 +1,11 @@
 import { Container } from '@/components/ui/container';
 import { Hero } from '@/components/ui/hero';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import {
   ArrowRight,
-  Lightbulb,
-  Users,
-  Award,
-  Heart,
   Calendar,
   MapPin as LocationIcon,
   Briefcase,
-  FileSearch,
 } from 'lucide-react';
 import Link from 'next/link';
 import { whyWorkItems } from '@/lib/data/contact-data';
@@ -23,15 +16,18 @@ import {
   MoreContactOptions,
 } from '@/components/contact/contact-sidebar';
 
-// Icon mapping
-const iconMap = {
-  Lightbulb,
-  Users,
-  Award,
-  Heart,
-};
-
 export const revalidate = 300;
+
+interface JobPosting {
+  _id: string;
+  title: string;
+  department?: string;
+  location?: string;
+  employmentType?: string;
+  description?: string;
+  applicationDeadline?: string;
+  slug: { current: string };
+}
 
 export default async function CareersPage() {
   const breadcrumbItems = [
@@ -46,189 +42,165 @@ export default async function CareersPage() {
     <>
       <Hero
         title="Careers"
-        description="Join Our Mission to Power Nigeria"
+        description="Build What Powers Nigeria."
         image="/images/contact/careers.webp?height=400&width=1200"
+        titleSize="display"
       />
 
-      <Container className="px-4 py-6 md:py-8">
-        <Breadcrumb items={breadcrumbItems} className="mb-6 md:mb-8" />
+      <Container className="px-4 py-8">
+        <Breadcrumb items={breadcrumbItems} className="mb-8 md:mb-12" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 items-start">
-          <div className="lg:col-span-2 space-y-4 md:space-y-6">
-            <Card className="border shadow-md border-border bg-surface">
-              <CardContent className="p-4 sm:p-5 md:p-6">
-                <h2 className="text-2xl md:text-3xl font-semibold mb-4 md:mb-6 text-foreground">
-                  Shape the Future of Energy with Us
-                </h2>
-                <div className="text-muted-foreground leading-relaxed space-y-4 md:space-y-5 text-base">
-                  <p>
-                    At ACOB Lighting Technology Limited, we believe that our
-                    people are our greatest asset. We are a dynamic and growing
-                    company at the forefront of Nigeria&apos;s clean energy
-                    revolution. Joining our team means becoming part of a
-                    mission-driven organization dedicated to innovation,
-                    sustainability, and community empowerment.
-                  </p>
-                  <p>
-                    We offer a collaborative work environment where creativity
-                    is encouraged, and professional growth is prioritized. If
-                    you are passionate about making a tangible difference and
-                    contributing to a brighter, more sustainable future, we
-                    invite you to explore career opportunities with us.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+        {/* Standfirst */}
+        <div className="max-w-[68ch]">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-primary">
+            Join the team
+          </span>
+          <p className="mt-4 text-xl font-medium leading-relaxed text-foreground md:text-2xl">
+            Our people are our greatest asset — a mission-driven team at the
+            forefront of Nigeria&apos;s clean energy revolution.
+          </p>
+          <p className="mt-5 max-w-[70ch] text-lg leading-relaxed text-muted-foreground">
+            We offer a collaborative environment where creativity is encouraged
+            and professional growth is prioritized. If you are passionate about
+            making a tangible difference and contributing to a brighter, more
+            sustainable future, explore career opportunities with us.
+          </p>
+        </div>
 
-            <Card className="border shadow-md border-border bg-surface">
-              <CardContent className="p-4 sm:p-5 md:p-6">
-                <h2 className="text-2xl md:text-3xl font-semibold mb-4 md:mb-6 text-foreground">
-                  Why Work at ACOB Lighting?
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  {whyWorkItems.map(({ icon, title, description }, index) => {
-                    const IconComponent = iconMap[icon as keyof typeof iconMap];
-                    return (
-                      <FadeIn key={title} delay={index * 0.15} direction="up">
-                        <div className="group flex items-start gap-3 md:gap-4 p-4 md:p-5 rounded-xl bg-muted/30 border border-border hover:shadow-lg hover:-translate-y-1 transition-all duration-500 cursor-pointer">
-                          <div className="relative rounded-full bg-primary/10 p-3 overflow-hidden transition-all duration-500 flex items-center justify-center group-hover:bg-primary group-hover:scale-110 w-10 h-10 md:w-12 md:h-12 flex-shrink-0">
-                            <div className="absolute inset-0 bg-primary transform scale-0 transition-transform duration-500 ease-out group-hover:scale-100 rounded-full origin-center" />
-                            <IconComponent className="h-5 w-5 md:h-6 md:w-6 relative z-10 transition-colors duration-500 text-muted-foreground group-hover:text-primary-foreground" />
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-base md:text-lg mb-1.5 md:mb-2 text-foreground">
-                              {title}
-                            </h4>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
-                              {description}
-                            </p>
-                          </div>
-                        </div>
-                      </FadeIn>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+        <div className="mt-12 grid grid-cols-1 items-start gap-10 border-t-[3px] border-foreground pt-10 lg:grid-cols-[1fr_300px] lg:gap-14 md:mt-16">
+          {/* Main column */}
+          <div className="space-y-14 md:space-y-20">
+            {/* Why work here */}
+            <section>
+              <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                Our culture
+              </span>
+              <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+                Why work at ACOB Lighting?
+              </h2>
 
-            <Card className="border shadow-md border-border bg-surface">
-              <CardContent className="p-4 sm:p-5 md:p-6">
-                <h2 className="text-2xl md:text-3xl font-semibold mb-4 md:mb-6 text-foreground">
-                  {jobPostings.length > 0
-                    ? 'Current Openings'
-                    : 'Career Opportunities'}
-                </h2>
-
-                {jobPostings.length > 0 ? (
-                  <div className="space-y-4 md:space-y-6">
-                    {jobPostings.map(
-                      (job: {
-                        _id: string;
-                        title: string;
-                        department?: string;
-                        location?: string;
-                        employmentType?: string;
-                        description?: string;
-                        applicationDeadline?: string;
-                        slug: { current: string };
-                      }) => (
-                        <div
-                          key={job._id}
-                          className="p-4 md:p-5 rounded-xl border border-border bg-muted/30 hover:bg-muted/50 transition-colors duration-500"
-                        >
-                          <div className="mb-3 md:mb-4">
-                            <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">
-                              {job.title}
-                            </h3>
-                            <div className="flex flex-wrap gap-3 md:gap-4 text-xs md:text-sm text-muted-foreground">
-                              {job.department && (
-                                <div className="flex items-center gap-1">
-                                  <Briefcase className="h-4 w-4" />
-                                  <span>{job.department}</span>
-                                </div>
-                              )}
-                              {job.location && (
-                                <div className="flex items-center gap-1">
-                                  <LocationIcon className="h-4 w-4" />
-                                  <span>{job.location}</span>
-                                </div>
-                              )}
-                              {job.employmentType && (
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="h-4 w-4" />
-                                  <span>{job.employmentType}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <p className="text-sm text-muted-foreground mb-3 md:mb-4 leading-relaxed">
-                            {job.description}
-                          </p>
-
-                          <div className="flex flex-col sm:flex-row gap-2 md:gap-3">
-                            <Link href={`/contact/careers/${job.slug.current}`}>
-                              <Button variant="default">
-                                View Details
-                                <ArrowRight className="ml-2 h-4 w-4" />
-                              </Button>
-                            </Link>
-                            {job.applicationDeadline && (
-                              <div className="text-sm text-muted-foreground flex items-center gap-1">
-                                <Calendar className="h-4 w-4" />
-                                <span>
-                                  Deadline:{' '}
-                                  {new Date(
-                                    job.applicationDeadline,
-                                  ).toLocaleDateString()}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-6 md:py-8">
-                    <div className="mb-6 md:mb-8 flex justify-center">
-                      <div className="relative rounded-full bg-muted/50 p-6 md:p-8">
-                        <FileSearch className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground" />
-                      </div>
+              <div className="mt-8 border-t border-border">
+                {whyWorkItems.map(({ title, description }, index) => (
+                  <FadeIn
+                    key={title}
+                    delay={index * 0.08}
+                    className="grid grid-cols-[48px_1fr] gap-x-5 border-b border-border py-6 md:grid-cols-[72px_1fr] md:gap-x-8"
+                  >
+                    <div className="text-2xl font-extrabold leading-none tabular-nums text-primary md:text-3xl">
+                      {String(index + 1).padStart(2, '0')}
                     </div>
-                    <h3 className="text-xl md:text-2xl font-semibold text-foreground mb-3 md:mb-4">
-                      No Current Openings
-                    </h3>
-                    <p className="text-sm md:text-base text-muted-foreground leading-relaxed mb-6 md:mb-8 max-w-2xl mx-auto">
-                      We currently don't have any open positions, but we're
-                      always looking for talented individuals who are passionate
-                      about clean energy and innovation to join our growing
-                      team.
-                    </p>
-                    <div className="p-4 md:p-6 bg-muted/30 rounded-xl border border-border mb-6 md:mb-8 max-w-2xl mx-auto">
-                      <p className="text-sm md:text-base text-muted-foreground font-medium">
-                        Please check this page regularly for new job openings
-                        and opportunities. You can also reach out to us directly
-                        to express your interest in future positions.
+                    <div className="max-w-[62ch]">
+                      <h3 className="text-lg font-extrabold tracking-tight text-foreground md:text-xl">
+                        {title}
+                      </h3>
+                      <p className="mt-2 leading-relaxed text-muted-foreground">
+                        {description}
                       </p>
                     </div>
-                    <Link href="/contact">
-                      <Button variant="default" size="lg">
-                        Contact Us
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  </FadeIn>
+                ))}
+              </div>
+            </section>
+
+            {/* Openings */}
+            <section>
+              <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                Opportunities
+              </span>
+              <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+                {jobPostings.length > 0
+                  ? 'Current openings'
+                  : 'Career opportunities'}
+              </h2>
+
+              {jobPostings.length > 0 ? (
+                <div className="mt-8 border-t border-border">
+                  {jobPostings.map((job: JobPosting) => (
+                    <article
+                      key={job._id}
+                      className="border-b border-border py-7 md:py-8"
+                    >
+                      <h3 className="text-xl font-extrabold tracking-tight text-foreground md:text-2xl">
+                        {job.title}
+                      </h3>
+
+                      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
+                        {job.department && (
+                          <span className="flex items-center gap-1.5">
+                            <Briefcase className="h-4 w-4 text-primary" />
+                            {job.department}
+                          </span>
+                        )}
+                        {job.location && (
+                          <span className="flex items-center gap-1.5">
+                            <LocationIcon className="h-4 w-4 text-primary" />
+                            {job.location}
+                          </span>
+                        )}
+                        {job.employmentType && (
+                          <span className="flex items-center gap-1.5">
+                            <Calendar className="h-4 w-4 text-primary" />
+                            {job.employmentType}
+                          </span>
+                        )}
+                      </div>
+
+                      {job.description && (
+                        <p className="mt-4 max-w-[64ch] leading-relaxed text-muted-foreground">
+                          {job.description}
+                        </p>
+                      )}
+
+                      <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                        <Link
+                          href={`/contact/careers/${job.slug.current}`}
+                          className="group inline-flex items-center gap-2 border-b-2 border-foreground pb-1 text-sm font-bold text-foreground transition-all hover:gap-3 hover:border-primary hover:text-primary"
+                        >
+                          View details
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                        {job.applicationDeadline && (
+                          <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                            <Calendar className="h-4 w-4" />
+                            Deadline:{' '}
+                            {new Date(
+                              job.applicationDeadline,
+                            ).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-8 border-y border-border py-12">
+                  <p className="text-3xl font-extrabold uppercase tracking-tight text-foreground md:text-4xl">
+                    No current openings
+                  </p>
+                  <p className="mt-4 max-w-[64ch] text-lg leading-relaxed text-muted-foreground">
+                    We don&apos;t have any open positions right now, but
+                    we&apos;re always looking for talented people who are
+                    passionate about clean energy and innovation. Check back
+                    regularly, or reach out directly to express interest in
+                    future roles.
+                  </p>
+                  <Link
+                    href="/contact"
+                    className="group mt-6 inline-flex items-center gap-2 border-b-2 border-foreground pb-1 text-sm font-bold text-foreground transition-all hover:gap-3 hover:border-primary hover:text-primary"
+                  >
+                    Contact us
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              )}
+            </section>
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-4 md:space-y-6 sticky top-20 self-start">
-            <MoreContactOptions excludeHref="/contact/careers" />
+          <aside className="space-y-10 lg:sticky lg:top-24">
             <QuickContact emailAudience="careers" phones="both" showAddress />
-          </div>
+            <MoreContactOptions excludeHref="/contact/careers" />
+          </aside>
         </div>
       </Container>
     </>

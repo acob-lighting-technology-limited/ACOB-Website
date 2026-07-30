@@ -13,10 +13,8 @@ export default async function GalleryPage() {
     { label: 'Media Gallery' },
   ];
 
-  // Fetch projects with gallery images
   const projects = await getProjects();
 
-  // Convert kebab-case to title case
   const formatCategoryName = (category: string) => {
     return category
       .split('-')
@@ -24,16 +22,14 @@ export default async function GalleryPage() {
       .join(' ');
   };
 
-  // Collect all unique images from all projects with their metadata
   const allImages: Array<{ src: string; alt: string; category: string }> = [];
-  const seenUrls = new Set<string>(); // Track unique URLs to avoid duplicates
+  const seenUrls = new Set<string>();
 
   projects.forEach((project: Project) => {
     const categoryName = project.categories?.[0]
       ? formatCategoryName(project.categories[0])
       : 'Solar Projects';
 
-    // Add the main project image
     if (project.projectImage && !seenUrls.has(project.projectImage)) {
       seenUrls.add(project.projectImage);
       allImages.push({
@@ -43,7 +39,6 @@ export default async function GalleryPage() {
       });
     }
 
-    // Extract images from content blocks (PortableText)
     if (project.content && Array.isArray(project.content)) {
       project.content.forEach((block: PortableTextBlock) => {
         if (block._type === 'image') {
@@ -62,7 +57,6 @@ export default async function GalleryPage() {
                 .quality(90)
                 .url() || '';
 
-            // Only add if we haven't seen this URL before
             if (imageUrl && !seenUrls.has(imageUrl)) {
               seenUrls.add(imageUrl);
               allImages.push({
@@ -81,22 +75,28 @@ export default async function GalleryPage() {
     <>
       <Hero
         title="Media Gallery"
-        description="Explore Our Project Portfolio"
+        description="Our Work, in Frame."
         image="/images/services/header.webp"
+        titleSize="display"
       />
 
       <Container className="px-4 py-8">
-        <Breadcrumb items={breadcrumbItems} className="mb-8" />
+        <Breadcrumb items={breadcrumbItems} className="mb-8 md:mb-12" />
 
-        <div className="mb-6">
-          <h2 className="text-3xl font-bold mb-2">Project Gallery</h2>
-          <p className="text-muted-foreground">
-            Browse through our collection of renewable energy projects (
-            {allImages.length} images)
+        {/* Standfirst */}
+        <div className="max-w-[62ch]">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-primary">
+            {allImages.length} images
+          </span>
+          <p className="mt-4 text-xl font-medium leading-relaxed text-foreground md:text-2xl">
+            Browse through our collection of renewable energy projects across
+            Nigeria.
           </p>
         </div>
 
-        <GalleryClient images={allImages} />
+        <div className="mt-10 md:mt-14">
+          <GalleryClient images={allImages} />
+        </div>
       </Container>
     </>
   );

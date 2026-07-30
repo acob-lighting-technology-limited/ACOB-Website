@@ -13,25 +13,28 @@ export default function ResourcesPage() {
     <>
       <Hero
         title="Resources & Downloads"
-        description="Access comprehensive product information, guides, and certifications"
+        description="Everything You Need."
         image="/images/services/solar-installation.webp"
+        titleSize="display"
       />
 
-      <Container className="px-4 py-12">
-        <Breadcrumb items={breadcrumbItems} className="mb-8" />
+      <Container className="px-4 py-8">
+        <Breadcrumb items={breadcrumbItems} className="mb-8 md:mb-12" />
 
-        <div className="mb-12 text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold mb-4">
-            Everything You Need to Know
-          </h2>
-          <p className="text-muted-foreground text-lg">
-            Browse our comprehensive library of resources including product
-            brochures, technical specifications, installation guides, and
-            certifications.
+        {/* Standfirst */}
+        <div className="max-w-[68ch]">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-primary">
+            Downloads &amp; guides
+          </span>
+          <p className="mt-4 text-xl font-medium leading-relaxed text-foreground md:text-2xl">
+            Browse our library of product brochures, technical specifications,
+            installation guides, and certifications.
           </p>
         </div>
 
-        <ResourcesSection />
+        <div className="mt-12 md:mt-16">
+          <ResourcesSection />
+        </div>
       </Container>
     </>
   );

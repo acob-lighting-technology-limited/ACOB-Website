@@ -103,14 +103,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="min-h-screen">
-      <div className="bg-muted/30 py-4 border-b">
-        <Container noPadding className="px-4 ">
-          <Breadcrumb items={breadcrumbItems} />
-        </Container>
-      </div>
+      <Container className="px-4 py-8">
+        <Breadcrumb items={breadcrumbItems} className="mb-8 md:mb-12" />
 
-      <Container className="px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14">
           {/* Image Gallery */}
           <div className="lg:sticky lg:top-4 lg:self-start">
             <ProductDetailClient
@@ -121,26 +117,28 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
 
           {/* Product Information */}
-          <div className="space-y-6">
+          <div>
             {/* Title and Description */}
             <div>
-              <div className="mb-3">
-                <Badge variant="outline" className="text-sm font-medium">
-                  {getCategoryLabel(product.category)}
-                </Badge>
-              </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
+              <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                {getCategoryLabel(product.category)}
+              </span>
+              <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
                 {product.title}
               </h1>
-              <h2 className="text-2xl font-bold mb-4">Description</h2>
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="mt-4 max-w-[64ch] leading-relaxed text-muted-foreground">
                 {product.description}
               </p>
             </div>
 
             {/* Product Details */}
-            <div className="border-t pt-6">
-              <h2 className="text-2xl font-bold mb-4">Product Details</h2>
+            <div className="mt-10 border-t-[3px] border-foreground pt-6">
+              <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                Specifications
+              </span>
+              <h2 className="mt-2 mb-4 text-2xl font-extrabold uppercase tracking-tight text-foreground">
+                Product Details
+              </h2>
               <dl className="space-y-3">
                 <div className="flex justify-between py-2 border-b">
                   <dt className="text-muted-foreground font-medium">

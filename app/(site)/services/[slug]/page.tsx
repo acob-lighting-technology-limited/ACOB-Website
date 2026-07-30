@@ -1,16 +1,7 @@
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Container } from '@/components/ui/container';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  ArrowRight,
-  ArrowLeft,
-  CheckCircle2,
-  Star,
-  Target,
-  ShieldCheck,
-} from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { getServiceBySlug, servicesData } from '@/lib/data';
 import Link from 'next/link';
@@ -22,15 +13,27 @@ import { FadeIn } from '@/components/animations/FadeIn';
 import { client } from '@/sanity/lib/queries';
 
 interface ServicePageProps {
-  params: Promise<{
-    slug: string;
-  }>;
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
-  return servicesData.map(service => ({
-    slug: service.slug,
-  }));
+  return servicesData.map(service => ({ slug: service.slug }));
+}
+
+/** Pulls out the first benefit that carries a headline metric (e.g. "Up to
+ *  60% reduction…") so it can be rendered as a big stat callout instead of
+ *  buried in a plain bullet list. */
+function extractLeadMetric(benefits: string[] | undefined) {
+  if (!benefits || benefits.length === 0) {
+    return null;
+  }
+  const metricPattern = /\d+%|\d+\/\d+|\d+\+/;
+  const index = benefits.findIndex(b => metricPattern.test(b));
+  if (index === -1) {
+    return null;
+  }
+  const match = benefits[index].match(metricPattern);
+  return match ? { index, value: match[0], caption: benefits[index] } : null;
 }
 
 export default async function ServicePage({ params }: ServicePageProps) {
@@ -47,10 +50,8 @@ export default async function ServicePage({ params }: ServicePageProps) {
     { label: service.title },
   ];
 
-  // Get related services (excluding current service)
   const relatedServices = servicesData.filter(s => s.slug !== slug).slice(0, 3);
 
-  // Fetch all projects to match with key deployments
   let projects: Array<{ title: string; slug: { current: string } }> = [];
   try {
     projects = await client.fetch('*[_type == "project"]{ title, slug }');
@@ -61,7 +62,6 @@ export default async function ServicePage({ params }: ServicePageProps) {
     );
   }
 
-  // Helper to match deployment name to Sanity project
   const findMatchingProject = (deploymentName: string) => {
     const cleanSearchTerm = (name: string) => {
       let cleaned = name.toLowerCase();
@@ -98,7 +98,6 @@ export default async function ServicePage({ params }: ServicePageProps) {
       if (cleaned.includes('yakowa') || cleaned.includes('kafanchan')) {
         return 'yakowa';
       }
-
       cleaned = cleaned
         .replace(
           /\b(community|hospital|general|teaching|zonal|specialist|facility|site|sites|headquarters|utility|suite|bank|home)\b/g,
@@ -113,21 +112,14 @@ export default async function ServicePage({ params }: ServicePageProps) {
     if (!term) {
       return null;
     }
-
-    return projects.find(proj => {
-      const titleLower = proj.title.toLowerCase();
-      return titleLower.includes(term);
-    });
+    return projects.find(proj => proj.title.toLowerCase().includes(term));
   };
 
-  // Parse narrative vs completed projects list
   const descParts = service.description.split(
     /We have successfully[\s\S]*?including:/i,
   );
   const introText = descParts[0].trim();
   const projectsSection = descParts[1] ? descParts[1].trim() : '';
-
-  // Extract individual bullet points
   const completedProjects = projectsSection
     ? projectsSection
         .split('\n')
@@ -135,280 +127,319 @@ export default async function ServicePage({ params }: ServicePageProps) {
         .filter(Boolean)
     : [];
 
+  const hasGlance =
+    (service.features && service.features.length > 0) ||
+    (service.benefits && service.benefits.length > 0);
+
+  const leadMetric = extractLeadMetric(service.benefits);
+  const remainingBenefits = service.benefits
+    ? service.benefits.filter((_, i) => i !== leadMetric?.index)
+    : [];
+
+  const galleryImages = service.gallery ?? [];
+
   return (
     <>
       <Hero
         title="Our Services"
         description={service.title}
         image={service.image}
+        titleSize="display"
       />
-      <Container className="py-12">
-        <Breadcrumb items={breadcrumbItems} className="mb-8" />
+      <Container className="px-4 py-8">
+        <Breadcrumb items={breadcrumbItems} className="mb-8 md:mb-12" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.7fr_1.3fr] gap-8 items-start">
-          {/* Left Column: Narrative, Gallery & Key Deployments */}
-          <div className="space-y-10">
-            <FadeIn delay={0.1}>
-              <div className="space-y-6">
-                <div className="border-l-4 border-primary pl-4 py-1">
-                  <span className="text-xs uppercase font-bold tracking-widest text-primary">
-                    Service Overview
-                  </span>
-                  <h1 className="text-3xl font-extrabold tracking-tight mt-1">
-                    {service.title}
-                  </h1>
-                </div>
-
-                <p className="text-muted-foreground dark:text-foreground/90 leading-relaxed text-lg whitespace-pre-line">
-                  {introText}
-                </p>
-              </div>
-            </FadeIn>
-
-            {/* Inline Mixed Portfolio Gallery */}
-            {service.gallery && service.gallery.length > 0 && (
-              <FadeIn delay={0.2}>
-                <div className="space-y-4">
-                  <h3 className="text-xl font-bold tracking-tight flex items-center gap-2">
-                    <ShieldCheck className="h-5 w-5 text-primary" />
-                    Project Portfolio Gallery
-                  </h3>
-                  <ServiceGallery
-                    images={service.gallery}
-                    serviceTitle={service.title}
-                  />
-                </div>
-              </FadeIn>
-            )}
-
-            {/* Key Completed Deployments (Stylized Timeline/Grid) */}
-            {completedProjects.length > 0 && (
-              <FadeIn delay={0.3}>
-                <div className="space-y-6">
-                  <h3 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                    <Target className="h-6 w-6 text-primary" />
-                    Key Completed Deployments
-                  </h3>
-                  <div className="grid grid-cols-1 gap-4">
-                    {completedProjects.map((proj, idx) => {
-                      const colonIdx = proj.indexOf(':');
-                      let name = proj;
-                      let detail = '';
-                      if (colonIdx !== -1) {
-                        name = proj.substring(0, colonIdx).trim();
-                        detail = proj.substring(colonIdx + 1).trim();
-                      }
-                      const matchingProject = findMatchingProject(name);
-
-                      const CardContent = (
-                        <>
-                          <div className="flex-shrink-0 h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                            {idx + 1}
-                          </div>
-                          <div className="space-y-1 flex-1 text-left">
-                            <h4 className="font-semibold text-base text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                              {name}
-                              {matchingProject && (
-                                <ArrowRight className="h-3.5 w-3.5 text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-0.5" />
-                              )}
-                            </h4>
-                            {detail && (
-                              <p className="text-sm text-muted-foreground leading-relaxed">
-                                {detail}
-                              </p>
-                            )}
-                          </div>
-                        </>
-                      );
-
-                      return matchingProject ? (
-                        <Link
-                          href={`/projects/${matchingProject.slug.current}`}
-                          key={idx}
-                          className="group flex gap-4 p-5 rounded-xl border border-border/80 bg-card/45 hover:bg-card hover:border-primary/45 hover:shadow-md transition-all duration-300 cursor-pointer w-full"
-                        >
-                          {CardContent}
-                        </Link>
-                      ) : (
-                        <div
-                          key={idx}
-                          className="flex gap-4 p-5 rounded-xl border border-border/80 bg-card/45 transition-all duration-300 w-full"
-                        >
-                          {CardContent}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </FadeIn>
-            )}
-          </div>
-
-          {/* Right Column: Features, Benefits, Applications & Why Choose Us */}
-          <div className="space-y-8 lg:sticky lg:top-24">
-            {/* Features Card */}
-            {service.features && service.features.length > 0 && (
-              <FadeIn delay={0.15}>
-                <Card className="border border-border bg-card/45 shadow-sm overflow-hidden">
-                  <CardHeader className="bg-primary/5 pb-4 border-b border-border/60">
-                    <CardTitle className="text-lg font-bold flex items-center gap-2 text-primary">
-                      <CheckCircle2 className="h-5 w-5" />
-                      Key Features
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-6">
-                    <ul className="space-y-3">
-                      {service.features.map((feat, i) => (
-                        <li
-                          key={i}
-                          className="flex gap-3 text-sm text-muted-foreground dark:text-foreground/90"
-                        >
-                          <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                          <span>{feat}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </FadeIn>
-            )}
-
-            {/* Benefits & Impact Card */}
-            {service.benefits && service.benefits.length > 0 && (
-              <FadeIn delay={0.25}>
-                <Card className="border border-border bg-card/45 shadow-sm overflow-hidden">
-                  <CardHeader className="bg-emerald-500/5 pb-4 border-b border-border/60">
-                    <CardTitle className="text-lg font-bold flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
-                      <Star className="h-5 w-5" />
-                      Value & Impact
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-6">
-                    <ul className="space-y-3">
-                      {service.benefits.map((benefit, i) => (
-                        <li
-                          key={i}
-                          className="flex gap-3 text-sm text-muted-foreground dark:text-foreground/90"
-                        >
-                          <Star className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                          <span>{benefit}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </FadeIn>
-            )}
-
-            {/* Applications Tags */}
-            {service.applications && service.applications.length > 0 && (
-              <FadeIn delay={0.35}>
-                <Card className="border border-border bg-card/45 shadow-sm">
-                  <CardContent className="p-6 space-y-4">
-                    <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">
-                      Target Applications
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {service.applications.map((app, i) => (
-                        <Badge
-                          key={i}
-                          variant="secondary"
-                          className="px-3 py-1 text-xs font-semibold"
-                        >
-                          {app}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </FadeIn>
-            )}
-
-            {/* Why Choose ACOB */}
-            {service.whyChooseUs && service.whyChooseUs.length > 0 && (
-              <FadeIn delay={0.45}>
-                <Card className="border border-border bg-card/45 shadow-sm">
-                  <CardContent className="p-6 space-y-4">
-                    <h4 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">
-                      Why Choose ACOB
-                    </h4>
-                    <ul className="space-y-3 text-sm text-muted-foreground dark:text-foreground/90">
-                      {service.whyChooseUs.map((w, i) => (
-                        <li key={i} className="flex gap-2">
-                          <span className="text-primary font-extrabold">•</span>
-                          <span>{w}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </FadeIn>
-            )}
-          </div>
+        {/* Overview */}
+        <div className="max-w-[72ch]">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-primary">
+            Service Overview
+          </span>
+          <p className="mt-4 whitespace-pre-line text-lg leading-relaxed text-foreground/90 md:text-xl">
+            {introText}
+          </p>
         </div>
 
-        {/* Share Section */}
-        <div className="flex items-center gap-4 py-8 border-t border-b border-border/60 mt-12">
+        {/* At a glance — the system (features) vs the impact (outcomes) */}
+        {hasGlance && (
+          <FadeIn>
+            <section className="mt-12 grid gap-8 border-t-[3px] border-foreground pt-10 md:mt-16 md:grid-cols-[1fr_1.2fr] md:gap-10">
+              {/* The System — compact spec list */}
+              {service.features && service.features.length > 0 && (
+                <div>
+                  <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                    The System
+                  </span>
+                  <h2 className="mt-2 text-xl font-extrabold tracking-tight text-foreground md:text-2xl">
+                    Key Features
+                  </h2>
+                  <ul className="mt-6 divide-y divide-border border-y border-border">
+                    {service.features.map((feat, i) => (
+                      <li key={i} className="flex items-center gap-3 py-3">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-sm bg-primary" />
+                        <span className="text-sm leading-relaxed text-foreground/90 md:text-base">
+                          {feat}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* The Impact — tinted panel led by the standout metric */}
+              {service.benefits && service.benefits.length > 0 && (
+                <div className="border border-primary/25 bg-primary/5 p-6 md:p-8 rounded-2xl">
+                  <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                    The Impact
+                  </span>
+                  <h2 className="mt-2 text-xl font-extrabold tracking-tight text-foreground md:text-2xl">
+                    Value &amp; Impact
+                  </h2>
+
+                  {leadMetric && (
+                    <div className="mt-6 border-b border-primary/20 pb-6">
+                      <div className="text-5xl font-extrabold leading-none tabular-nums text-primary md:text-6xl">
+                        {leadMetric.value}
+                      </div>
+                      <p className="mt-3 text-sm leading-relaxed text-foreground md:text-base">
+                        {leadMetric.caption}
+                      </p>
+                    </div>
+                  )}
+
+                  <ul className="mt-6 space-y-3">
+                    {remainingBenefits.map((benefit, i) => (
+                      <li
+                        key={i}
+                        className="flex gap-3 text-sm leading-relaxed text-foreground/90 md:text-base"
+                      >
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </section>
+          </FadeIn>
+        )}
+
+        {/* Applications */}
+        {service.applications && service.applications.length > 0 && (
+          <section className="mt-14 md:mt-16">
+            <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+              Target Applications
+            </span>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {service.applications.map((app, i) => (
+                <span
+                  key={i}
+                  className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground"
+                >
+                  {app}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Portfolio gallery */}
+        {service.gallery && service.gallery.length > 0 && (
+          <FadeIn>
+            <section className="mt-14 md:mt-20">
+              <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                Portfolio
+              </span>
+              <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+                Project gallery
+              </h2>
+              <div className="mt-6">
+                <ServiceGallery
+                  images={service.gallery}
+                  serviceTitle={service.title}
+                />
+              </div>
+            </section>
+          </FadeIn>
+        )}
+
+        {/* Key completed deployments */}
+        {completedProjects.length > 0 && (
+          <FadeIn>
+            <section className="mt-14 md:mt-20">
+              <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                Track record
+              </span>
+              <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+                Key completed deployments
+              </h2>
+
+              <div className="mt-6 border-t border-border">
+                {completedProjects.map((proj, idx) => {
+                  const colonIdx = proj.indexOf(':');
+                  let name = proj;
+                  let detail = '';
+                  if (colonIdx !== -1) {
+                    name = proj.substring(0, colonIdx).trim();
+                    detail = proj.substring(colonIdx + 1).trim();
+                  }
+                  const matchingProject = findMatchingProject(name);
+                  // Cycle through the service's own gallery photos as
+                  // deployment thumbnails — there's no per-deployment image,
+                  // so each row borrows one of the service's carousel shots.
+                  const thumb =
+                    galleryImages.length > 0
+                      ? galleryImages[idx % galleryImages.length].split('?')[0]
+                      : null;
+
+                  const inner = (
+                    <div className="grid grid-cols-[72px_1fr_auto] items-center gap-x-4 py-5 sm:grid-cols-[96px_1fr_auto] md:grid-cols-[120px_1fr_auto]">
+                      {thumb ? (
+                        <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-muted rounded-lg">
+                          <Image
+                            src={thumb}
+                            alt=""
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            sizes="120px"
+                          />
+                          <span className="absolute bottom-1 left-1.5 text-[0.7rem] font-extrabold leading-none tabular-nums text-white drop-shadow">
+                            {String(idx + 1).padStart(2, '0')}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-2xl font-extrabold leading-none tabular-nums text-primary md:text-3xl">
+                          {String(idx + 1).padStart(2, '0')}
+                        </span>
+                      )}
+                      <div>
+                        <h3 className="font-bold text-foreground transition-colors group-hover:text-primary">
+                          {name}
+                        </h3>
+                        {detail && (
+                          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                            {detail}
+                          </p>
+                        )}
+                      </div>
+                      {matchingProject && (
+                        <ArrowRight className="h-5 w-5 shrink-0 text-primary opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100" />
+                      )}
+                    </div>
+                  );
+
+                  return matchingProject ? (
+                    <Link
+                      key={idx}
+                      href={`/projects/${matchingProject.slug.current}`}
+                      className="group -mx-2 block border-b border-border px-2 transition-colors hover:bg-muted/40"
+                    >
+                      {inner}
+                    </Link>
+                  ) : (
+                    <div key={idx} className="border-b border-border">
+                      {inner}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          </FadeIn>
+        )}
+
+        {/* Why choose ACOB */}
+        {service.whyChooseUs && service.whyChooseUs.length > 0 && (
+          <section className="mt-14 border-t border-border pt-10 md:mt-20">
+            <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+              The ACOB difference
+            </span>
+            <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+              Why choose us
+            </h2>
+            <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+              {service.whyChooseUs.map((w, i) => (
+                <li
+                  key={i}
+                  className="flex gap-3 text-sm leading-relaxed text-muted-foreground dark:text-foreground/90 md:text-base"
+                >
+                  <span className="font-extrabold text-primary">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span>{w}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Share */}
+        <div className="mt-14 flex items-center gap-4 border-y border-border py-8">
           <span className="text-sm font-semibold text-muted-foreground">
             Share this Service:
           </span>
           <ShareCopy className="rounded-full bg-transparent" />
         </div>
 
-        {/* Related Services */}
+        {/* Related services */}
         {relatedServices.length > 0 && (
-          <div className="mt-12">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold">Related Services</h3>
+          <section className="mt-16 md:mt-20">
+            <div className="mb-8 flex items-end justify-between">
+              <div>
+                <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                  Keep exploring
+                </span>
+                <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+                  Related services
+                </h2>
+              </div>
               <Link
                 href="/services"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+                className="hidden items-center gap-1 text-sm font-semibold text-primary transition-all hover:gap-2 sm:flex"
               >
                 View all
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
               {relatedServices.map(relatedService => (
                 <Link
                   key={relatedService.id}
                   href={`/services/${relatedService.slug}`}
-                  className="group flex flex-col rounded-xl border border-border bg-card overflow-hidden hover:border-primary/50 hover:shadow-lg transition-all duration-300"
+                  className="group block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
-                  {/* Thumbnail */}
-                  <div className="relative h-44 w-full bg-muted overflow-hidden">
-                    <Image
-                      src={relatedService.image}
-                      alt={relatedService.title}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-
-                  {/* Body */}
-                  <div className="flex flex-col flex-1 p-4 gap-2">
-                    <h4 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors duration-200 line-clamp-2 leading-snug">
-                      {relatedService.title}
-                    </h4>
-                    {relatedService.excerpt && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                        {relatedService.excerpt}
-                      </p>
-                    )}
-                    <div className="mt-auto pt-3 flex items-center justify-between border-t border-border/60 text-xs text-primary font-medium group-hover:gap-2 transition-all duration-300">
-                      <span>Learn More</span>
-                      <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform duration-300" />
+                  <article className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-500 group-hover:-translate-y-1 group-hover:border-primary/40 group-hover:shadow-lg">
+                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+                      <Image
+                        src={relatedService.image}
+                        alt={relatedService.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
                     </div>
-                  </div>
+                    <div className="flex flex-1 flex-col p-4 md:p-5">
+                      <h3 className="text-base font-extrabold tracking-tight text-foreground line-clamp-2">
+                        {relatedService.title}
+                      </h3>
+                      {relatedService.excerpt && (
+                        <p className="mt-2 flex-1 text-xs leading-relaxed text-muted-foreground line-clamp-3 md:text-sm">
+                          {relatedService.excerpt}
+                        </p>
+                      )}
+                      <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-primary md:text-sm">
+                        Learn more
+                        <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1 md:h-4 md:w-4" />
+                      </span>
+                    </div>
+                  </article>
                 </Link>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Back to Services Button */}
-        <div className="mt-12 mb-8 text-center">
+        {/* Back */}
+        <div className="mb-8 mt-16 text-center">
           <Link href="/services">
             <Button variant="outline" className="group">
               <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />

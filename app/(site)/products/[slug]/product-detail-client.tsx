@@ -148,7 +148,7 @@ export function ProductDetailClient({
                     {isVideo ? (
                       <video
                         src={image.asset?.url}
-                        className="object-cover w-full h-full"
+                        className="object-cover w-full h-full rounded-lg"
                         muted
                         playsInline
                         aria-label={mediaTitle}
@@ -174,7 +174,7 @@ export function ProductDetailClient({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-muted group"
+              className="relative aspect-[4/3] w-full overflow-hidden border border-border bg-muted group rounded-lg"
               ref={imageRef}
               onMouseMove={isLargeScreen ? handleMouseMove : undefined}
               onMouseEnter={isLargeScreen ? handleMouseEnter : undefined}
@@ -202,7 +202,7 @@ export function ProductDetailClient({
                       return (
                         <video
                           src={currentItem?.asset?.url}
-                          className="w-full h-full object-cover cursor-pointer"
+                          className="w-full h-full object-cover cursor-pointer rounded-lg"
                           onClick={openLightbox}
                           controls={false}
                           muted

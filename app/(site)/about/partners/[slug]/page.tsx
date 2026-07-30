@@ -6,8 +6,6 @@ import { ArrowLeft, ExternalLink, Handshake, CheckCircle2 } from 'lucide-react';
 import { Container } from '@/components/ui/container';
 import { Hero } from '@/components/ui/hero';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FadeIn } from '@/components/animations/FadeIn';
 import { partners } from '@/lib/data/partners-data';
@@ -58,6 +56,10 @@ export default async function PartnerDetailPage({
     { label: partner.name },
   ];
 
+  const relatedPartners = partners
+    .filter(p => p.category === partner.category && p.slug !== partner.slug)
+    .slice(0, 3);
+
   return (
     <>
       <Hero
@@ -66,180 +68,158 @@ export default async function PartnerDetailPage({
           partner.details?.partnershipType || 'Strategic Partnership'
         }
         image="/images/about/partners-collage.webp"
+        titleSize="display"
       />
 
-      <Container>
-        <Breadcrumb items={breadcrumbItems} className="mb-10" />
+      <Container className="px-4 py-8">
+        <Breadcrumb items={breadcrumbItems} className="mb-8 md:mb-12" />
 
-        <div className="grid gap-12 lg:grid-cols-[2fr_1fr]">
-          {/* Main Content */}
-          <div className="space-y-8">
-            {/* Video Section (if available) */}
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1fr_300px] lg:gap-14">
+          {/* Main content */}
+          <div className="space-y-12 md:space-y-16">
             {partner.details?.videoUrl && (
-              <FadeIn delay={0.1}>
-                <Card className="overflow-hidden border-2 border-primary/20">
-                  <div className="relative w-full aspect-video bg-muted/50">
-                    <iframe
-                      src={partner.details.videoUrl}
-                      className="absolute top-0 left-0 w-full h-full border-0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                      title={`${partner.name} Partnership Video`}
-                    />
-                  </div>
-                </Card>
+              <FadeIn>
+                <div className="relative aspect-video w-full overflow-hidden border border-border bg-muted/50 rounded-lg">
+                  <iframe
+                    src={partner.details.videoUrl}
+                    className="absolute left-0 top-0 h-full w-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    title={`${partner.name} Partnership Video`}
+                  />
+                </div>
               </FadeIn>
             )}
 
-            {/* Overview Section */}
-            <FadeIn delay={0.2}>
-              <Card className="border border-border bg-surface p-6 sm:p-8">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Handshake className="h-5 w-5 text-primary" />
-                    <h2 className="text-2xl font-semibold text-foreground">
-                      Partnership Overview
-                    </h2>
-                  </div>
-                  <p className="text-base leading-relaxed text-muted-foreground">
-                    {partner.details?.overview}
-                  </p>
+            <FadeIn>
+              <section>
+                <div className="flex items-center gap-2">
+                  <Handshake className="h-4 w-4 text-primary" />
+                  <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                    Partnership overview
+                  </span>
                 </div>
-              </Card>
+                <p className="mt-4 max-w-[68ch] text-lg leading-relaxed text-foreground/90">
+                  {partner.details?.overview}
+                </p>
+              </section>
             </FadeIn>
 
-            {/* Key Achievements */}
             {partner.details?.keyAchievements &&
               partner.details.keyAchievements.length > 0 && (
-                <FadeIn delay={0.3}>
-                  <Card className="border border-border bg-surface p-6 sm:p-8">
-                    <h3 className="text-xl font-semibold text-foreground mb-4">
-                      Key Achievements
-                    </h3>
-                    <ul className="space-y-3">
+                <FadeIn>
+                  <section>
+                    <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                      Track record
+                    </span>
+                    <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+                      Key achievements
+                    </h2>
+                    <div className="mt-6 border-t border-border">
                       {partner.details.keyAchievements.map(
                         (achievement, index) => (
-                          <li key={index} className="flex items-start gap-3">
-                            <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                            <span className="text-base text-muted-foreground">
+                          <div
+                            key={index}
+                            className="flex items-start gap-3 border-b border-border py-4"
+                          >
+                            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                            <span className="leading-relaxed text-muted-foreground">
                               {achievement}
                             </span>
-                          </li>
+                          </div>
                         ),
                       )}
-                    </ul>
-                  </Card>
+                    </div>
+                  </section>
                 </FadeIn>
               )}
           </div>
 
           {/* Sidebar */}
-          <aside className="space-y-6">
-            {/* Partner Logo Card */}
-            <FadeIn delay={0.1}>
-              <Card className="border border-border bg-surface p-6">
-                <div className="space-y-4">
-                  <Badge className="bg-primary/10 text-primary border-primary/20">
-                    {partner.category}
-                  </Badge>
-                  <div className="relative h-24 w-full flex items-center justify-center bg-muted/30 rounded-lg p-4">
-                    <Image
-                      src={partner.logo}
-                      alt={partner.name}
-                      width={200}
-                      height={100}
-                      className="h-auto w-full max-w-[180px] object-contain"
-                      quality={90}
-                      placeholder="blur"
-                      blurDataURL={getBlurDataURL()}
-                    />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg text-foreground mb-2">
-                      {partner.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {partner.description}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            </FadeIn>
+          <aside className="space-y-10 lg:sticky lg:top-24">
+            <section>
+              <div className="border-t-2 border-foreground pt-4">
+                <span className="text-[0.66rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                  {partner.category}
+                </span>
+              </div>
+              <div className="mt-4 flex h-24 w-full items-center justify-center bg-muted/30 p-4 rounded-lg">
+                <Image
+                  src={partner.logo}
+                  alt={partner.name}
+                  width={200}
+                  height={100}
+                  className="h-auto w-full max-w-[180px] object-contain"
+                  quality={90}
+                  placeholder="blur"
+                  blurDataURL={getBlurDataURL()}
+                />
+              </div>
+              <h3 className="mt-4 text-lg font-extrabold tracking-tight text-foreground">
+                {partner.name}
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {partner.description}
+              </p>
+            </section>
 
-            {/* Partnership Type */}
-            <FadeIn delay={0.2}>
-              <Card className="border border-primary/30 bg-primary/5 p-6">
-                <h4 className="text-sm font-semibold uppercase tracking-wider text-primary mb-2">
+            {partner.details?.partnershipType && (
+              <section className="border-t-2 border-foreground pt-4">
+                <h4 className="text-[0.66rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                   Partnership Type
                 </h4>
-                <p className="text-base text-foreground">
-                  {partner.details?.partnershipType}
+                <p className="mt-2 text-sm font-semibold text-foreground">
+                  {partner.details.partnershipType}
                 </p>
-              </Card>
-            </FadeIn>
-
-            {/* Website Link */}
-            {partner.details?.website && (
-              <FadeIn delay={0.3}>
-                <Card className="border border-border bg-surface p-6">
-                  <a
-                    href={partner.details.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    <span className="text-sm font-medium">Visit Website</span>
-                  </a>
-                </Card>
-              </FadeIn>
+              </section>
             )}
 
-            {/* Related Partners */}
-            <FadeIn delay={0.4}>
-              <Card className="border border-border bg-surface p-6">
-                <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground mb-4">
+            {partner.details?.website && (
+              <a
+                href={partner.details.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-2 border-t-2 border-foreground pt-4 text-sm font-semibold text-foreground transition-colors hover:text-primary"
+              >
+                <ExternalLink className="h-4 w-4 text-primary" />
+                Visit Website
+              </a>
+            )}
+
+            {relatedPartners.length > 0 && (
+              <section className="border-t-2 border-foreground pt-4">
+                <h4 className="text-[0.66rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
                   Related Partners
                 </h4>
-                <div className="space-y-3">
-                  {partners
-                    .filter(
-                      p =>
-                        p.category === partner.category &&
-                        p.slug !== partner.slug,
-                    )
-                    .slice(0, 3)
-                    .map(relatedPartner => (
-                      <Link
-                        key={relatedPartner.slug}
-                        href={`/about/partners/${relatedPartner.slug}`}
-                        className="block group"
-                      >
-                        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                          <div className="relative h-12 w-16 flex items-center justify-center bg-muted/30 rounded">
-                            <Image
-                              src={relatedPartner.logo}
-                              alt={relatedPartner.name}
-                              width={60}
-                              height={40}
-                              className="h-auto w-full max-w-[50px] object-contain"
-                              quality={75}
-                            />
-                          </div>
-                          <span className="text-sm text-foreground group-hover:text-primary transition-colors">
-                            {relatedPartner.name}
-                          </span>
-                        </div>
-                      </Link>
-                    ))}
+                <div className="mt-3 divide-y divide-border">
+                  {relatedPartners.map(relatedPartner => (
+                    <Link
+                      key={relatedPartner.slug}
+                      href={`/about/partners/${relatedPartner.slug}`}
+                      className="group -mx-2 flex items-center gap-3 px-2 py-3 transition-colors hover:bg-muted/40"
+                    >
+                      <div className="relative flex h-12 w-16 shrink-0 items-center justify-center bg-muted/30 rounded">
+                        <Image
+                          src={relatedPartner.logo}
+                          alt={relatedPartner.name}
+                          width={60}
+                          height={40}
+                          className="h-auto w-full max-w-[50px] object-contain"
+                          quality={75}
+                        />
+                      </div>
+                      <span className="text-sm text-foreground transition-colors group-hover:text-primary">
+                        {relatedPartner.name}
+                      </span>
+                    </Link>
+                  ))}
                 </div>
-              </Card>
-            </FadeIn>
+              </section>
+            )}
           </aside>
         </div>
 
-        {/* Back Button */}
-        <div className="mt-12 mb-8">
+        <div className="mb-8 mt-16 text-center">
           <Link href="/about/partners">
             <Button variant="outline" className="group">
               <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />

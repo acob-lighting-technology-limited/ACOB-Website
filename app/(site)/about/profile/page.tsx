@@ -19,28 +19,18 @@ export default function CompanyProfilePage() {
 
   const handleDownload = async () => {
     try {
-      // Fetch the PDF file
       const response = await fetch('/documents/acob-company-profile.pdf');
       const blob = await response.blob();
-
-      // Create a blob URL
       const blobUrl = window.URL.createObjectURL(blob);
-
-      // Create a temporary link element
       const link = document.createElement('a');
       link.href = blobUrl;
       link.download = 'ACOB-Lighting-Technology-Limited-Company-Profile.pdf';
-
-      // Append to body, click, and remove
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
-      // Clean up the blob URL
       window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
       console.error('Download failed:', error);
-      // Fallback: open in new tab if download fails
       window.open('/documents/acob-company-profile.pdf', '_blank');
     }
   };
@@ -54,17 +44,29 @@ export default function CompanyProfilePage() {
       <Hero
         image={heroImages}
         title="Company Profile"
-        description="Discover ACOB Lighting Technology - Powering Nigeria's Future with Clean Energy"
+        description="The Full Picture."
+        titleSize="display"
       />
 
-      <Container className="py-8">
-        <Breadcrumb items={breadcrumbItems} className="mb-6" />
+      <Container className="px-4 py-8">
+        <Breadcrumb items={breadcrumbItems} className="mb-8 md:mb-12" />
 
-        <div className="flex h-[calc(100vh-300px)] min-h-[600px] w-full flex-col rounded-3xl border border-border bg-surface shadow-lg overflow-hidden">
-          {/* Header Bar */}
-          <div className="border-b border-border bg-surface/95 backdrop-blur">
+        {/* Standfirst */}
+        <div className="max-w-[68ch]">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-primary">
+            Company profile
+          </span>
+          <p className="mt-4 text-xl font-medium leading-relaxed text-foreground md:text-2xl">
+            Discover ACOB Lighting Technology — powering Nigeria&apos;s future
+            with clean energy.
+          </p>
+        </div>
+
+        <div className="mt-10 flex h-[calc(100vh-300px)] min-h-[600px] w-full flex-col border border-border bg-surface md:mt-14 rounded-3xl">
+          {/* Header bar */}
+          <div className="border-b border-border">
             <div className="flex items-center justify-between px-6 py-4">
-              <h2 className="text-lg font-bold text-foreground md:text-xl">
+              <h2 className="text-sm font-bold uppercase tracking-[0.18em] text-foreground">
                 ACOB Company Profile Document
               </h2>
               <div className="flex gap-2">
@@ -85,7 +87,7 @@ export default function CompanyProfilePage() {
             </div>
           </div>
 
-          {/* PDF Viewer using object tag - better browser compatibility */}
+          {/* PDF Viewer */}
           <div className="flex-1">
             <object
               data="/documents/acob-company-profile.pdf"
@@ -96,7 +98,7 @@ export default function CompanyProfilePage() {
               <div className="flex h-full items-center justify-center bg-muted/20 p-8">
                 <div className="max-w-md text-center">
                   <p className="mb-6 text-lg text-foreground">
-                    Your browser doesn't support embedded PDFs
+                    Your browser doesn&apos;t support embedded PDFs
                   </p>
                   <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
                     <Button

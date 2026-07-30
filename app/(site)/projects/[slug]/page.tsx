@@ -1,7 +1,6 @@
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Container } from '@/components/ui/container';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { ArrowRight, ArrowLeft, MapPin, Calendar } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import {
@@ -13,7 +12,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Hero } from '@/components/ui/hero';
 import type { Project } from '@/lib/types';
-import { Card, CardContent } from '@/components/ui/card';
 import { ShareCopy } from '@/components/updates/share-copy';
 import { ProjectContent } from './project-content';
 import { ImpactMetrics } from '@/components/projects/impact-metrics';
@@ -111,13 +109,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       let score = 0;
       const pCategories = p.categories || (p.category ? [p.category] : []);
 
-      // Share category matching
       const sharedCategories = pCategories.filter(cat =>
         currentCategories.includes(cat),
       );
       score += sharedCategories.length * 10;
 
-      // Subcategory matching
       if (p.subcategory && p.subcategory === currentSubcategory) {
         score += 5;
       }
@@ -128,7 +124,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
       if (b.score !== a.score) {
         return b.score - a.score;
       }
-      // Fallback: Newer projects first
       const dateA = a.project.projectDate
         ? new Date(a.project.projectDate).getTime()
         : 0;
@@ -139,11 +134,21 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     })
     .map(item => item.project)
     .slice(0, 3);
+
   const breadcrumbItems = [
     { label: 'Home', href: '/' },
     { label: 'Projects', href: '/projects' },
     { label: project.title },
   ];
+
+  const hasContent = Boolean(
+    project.projectContent ||
+    project.content ||
+    project.descriptionTemplate ||
+    (project.gallery && project.gallery.length > 0) ||
+    project.coverImage ||
+    project.projectImage,
+  );
 
   return (
     <>
@@ -151,130 +156,144 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         title="Our Projects"
         description={project.title}
         image={project.projectImage}
+        titleSize="display"
       />
 
-      <Container className="px-4 py-8 relative">
-        <Breadcrumb items={breadcrumbItems} className="mb-8" />
+      <Container className="px-4 py-8">
+        <Breadcrumb items={breadcrumbItems} className="mb-8 md:mb-12" />
 
         {/* Overview */}
-        <Card className="pt-2">
-          <CardContent className="p-4 sm:p-6 xl:p-8 space-y-4 sm:space-y-6">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-foreground">
-                Project Overview
-              </h2>
-              <p className="text-muted-foreground dark:text-foreground/80 leading-relaxed text-lg">
-                {project.description || project.excerpt}
-              </p>
+        <div className="max-w-[70ch]">
+          <span className="text-sm font-bold uppercase tracking-[0.3em] text-primary">
+            Project Overview
+          </span>
+          <p className="mt-4 text-xl leading-relaxed text-foreground/90 md:text-2xl">
+            {project.description || project.excerpt}
+          </p>
 
-              {/* Project Location */}
-              {project.location && (
-                <div className="flex flex-wrap items-center text-muted-foreground mt-6 gap-2">
-                  <div className="flex items-center">
-                    <MapPin className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
-                    <span className="text-sm sm:text-base md:text-lg">
-                      {project.location}
-                      {project.state &&
-                        `, ${project.state.toUpperCase() === 'FCT' ? 'FCT' : `${project.state} State.`}`}
-                    </span>
-                  </div>
-                  <span className="hidden sm:inline mx-2">•</span>
-                  <div className="flex items-center">
-                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                    <span className="text-sm sm:text-base md:text-lg">
-                      {new Date(
-                        project.projectDate || project._createdAt,
-                      ).getFullYear()}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Project Content */}
-            {(project.projectContent || project.content) && (
-              <div className="mt-6 prose prose-lg max-w-none">
-                <ProjectContent
-                  content={project.content}
-                  projectContent={project.projectContent}
-                  project={project}
-                />
+          {project.location && (
+            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border pt-5 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 shrink-0 text-primary" />
+                <span>
+                  {project.location}
+                  {project.state &&
+                    `, ${project.state.toUpperCase() === 'FCT' ? 'FCT' : `${project.state} State`}`}
+                </span>
               </div>
-            )}
-
-            {/* Impact Metrics */}
-            {project.impactMetrics && (
-              <ImpactMetrics metrics={project.impactMetrics} />
-            )}
-
-            {/* Share Buttons */}
-            <div className="flex items-center gap-4 pt-8 border-t mt-6">
-              <ShareCopy className="rounded-full bg-transparent" />
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 shrink-0 text-primary" />
+                <span>
+                  {new Date(
+                    project.projectDate || project._createdAt,
+                  ).getFullYear()}
+                </span>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
 
-        {/* Related Projects */}
+        {/* Project content (gallery, narrative, template) */}
+        {hasContent && (
+          <div className="mt-8 md:mt-10">
+            <div className="prose prose-lg max-w-none">
+              <ProjectContent
+                content={project.content}
+                projectContent={project.projectContent}
+                descriptionTemplate={project.descriptionTemplate}
+                gallery={project.gallery}
+                project={project}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Impact metrics */}
+        {project.impactMetrics && (
+          <div className="mt-12 md:mt-16">
+            <ImpactMetrics metrics={project.impactMetrics} />
+          </div>
+        )}
+
+        {/* Share */}
+        <div className="mt-14 flex items-center gap-4 border-y border-border py-8">
+          <span className="text-sm font-semibold text-muted-foreground">
+            Share this Project:
+          </span>
+          <ShareCopy className="rounded-full bg-transparent" />
+        </div>
+
+        {/* Related projects */}
         {relatedProjects.length > 0 && (
-          <div className="mt-12">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold">Related Projects</h3>
+          <section className="mt-16 md:mt-20">
+            <div className="mb-8 flex items-end justify-between">
+              <div>
+                <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                  Keep exploring
+                </span>
+                <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+                  Related projects
+                </h2>
+              </div>
               <Link
                 href="/projects"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+                className="hidden items-center gap-1 text-sm font-semibold text-primary transition-all hover:gap-2 sm:flex"
               >
                 View all
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
               {relatedProjects.map((relatedProject: Project) => (
                 <Link
                   key={relatedProject._id}
                   href={`/projects/${relatedProject.slug.current}`}
-                  className="group flex flex-col rounded-xl border border-border bg-card overflow-hidden hover:border-primary/50 hover:shadow-lg transition-all duration-300"
+                  className="group block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
-                  {/* Thumbnail */}
-                  <div className="relative h-44 w-full bg-muted overflow-hidden">
-                    {relatedProject.projectImage ? (
-                      <Image
-                        src={relatedProject.projectImage}
-                        alt={relatedProject.title}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center bg-primary/5">
-                        <span className="text-4xl font-bold text-primary/20 select-none">
-                          ACOB
-                        </span>
-                      </div>
-                    )}
-                    {relatedProject.categories?.[0] && (
-                      <div className="absolute top-3 left-3">
-                        <Badge className="text-[10px] uppercase tracking-wide shadow">
+                  <article className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-500 group-hover:-translate-y-1 group-hover:border-primary/40 group-hover:shadow-lg">
+                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+                      {relatedProject.projectImage ? (
+                        <Image
+                          src={relatedProject.projectImage}
+                          alt={relatedProject.title}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center bg-primary/5">
+                          <span className="select-none text-4xl font-bold text-primary/20">
+                            ACOB
+                          </span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      {relatedProject.categories?.[0] && (
+                        <span className="absolute left-3 top-3 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-white/90">
                           {CATEGORY_INFO[relatedProject.categories[0]]?.title ??
                             relatedProject.categories[0]}
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
+                        </span>
+                      )}
+                      {relatedProject.projectDate && (
+                        <span className="absolute bottom-3 left-3 text-[0.65rem] font-bold tabular-nums text-white/90">
+                          {new Date(relatedProject.projectDate).getFullYear()}
+                        </span>
+                      )}
+                    </div>
 
-                  {/* Body */}
-                  <div className="flex flex-col flex-1 p-4 gap-2">
-                    <h4 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors duration-200 line-clamp-2 leading-snug">
-                      {relatedProject.title}
-                    </h4>
-                    {relatedProject.description && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                        {relatedProject.description}
-                      </p>
-                    )}
-                    <div className="mt-auto pt-3 flex items-center justify-between border-t border-border/60">
+                    <div className="flex flex-1 flex-col p-4 md:p-5">
+                      <h3 className="text-base font-extrabold tracking-tight text-foreground line-clamp-2">
+                        {relatedProject.title}
+                      </h3>
+                      {relatedProject.description && (
+                        <p className="mt-2 flex-1 text-xs leading-relaxed text-muted-foreground line-clamp-2 md:text-sm">
+                          {relatedProject.description}
+                        </p>
+                      )}
                       {relatedProject.location && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
-                          <MapPin className="h-3 w-3 flex-shrink-0" />
+                        <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <MapPin className="h-3 w-3 shrink-0" />
                           <span className="truncate">
                             {relatedProject.location}
                             {relatedProject.state &&
@@ -282,30 +301,20 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                           </span>
                         </div>
                       )}
-                      {relatedProject.projectDate && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0 ml-2">
-                          <Calendar className="h-3 w-3" />
-                          <span>
-                            {new Date(relatedProject.projectDate).getFullYear()}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex justify-end">
-                      <span className="text-xs text-primary font-medium flex items-center gap-1 group-hover:gap-2 transition-all duration-200">
+                      <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-primary md:text-sm">
                         View project
-                        <ArrowRight className="h-3 w-3" />
+                        <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1 md:h-4 md:w-4" />
                       </span>
                     </div>
-                  </div>
+                  </article>
                 </Link>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Back to Projects Button */}
-        <div className="mt-12 mb-8 text-center">
+        {/* Back */}
+        <div className="mb-8 mt-16 text-center">
           <Link href="/projects">
             <Button variant="outline" className="group">
               <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />

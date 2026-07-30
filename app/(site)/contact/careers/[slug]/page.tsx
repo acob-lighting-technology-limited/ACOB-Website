@@ -1,10 +1,10 @@
 import { Container } from '@/components/ui/container';
 import { Hero } from '@/components/ui/hero';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   ArrowLeft,
+  ArrowRight,
   Calendar,
   MapPin,
   Briefcase,
@@ -21,19 +21,6 @@ interface JobPostingPageProps {
     slug: string;
   }>;
 }
-
-// Temporarily disabled static generation until job postings exist
-// export async function generateStaticParams() {
-//   try {
-//     const jobs = await getJobPostings();
-//     return jobs.map((job: any) => ({
-//       slug: job.slug.current,
-//     }));
-//   } catch (error) {
-//     console.error('Error generating static params for job postings:', error);
-//     return [];
-//   }
-// }
 
 export default async function JobPostingPage({ params }: JobPostingPageProps) {
   const { slug } = await params;
@@ -57,202 +44,214 @@ export default async function JobPostingPage({ params }: JobPostingPageProps) {
         title="Careers"
         description={job.title}
         image="/images/contact/careers.webp?height=400&width=1200"
+        titleSize="display"
       />
 
       <Container className="px-4 py-8">
-        <Breadcrumb items={breadcrumbItems} className="mb-8" />
+        <Breadcrumb items={breadcrumbItems} className="mb-8 md:mb-12" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          {/* Main Content */}
-          <div className="lg:col-span-2 ">
-            {/* Job Details */}
-            <Card className="border shadow-md border-border bg-surface">
-              <CardContent className="p-4 sm:p-6 xl:p-8">
-                <div className="mb-6">
-                  <h1 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-                    {job.title}
-                  </h1>
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1fr_300px] lg:gap-14">
+          {/* Main content */}
+          <div>
+            {/* Meta */}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-border pb-6 text-sm text-muted-foreground">
+              {job.department && (
+                <span className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-primary" />
+                  {job.department}
+                </span>
+              )}
+              {job.location && (
+                <span className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  {job.location}
+                </span>
+              )}
+              {job.employmentType && (
+                <span className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-primary" />
+                  {job.employmentType}
+                </span>
+              )}
+            </div>
 
-                  {/* Job Meta Information */}
-                  <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-6">
-                    {job.department && (
-                      <div className="flex items-center gap-2">
-                        <Briefcase className="h-4 w-4" />
-                        <span>{job.department}</span>
-                      </div>
-                    )}
-                    {job.location && (
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        <span>{job.location}</span>
-                      </div>
-                    )}
-                    {job.employmentType && (
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        <span>{job.employmentType}</span>
-                      </div>
-                    )}
-                  </div>
+            {/* Description */}
+            <div className="mt-8">
+              <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                The role
+              </span>
+              <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+                Job description
+              </h2>
+              <p className="mt-4 max-w-[68ch] text-lg leading-relaxed text-foreground/90">
+                {job.description}
+              </p>
+            </div>
 
-                  {/* Job Description */}
-                  <div className="prose prose-gray max-w-none">
-                    <h2 className="text-xl font-semibold text-foreground mb-3">
-                      Job Description
-                    </h2>
-                    <p className="text-muted-foreground leading-relaxed mb-6">
-                      {job.description}
-                    </p>
-                  </div>
-
-                  {/* Requirements */}
-                  {job.requirements && job.requirements.length > 0 && (
-                    <div className="mb-6">
-                      <h2 className="text-xl font-semibold text-foreground mb-3">
-                        Requirements
-                      </h2>
-                      <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                        {job.requirements.map(
-                          (requirement: string, index: number) => (
-                            <li key={index} className="leading-relaxed">
-                              {requirement}
-                            </li>
-                          ),
-                        )}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* Application Deadline */}
-                  {job.applicationDeadline && (
-                    <div className="p-4 bg-muted/30 rounded-lg border border-border">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        <span>
-                          <strong>Application Deadline:</strong>{' '}
-                          {new Date(
-                            job.applicationDeadline,
-                          ).toLocaleDateString()}
+            {/* Requirements */}
+            {job.requirements && job.requirements.length > 0 && (
+              <div className="mt-12">
+                <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                  What we&apos;re looking for
+                </span>
+                <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+                  Requirements
+                </h2>
+                <div className="mt-6 border-t border-border">
+                  {job.requirements.map(
+                    (requirement: string, index: number) => (
+                      <div
+                        key={index}
+                        className="grid grid-cols-[36px_1fr] gap-x-4 border-b border-border py-4"
+                      >
+                        <span className="text-sm font-extrabold tabular-nums text-primary">
+                          {String(index + 1).padStart(2, '0')}
                         </span>
+                        <p className="max-w-[64ch] leading-relaxed text-muted-foreground">
+                          {requirement}
+                        </p>
                       </div>
-                    </div>
+                    ),
                   )}
                 </div>
+              </div>
+            )}
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t">
-                  <Link href="/contact/careers">
-                    <Button
-                      variant="outline"
-                      className="group w-full sm:w-auto"
-                    >
-                      <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
-                      Back to Careers
-                    </Button>
-                  </Link>
-                  <Link href={`/contact/careers/${slug}/apply`}>
-                    <Button className="w-full sm:w-auto">Apply Now</Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Deadline */}
+            {job.applicationDeadline && (
+              <div className="mt-10 flex items-center gap-2 border-t border-border pt-6 text-sm text-muted-foreground">
+                <Calendar className="h-4 w-4 text-primary" />
+                <span>
+                  <strong className="font-semibold text-foreground">
+                    Application deadline:
+                  </strong>{' '}
+                  {new Date(job.applicationDeadline).toLocaleDateString()}
+                </span>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="mt-10 flex flex-col gap-4 border-t border-border pt-8 sm:flex-row">
+              <Link href="/contact/careers">
+                <Button variant="outline" className="group w-full sm:w-auto">
+                  <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                  Back to Careers
+                </Button>
+              </Link>
+              <Link href={`/contact/careers/${slug}/apply`}>
+                <Button className="group w-full sm:w-auto">
+                  Apply Now
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6 sticky top-20 self-start">
-            {/* Quick Contact */}
-            <Card className="!border-t-2 !border-t-primary border border-border">
-              <CardContent className="p-6">
-                <h3 className="font-semibold mb-4">Apply for this Position</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Interested in this role? Get in touch with us to apply.
-                </p>
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-2">Email</p>
-                    <div className="space-y-2">
-                      <a
-                        href={`mailto:${CONTACT_INFO.email.careers}`}
-                        className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
-                      >
-                        <Mail className="h-4 w-4" />
-                        <span className="text-sm font-medium break-all">
-                          {CONTACT_INFO.email.careers}
-                        </span>
-                      </a>
-                      <a
-                        href={`mailto:${CONTACT_INFO.email.secondary}`}
-                        className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
-                      >
-                        <Mail className="h-4 w-4" />
-                        <span className="text-sm font-medium break-all">
-                          {CONTACT_INFO.email.secondary}
-                        </span>
-                      </a>
-                    </div>
+          <aside className="space-y-10 lg:sticky lg:top-24">
+            <section>
+              <div className="border-t-2 border-foreground pt-4">
+                <h2 className="text-sm font-bold uppercase tracking-[0.18em] text-foreground">
+                  Apply for this Position
+                </h2>
+              </div>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                Interested in this role? Get in touch with us to apply.
+              </p>
+              <div className="mt-4 divide-y divide-border border-y border-border">
+                <div className="py-3.5">
+                  <div className="flex items-center gap-1.5 text-[0.66rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                    <Mail className="h-3 w-3" />
+                    Email
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-2">Phone</p>
-                    <div className="space-y-2">
-                      <a
-                        href={`tel:${CONTACT_INFO.phone.primary.replace(/\s/g, '')}`}
-                        className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
-                      >
-                        <Phone className="h-4 w-4" />
-                        <span className="text-sm font-medium">
-                          {CONTACT_INFO.phone.primary}
-                        </span>
-                      </a>
-                      <a
-                        href={`tel:${CONTACT_INFO.phone.secondary.replace(/\s/g, '')}`}
-                        className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
-                      >
-                        <Phone className="h-4 w-4" />
-                        <span className="text-sm font-medium">
-                          {CONTACT_INFO.phone.secondary}
-                        </span>
-                      </a>
-                    </div>
+                  <div className="mt-1.5 flex flex-col gap-0.5">
+                    <a
+                      href={`mailto:${CONTACT_INFO.email.careers}`}
+                      className="break-all text-sm font-semibold text-foreground hover:text-primary"
+                    >
+                      {CONTACT_INFO.email.careers}
+                    </a>
+                    <a
+                      href={`mailto:${CONTACT_INFO.email.secondary}`}
+                      className="break-all text-sm font-semibold text-foreground hover:text-primary"
+                    >
+                      {CONTACT_INFO.email.secondary}
+                    </a>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="py-3.5">
+                  <div className="flex items-center gap-1.5 text-[0.66rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                    <Phone className="h-3 w-3" />
+                    Phone
+                  </div>
+                  <div className="mt-1.5 flex flex-col gap-0.5">
+                    <a
+                      href={`tel:${CONTACT_INFO.phone.primary.replace(/\s/g, '')}`}
+                      className="text-sm font-semibold tabular-nums text-foreground hover:text-primary"
+                    >
+                      {CONTACT_INFO.phone.primary}
+                    </a>
+                    <a
+                      href={`tel:${CONTACT_INFO.phone.secondary.replace(/\s/g, '')}`}
+                      className="text-sm font-semibold tabular-nums text-foreground hover:text-primary"
+                    >
+                      {CONTACT_INFO.phone.secondary}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </section>
 
-            {/* Job Summary */}
-            <Card className="border border-border">
-              <CardContent className="p-6">
-                <h3 className="font-semibold mb-4">Job Summary</h3>
-                <div className="space-y-3 text-sm">
-                  {job.department && (
-                    <div>
-                      <span className="text-muted-foreground">Department:</span>
-                      <p className="font-medium">{job.department}</p>
-                    </div>
-                  )}
-                  {job.location && (
-                    <div>
-                      <span className="text-muted-foreground">Location:</span>
-                      <p className="font-medium">{job.location}</p>
-                    </div>
-                  )}
-                  {job.employmentType && (
-                    <div>
-                      <span className="text-muted-foreground">Type:</span>
-                      <p className="font-medium">{job.employmentType}</p>
-                    </div>
-                  )}
-                  {job.publishedAt && (
-                    <div>
-                      <span className="text-muted-foreground">Posted:</span>
-                      <p className="font-medium">
-                        {new Date(job.publishedAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+            <section>
+              <div className="border-t-2 border-foreground pt-4">
+                <h2 className="text-sm font-bold uppercase tracking-[0.18em] text-foreground">
+                  Job Summary
+                </h2>
+              </div>
+              <div className="mt-4 divide-y divide-border border-y border-border">
+                {job.department && (
+                  <div className="py-3.5">
+                    <span className="text-[0.66rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                      Department
+                    </span>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {job.department}
+                    </p>
+                  </div>
+                )}
+                {job.location && (
+                  <div className="py-3.5">
+                    <span className="text-[0.66rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                      Location
+                    </span>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {job.location}
+                    </p>
+                  </div>
+                )}
+                {job.employmentType && (
+                  <div className="py-3.5">
+                    <span className="text-[0.66rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                      Type
+                    </span>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {job.employmentType}
+                    </p>
+                  </div>
+                )}
+                {job.publishedAt && (
+                  <div className="py-3.5">
+                    <span className="text-[0.66rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                      Posted
+                    </span>
+                    <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">
+                      {new Date(job.publishedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </section>
+          </aside>
         </div>
       </Container>
     </>

@@ -1,14 +1,11 @@
-import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
 import { Hero } from '@/components/ui/hero';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
-import { Card, CardContent } from '@/components/ui/card';
 import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
-import { MaskText } from '@/components/animations/MaskText';
 import Image from 'next/image';
+import Link from 'next/link';
+import { FadeIn } from '@/components/animations/FadeIn';
 import { contactSections } from '@/lib/data/contact-data';
-import { SectionHeader } from '@/components/ui/section-header';
 
 export default function ContactPage() {
   const breadcrumbItems = [
@@ -16,12 +13,12 @@ export default function ContactPage() {
     { label: 'Contact Us' },
   ];
 
-  // Images from contact sub-routes
   const contactImages = [
     { src: '/images/contact/contact-us.webp', alt: 'Contact Us' },
     { src: '/images/contact/careers.webp', alt: 'Careers' },
     { src: '/images/contact/support.webp', alt: 'Support' },
     { src: '/images/contact/office-location-hero.webp', alt: 'Our Locations' },
+    { src: '/images/contact/faq-hero.webp', alt: 'Frequently Asked Questions' },
   ];
 
   return (
@@ -29,59 +26,72 @@ export default function ContactPage() {
       <Hero
         image={contactImages}
         title="Contact Us"
-        description="Get in Touch with ACOB Lighting Technology"
+        description="Let's Get in Touch."
+        titleSize="display"
       />
 
-      <Container className="px-4 py-8 ">
-        <Breadcrumb items={breadcrumbItems} className="mb-8" />
+      <Container className="px-4 py-8">
+        <Breadcrumb items={breadcrumbItems} className="mb-8 md:mb-12" />
 
-        <SectionHeader
-          title={
-            <h2 className="text-2xl font-bold text-foreground md:text-3xl lg:text-4xl">
-              <MaskText phrases={['How Can We Assist You?']} />
-            </h2>
-          }
-          description="Whether you have a question, need support, or are looking for a career opportunity, we're ready to connect."
-          className="mb-12"
-        />
+        {/* Standfirst */}
+        <div className="max-w-[68ch]">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-primary">
+            How can we help?
+          </span>
+          <p className="mt-4 text-xl font-medium leading-relaxed text-foreground md:text-2xl">
+            Whether you have a question, need support, or are looking for a
+            career opportunity — we&apos;re ready to connect.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-2 gap-3 md:gap-8 md:grid-cols-2 lg:grid-cols-4">
-          {contactSections.map(section => {
-            return (
-              <Link key={section.href} href={section.href}>
-                <Card className="group flex h-full flex-col overflow-hidden rounded-xl md:rounded-3xl border border-border bg-surface shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-lg">
-                  <div className="relative aspect-square md:aspect-[16/9] w-full overflow-hidden">
-                    <Image
-                      src={section.image || '/placeholder.svg'}
-                      alt={section.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 50vw, 25vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                  </div>
-                  <CardContent className="flex flex-1 flex-col gap-2 md:gap-4 p-3 md:p-4">
-                    <div className="flex-1">
-                      <h4 className="text-sm md:text-lg font-semibold text-foreground line-clamp-2">
+        {/* Card grid */}
+        <section className="mt-14 md:mt-20">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+            Get in Touch
+          </span>
+          <h2 className="mt-2 text-3xl font-extrabold uppercase leading-[0.95] tracking-tight text-foreground md:text-4xl lg:text-5xl">
+            Choose a path
+          </h2>
+
+          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 xl:grid-cols-4">
+            {contactSections.map((section, i) => (
+              <FadeIn key={section.href} delay={i * 0.06} className="h-full">
+                <Link
+                  href={section.href}
+                  className="group block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                >
+                  <article className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface transition-all duration-500 group-hover:-translate-y-1 group-hover:border-primary/40 group-hover:shadow-lg">
+                    <div className="relative aspect-[16/10] w-full overflow-hidden">
+                      <Image
+                        src={section.image || '/placeholder.svg'}
+                        alt={section.title}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                      <span className="absolute left-3 top-3 text-sm font-extrabold tabular-nums leading-none text-white">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                    </div>
+                    <div className="flex flex-1 flex-col p-4 md:p-5">
+                      <h3 className="text-base font-extrabold tracking-tight text-foreground md:text-lg">
                         {section.title}
-                      </h4>
-                      <p className="mt-1 md:mt-2 text-xs md:text-sm leading-relaxed text-muted-foreground line-clamp-2 md:line-clamp-none">
+                      </h3>
+                      <p className="mt-2 flex-1 text-xs leading-relaxed text-muted-foreground line-clamp-3 md:text-sm">
                         {section.description}
                       </p>
+                      <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-primary md:text-sm">
+                        Learn more
+                        <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1 md:h-4 md:w-4" />
+                      </span>
                     </div>
-                    <Button
-                      variant="default"
-                      className="w-full mt-auto text-xs md:text-sm py-2 md:py-2.5 h-auto"
-                    >
-                      Learn More
-                      <ArrowRight className="ml-1 md:ml-2 h-3 w-3 md:h-4 md:w-4" />
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
+                  </article>
+                </Link>
+              </FadeIn>
+            ))}
+          </div>
+        </section>
       </Container>
     </>
   );

@@ -2,7 +2,6 @@ import { Phone, Mail, MapPin } from 'lucide-react';
 import { Container } from '@/components/ui/container';
 import { Hero } from '@/components/ui/hero';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
-import { Card, CardContent } from '@/components/ui/card';
 import { CONTACT_INFO } from '@/lib/constants/app.constants';
 
 export default function GetQuotePage() {
@@ -16,72 +15,80 @@ export default function GetQuotePage() {
     <>
       <Hero
         title="Get a Quote"
-        description="Talk to our team directly for a customized solar energy quote."
+        description="Let's Talk Numbers."
         image="/images/contact/contact-us.webp?height=400&width=1200"
+        titleSize="display"
       />
 
-      <Container className="px-4 py-16 sm:py-20">
-        <Breadcrumb items={breadcrumbItems} className="mb-8" />
+      <Container className="px-4 py-8">
+        <Breadcrumb items={breadcrumbItems} className="mb-8 md:mb-12" />
 
-        <div className="flex min-h-[50vh] items-center justify-center">
-          <Card className="w-full max-w-2xl shadow-lg">
-            <CardContent className="p-8 sm:p-12">
-              <h1 className="mb-3 text-2xl font-semibold text-foreground sm:text-3xl">
-                Request a Quote
-              </h1>
-              <p className="mb-8 text-muted-foreground">
-                Our online quote form is being rebuilt. In the meantime, reach
-                out directly and our team will get back to you with a customized
-                quote for your mini-grid, street lighting, or energy audit
-                needs.
+        {/* Standfirst */}
+        <div className="max-w-[68ch]">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-primary">
+            Request a quote
+          </span>
+          <p className="mt-4 text-xl font-medium leading-relaxed text-foreground md:text-2xl">
+            Our online quote form is being rebuilt. In the meantime, reach out
+            directly and our team will get back to you with a customized quote
+            for your mini-grid, street lighting, or energy audit needs.
+          </p>
+        </div>
+
+        {/* Contact rows */}
+        <div className="mt-12 max-w-2xl border-t-[3px] border-foreground pt-4 md:mt-16">
+          <div className="grid grid-cols-[44px_1fr] gap-x-5 border-b border-border py-6 md:grid-cols-[60px_1fr]">
+            <Phone className="h-6 w-6 text-primary" />
+            <div>
+              <span className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                Phone
+              </span>
+              <p className="mt-1">
+                <a
+                  href={`tel:${CONTACT_INFO.phone.primary.replace(/\s/g, '')}`}
+                  className="font-semibold text-foreground hover:text-primary hover:underline"
+                >
+                  {CONTACT_INFO.phone.primary}
+                </a>
+                <span className="mx-2 text-muted-foreground">·</span>
+                <a
+                  href={`tel:${CONTACT_INFO.phone.secondary.replace(/\s/g, '')}`}
+                  className="font-semibold text-foreground hover:text-primary hover:underline"
+                >
+                  {CONTACT_INFO.phone.secondary}
+                </a>
               </p>
+            </div>
+          </div>
 
-              <div className="space-y-4">
-                <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-4">
-                  <Phone className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Phone</p>
-                    <a
-                      href={`tel:${CONTACT_INFO.phone.primary.replace(/\s/g, '')}`}
-                      className="font-semibold text-primary hover:underline"
-                    >
-                      {CONTACT_INFO.phone.primary}
-                    </a>
-                    {' · '}
-                    <a
-                      href={`tel:${CONTACT_INFO.phone.secondary.replace(/\s/g, '')}`}
-                      className="font-semibold text-primary hover:underline"
-                    >
-                      {CONTACT_INFO.phone.secondary}
-                    </a>
-                  </div>
-                </div>
+          <div className="grid grid-cols-[44px_1fr] gap-x-5 border-b border-border py-6 md:grid-cols-[60px_1fr]">
+            <Mail className="h-6 w-6 text-primary" />
+            <div>
+              <span className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                Email
+              </span>
+              <p className="mt-1">
+                <a
+                  href={`mailto:${CONTACT_INFO.email.sales}`}
+                  className="break-all font-semibold text-foreground hover:text-primary hover:underline"
+                >
+                  {CONTACT_INFO.email.sales}
+                </a>
+              </p>
+            </div>
+          </div>
 
-                <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-4">
-                  <Mail className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <a
-                      href={`mailto:${CONTACT_INFO.email.sales}`}
-                      className="font-semibold text-primary hover:underline break-all"
-                    >
-                      {CONTACT_INFO.email.sales}
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-4">
-                  <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Address</p>
-                    <p className="font-semibold leading-relaxed">
-                      {CONTACT_INFO.address.full}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-[44px_1fr] gap-x-5 border-b border-border py-6 md:grid-cols-[60px_1fr]">
+            <MapPin className="h-6 w-6 text-primary" />
+            <div>
+              <span className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                Address
+              </span>
+              <p className="mt-1 font-semibold leading-relaxed text-foreground">
+                {CONTACT_INFO.address.full}
+              </p>
+            </div>
+          </div>
         </div>
       </Container>
     </>

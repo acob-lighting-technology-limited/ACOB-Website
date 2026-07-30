@@ -33,6 +33,7 @@ export default async function ApplyPage({ params }: ApplyPageProps) {
         title="Apply Now"
         description={job.title}
         image="/images/contact/careers.webp?height=400&width=1200"
+        titleSize="display"
       />
 
       <div className="pt-8">

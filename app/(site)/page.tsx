@@ -5,6 +5,7 @@ import { AboutSection } from '@/components/sections/about-section';
 import { ServicesSection } from '@/components/sections/services-section';
 import { ProjectsSection } from '@/components/sections/projects-section';
 import { UpdatesSection } from '@/components/sections/updates-section';
+import { CtaSection } from '@/components/sections/cta-section';
 import {
   getProjectsForListing,
   getFeaturedProjects,
@@ -110,6 +111,7 @@ export default async function HomePage() {
       <NigeriaReachSection projects={projects} showMoreLink />
       <UpdatesSection posts={posts} />
       <PartnersSection />
+      <CtaSection />
     </main>
   );
 }

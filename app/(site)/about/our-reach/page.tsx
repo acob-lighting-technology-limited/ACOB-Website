@@ -1,22 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import {
-  ArrowLeft,
-  Building2,
-  Grid3x3,
-  Map,
-  MapPin,
-  Users,
-  Zap,
-} from 'lucide-react';
+import { ArrowLeft, Building2, Map, MapPin } from 'lucide-react';
 
 import { FadeIn } from '@/components/animations/FadeIn';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Container } from '@/components/ui/container';
 import { Hero } from '@/components/ui/hero';
-import { SectionHeader } from '@/components/ui/section-header';
 import { NigeriaReachSection } from '@/components/sections/nigeria-reach-section';
 import { COMPANY_STATS } from '@/lib/constants/app.constants';
 import { getProjectsForListing } from '@/sanity/lib/queries';
@@ -31,32 +21,20 @@ export const revalidate = 300;
 
 const reachHighlights = [
   {
-    icon: MapPin,
     label: 'Communities Served',
     value: `${COMPANY_STATS.communitiesServed}+`,
-    description:
-      'Communities with delivered clean energy and lighting infrastructure.',
   },
   {
-    icon: Grid3x3,
     label: 'Installed Capacity',
     value: `${COMPANY_STATS.totalCapacityMW}MW+`,
-    description:
-      'Combined deployed capacity powering productive use and essential services.',
   },
   {
-    icon: Users,
     label: 'Beneficiaries',
     value: '50K+',
-    description:
-      'People benefiting from our energy access and lighting interventions.',
   },
   {
-    icon: Zap,
     label: 'Installed Projects',
     value: `${COMPANY_STATS.projectsCompleted}+`,
-    description:
-      'Completed projects delivered across communities, institutions, and commercial sites.',
   },
 ];
 
@@ -94,102 +72,83 @@ export default async function OurReachPage() {
     <>
       <Hero
         title="Our Reach"
-        description="Tracking ACOB's growing project footprint across Nigeria"
+        description="Nationwide, and Growing."
         image="/images/about/our-reach.webp"
+        titleSize="display"
       />
 
-      <Container>
-        <Breadcrumb items={breadcrumbItems} className="mb-10" />
+      <Container className="px-4 py-8">
+        <Breadcrumb items={breadcrumbItems} className="mb-8 md:mb-12" />
 
-        <section className="mb-12 rounded-3xl border border-border bg-surface p-4 sm:p-6 xl:p-8 shadow-sm">
-          <SectionHeader
-            badge="National Footprint"
-            align="left"
-            title="Where our work is creating energy access"
-            description="This map highlights the states where we are active, our project sites, and our headquarters. Use it to quickly explore the breadth of our deployment activity across Nigeria."
-          />
-        </section>
+        {/* Standfirst */}
+        <div className="max-w-[68ch]">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-primary">
+            National footprint
+          </span>
+          <p className="mt-4 text-xl font-medium leading-relaxed text-foreground md:text-2xl">
+            This map highlights the states where we are active, our project
+            sites, and our headquarters — use it to explore the breadth of our
+            deployment activity across Nigeria.
+          </p>
+        </div>
 
-        <section className="mb-12">
+        {/* Map */}
+        <div className="mt-10 md:mt-14">
           <NigeriaReachSection projects={projects} />
-        </section>
+        </div>
 
-        <section className="mb-16 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {reachHighlights.map((item, index) => {
-            const Icon = item.icon;
-
-            return (
-              <FadeIn
-                key={item.label}
-                delay={index * 0.12}
-                direction="up"
-                className="h-full"
-              >
-                <Card className="group h-full rounded-3xl border border-border bg-surface shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-lg">
-                  <CardContent className="space-y-4 p-6">
-                    <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-primary/10 transition-all duration-500 group-hover:scale-110 group-hover:bg-primary">
-                      <div className="absolute inset-0 origin-center scale-0 rounded-full bg-primary transition-transform duration-500 ease-out group-hover:scale-100" />
-                      <Icon className="relative z-10 h-6 w-6 text-primary transition-colors duration-500 group-hover:text-primary-foreground" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                        {item.label}
-                      </p>
-                      <p className="mt-2 text-2xl font-bold text-foreground">
-                        {item.value}
-                      </p>
-                    </div>
-                    <p className="text-sm leading-relaxed text-muted-foreground">
-                      {item.description}
-                    </p>
-                  </CardContent>
-                </Card>
+        {/* Stat band */}
+        <section className="mt-4 border-y border-border py-10 md:py-12">
+          <dl className="grid grid-cols-2 gap-y-8 md:grid-cols-4">
+            {reachHighlights.map((item, i) => (
+              <FadeIn key={item.label} delay={i * 0.08}>
+                <div className="border-l border-border pl-4 md:pl-6">
+                  <dt className="text-4xl font-extrabold tabular-nums tracking-tight text-foreground md:text-5xl">
+                    {item.value}
+                  </dt>
+                  <dd className="mt-2 text-[0.7rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                    {item.label}
+                  </dd>
+                </div>
               </FadeIn>
-            );
-          })}
+            ))}
+          </dl>
         </section>
 
-        <section className="mb-16 rounded-3xl border border-border bg-surface p-4 sm:p-6 xl:p-8 shadow-sm">
-          <SectionHeader
-            badge="What This Shows"
-            align="left"
-            title="A clearer view of our operational footprint"
-            description="The map is designed to make our delivery footprint easy to read at a glance."
-            className="mb-6"
-          />
+        {/* What this shows */}
+        <section className="mt-16 md:mt-24">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+            Reading the map
+          </span>
+          <h2 className="mt-2 text-3xl font-extrabold uppercase leading-[0.95] tracking-tight text-foreground md:text-4xl">
+            What this shows
+          </h2>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            {reachDetails.map((item, index) => {
+          <div className="mt-8 border-t border-border">
+            {reachDetails.map((item, i) => {
               const Icon = item.icon;
-
               return (
                 <FadeIn
                   key={item.title}
-                  delay={index * 0.12}
-                  direction="up"
-                  className="h-full"
+                  delay={i * 0.08}
+                  className="grid grid-cols-[44px_1fr] gap-x-5 border-b border-border py-6 md:grid-cols-[60px_1fr] md:gap-x-8"
                 >
-                  <Card className="group h-full rounded-2xl border border-border bg-muted/20 transition-all duration-500 hover:-translate-y-1 hover:shadow-lg">
-                    <CardContent className="p-5">
-                      <div className="relative mb-4 flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-primary/10 transition-all duration-500 group-hover:scale-110 group-hover:bg-primary">
-                        <div className="absolute inset-0 origin-center scale-0 rounded-full bg-primary transition-transform duration-500 ease-out group-hover:scale-100" />
-                        <Icon className="relative z-10 h-5 w-5 text-primary transition-colors duration-500 group-hover:text-primary-foreground" />
-                      </div>
-                      <h3 className="text-lg font-semibold text-foreground">
-                        {item.title}
-                      </h3>
-                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                        {item.description}
-                      </p>
-                    </CardContent>
-                  </Card>
+                  <Icon className="h-6 w-6 text-primary" />
+                  <div>
+                    <h3 className="text-lg font-extrabold tracking-tight text-foreground md:text-xl">
+                      {item.title}
+                    </h3>
+                    <p className="mt-2 max-w-[62ch] leading-relaxed text-muted-foreground">
+                      {item.description}
+                    </p>
+                  </div>
                 </FadeIn>
               );
             })}
           </div>
         </section>
 
-        <div className="mt-12 mb-8 text-center">
+        <div className="mb-8 mt-16 text-center">
           <Link href="/about">
             <Button variant="outline" className="group">
               <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />

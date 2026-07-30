@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef, useState, useCallback, useMemo } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
@@ -34,6 +33,16 @@ interface ProjectsClientProps {
   breadcrumbItems: Array<{ label: string; href?: string }>;
 }
 
+function projectLocation(project: Project) {
+  const state =
+    project.state &&
+    (project.state.toUpperCase() === 'FCT' ? 'FCT' : `${project.state} State`);
+  if (project.location && state) {
+    return `${project.location}, ${state}`;
+  }
+  return project.location || state || 'Nigeria';
+}
+
 export default function ProjectsClient({
   initialProjects,
   initialPagination,
@@ -64,19 +73,16 @@ export default function ProjectsClient({
   );
 
   const fetchPage = useCallback(async (search: string, page: number) => {
-    // Cancel any in-flight request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    // Immediately show loading + scroll to top
     setIsLoading(true);
     setError(null);
     window.scrollTo({ top: 0, behavior: 'instant' });
 
-    // Update URL without Next.js navigation
     const urlParams = new URLSearchParams();
     if (search.trim()) {
       urlParams.set('search', search);
@@ -110,7 +116,7 @@ export default function ProjectsClient({
     } catch (err) {
       if ((err as Error).name === 'AbortError') {
         return;
-      } // Cancelled, ignore
+      }
       setError('Could not load projects.');
     } finally {
       if (!controller.signal.aborted) {
@@ -157,28 +163,29 @@ export default function ProjectsClient({
       <Hero
         image={heroImages}
         title="Our Projects"
-        description="Delivering Reliable Solar Energy Infrastructure Across Nigeria"
+        description="Power on the Ground."
+        titleSize="display"
       />
 
       <Container className="px-4 py-8">
-        {/* Breadcrumb with Search */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        {/* Breadcrumb + Search */}
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <Breadcrumb items={breadcrumbItems} />
-
-          <div className="relative w-full sm:w-auto sm:min-w-[400px] flex gap-2">
+          <div className="relative flex w-full gap-2 sm:w-auto sm:min-w-[400px]">
             <div className="relative flex-1">
               <Input
                 placeholder="Search projects..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="h-11 pl-10 pr-10 bg-background border-2 focus:border-primary transition-all duration-300"
+                className="h-11 border-2 bg-background pl-10 pr-10 transition-all duration-300 focus:border-primary"
               />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               {searchQuery && (
                 <button
                   onClick={handleClearSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 transition-colors hover:bg-muted"
+                  aria-label="Clear search"
                 >
                   <X className="h-4 w-4 text-muted-foreground" />
                 </button>
@@ -189,65 +196,79 @@ export default function ProjectsClient({
               size="lg"
               className="h-11 px-6"
             >
-              <Search className="h-4 w-4 mr-2" />
+              <Search className="mr-2 h-4 w-4" />
               Search
             </Button>
           </div>
         </div>
 
-        {/* Search Results Info */}
+        {/* Standfirst */}
+        <div className="max-w-[62ch]">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-primary">
+            Our Portfolio
+          </span>
+          <p className="mt-4 text-xl font-medium leading-relaxed text-foreground md:text-2xl">
+            Delivering reliable solar energy infrastructure across Nigeria —
+            from hybrid mini-grids to street lighting and captive power.
+          </p>
+        </div>
+
+        {/* Search result count */}
         {searchQuery && hasSearched && !isLoading && (
-          <div className="mb-4">
-            <div className="flex items-center justify-between text-sm text-muted-foreground bg-card border border-border rounded-md px-3 py-2">
-              <p>
-                <span className="font-medium text-foreground">
-                  {pagination.totalCount}
-                </span>{' '}
-                project{pagination.totalCount !== 1 ? 's' : ''} found for{' '}
-                <span className="font-medium text-foreground">
-                  &ldquo;{searchQuery}&rdquo;
-                </span>
-              </p>
-              <button
-                onClick={handleClearSearch}
-                className="text-xs hover:text-foreground transition-colors flex items-center gap-1"
-              >
-                <X className="h-3 w-3" />
-                Clear
-              </button>
-            </div>
+          <div className="mt-8 flex items-center justify-between border-t border-border pt-4 text-sm text-muted-foreground">
+            <p>
+              <span className="font-semibold text-foreground">
+                {pagination.totalCount}
+              </span>{' '}
+              project{pagination.totalCount !== 1 ? 's' : ''} found for{' '}
+              <span className="font-semibold text-foreground">
+                &ldquo;{searchQuery}&rdquo;
+              </span>
+            </p>
+            <button
+              onClick={handleClearSearch}
+              className="flex items-center gap-1 text-xs font-semibold transition-colors hover:text-primary"
+            >
+              <X className="h-3 w-3" />
+              Clear
+            </button>
           </div>
         )}
 
-        {/* Projects Grid */}
+        {/* Grid */}
         {isLoading ? (
-          <CardSkeleton count={PAGE_LIMIT} />
+          <div className="mt-10">
+            <CardSkeleton count={PAGE_LIMIT} />
+          </div>
         ) : projects.length === 0 ? (
-          <Card className="!border-t-2 !border-t-primary border border-border">
-            <CardContent className="p-4 sm:p-6 xl:p-8 text-center">
-              <div className="text-muted-foreground mb-4">
-                <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="text-xl font-semibold mb-2">
-                  No projects found
-                </h3>
-                <p>Try adjusting your search terms or browse all projects.</p>
-              </div>
-              <Button variant="outline" onClick={handleClearSearch}>
-                View All Projects
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="mt-10 border border-dashed border-border p-12 text-center">
+            <Search className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
+            <h3 className="mb-2 text-2xl font-bold tracking-tight">
+              No projects found
+            </h3>
+            <p className="mb-6 text-muted-foreground">
+              Try adjusting your search terms or browse all projects.
+            </p>
+            <Button variant="outline" onClick={handleClearSearch}>
+              View All Projects
+            </Button>
+          </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 xl:grid-cols-3">
               {projects.map((project: Project, index: number) => (
-                <FadeIn key={project._id} delay={index * 0.05} direction="up">
+                <FadeIn
+                  key={project._id}
+                  delay={index * 0.05}
+                  direction="up"
+                  className="h-full"
+                >
                   <Link
                     href={`/projects/${project.slug.current}`}
-                    className="group"
+                    className="group block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   >
-                    <Card className="overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-border hover:border-primary/50">
-                      <div className="aspect-[16/9] overflow-hidden relative bg-muted">
+                    <article className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-500 group-hover:-translate-y-1 group-hover:border-primary/40 group-hover:shadow-lg">
+                      <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
                         {project.projectImage ? (
                           <Image
                             src={applySanityImagePreset(
@@ -256,58 +277,42 @@ export default function ProjectsClient({
                             )}
                             alt={project.title}
                             fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-110"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <span className="text-muted-foreground text-sm">
+                          <div className="flex h-full w-full items-center justify-center bg-muted">
+                            <span className="text-sm text-muted-foreground">
                               No image
                             </span>
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        <span className="absolute bottom-3 left-3 flex items-center gap-1.5 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-white/90">
+                          <MapPin className="h-3 w-3" />
+                          {projectLocation(project)}
+                        </span>
+                        {project.projectDate && (
+                          <span className="absolute right-3 top-3 text-[0.65rem] font-bold tabular-nums text-white/90">
+                            {new Date(project.projectDate).getFullYear()}
+                          </span>
+                        )}
                       </div>
 
-                      <CardContent className="p-6 flex flex-col flex-1">
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3 flex-wrap">
-                          {(project.location || project.state) && (
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-3.5 w-3.5 text-primary" />
-                              <span>
-                                {project.location}
-                                {project.location && project.state && ', '}
-                                {project.state &&
-                                  (project.state.toUpperCase() === 'FCT'
-                                    ? 'FCT'
-                                    : `${project.state} State.`)}
-                              </span>
-                            </div>
-                          )}
-                          {project.projectDate && (
-                            <div className="flex items-center gap-1">
-                              <span>
-                                {new Date(project.projectDate).getFullYear()}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        <h3 className="text-lg font-bold mb-3 text-foreground group-hover:text-primary transition-colors duration-300 line-clamp-3">
+                      <div className="flex flex-1 flex-col p-4 md:p-5">
+                        <h3 className="text-base font-extrabold tracking-tight text-foreground line-clamp-2 md:text-lg">
                           {project.title}
                         </h3>
-
-                        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 mb-4 flex-1">
+                        <p className="mt-2 flex-1 text-xs leading-relaxed text-muted-foreground line-clamp-3 md:text-sm">
                           {project.excerpt ||
                             extractTextFromPortableText(project.content || [])}
                         </p>
-
-                        <div className="flex items-center text-sm font-medium text-primary group-hover:gap-2 transition-all duration-300">
-                          View Project
-                          <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform duration-300" />
-                        </div>
-                      </CardContent>
-                    </Card>
+                        <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-primary md:text-sm">
+                          View project
+                          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1 md:h-4 md:w-4" />
+                        </span>
+                      </div>
+                    </article>
                   </Link>
                 </FadeIn>
               ))}
@@ -316,7 +321,7 @@ export default function ProjectsClient({
             {/* Pagination */}
             {pagination.totalPages > 1 && (
               <div className="mt-12">
-                <div className="text-sm text-center text-muted-foreground mb-6">
+                <div className="mb-6 text-center text-sm text-muted-foreground">
                   Showing{' '}
                   <span className="font-medium text-foreground">
                     {(pagination.currentPage - 1) * pagination.limit + 1}

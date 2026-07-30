@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { Hero } from '@/components/ui/hero';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Container } from '@/components/ui/container';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -19,8 +18,6 @@ export default function ServicesPage() {
 
   useEffect(() => {
     let filtered = servicesData;
-
-    // Filter by search query
     if (searchQuery.trim()) {
       filtered = filtered.filter(
         service =>
@@ -29,49 +26,45 @@ export default function ServicesPage() {
           service.description.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
-
     setFilteredServices(filtered);
   }, [searchQuery]);
 
-  const handleClearSearch = () => {
-    setSearchQuery('');
-  };
+  const handleClearSearch = () => setSearchQuery('');
 
   const breadcrumbItems = [{ label: 'Home', href: '/' }, { label: 'Services' }];
 
-  // Get all service images for carousel
-  const serviceImages = useMemo(() => {
-    return servicesData.map(service => ({
-      src: service.image,
-      alt: service.title,
-    }));
-  }, []);
+  const serviceImages = useMemo(
+    () =>
+      servicesData.map(service => ({ src: service.image, alt: service.title })),
+    [],
+  );
 
   return (
     <>
       <Hero
         image={serviceImages}
         title="Our Services"
-        description="Comprehensive Solar Energy Solutions for Every Need"
+        description="Clean Energy, End to End."
+        titleSize="display"
       />
 
       <Container className="px-4 py-8">
-        {/* Breadcrumb with Search */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        {/* Breadcrumb + Search */}
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <Breadcrumb items={breadcrumbItems} />
-
           <div className="relative w-full sm:w-96">
             <Input
               placeholder="Search services..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="h-11 pl-10 pr-10 bg-background border-2 focus:border-primary transition-all duration-300"
+              className="h-11 border-2 bg-background pl-10 pr-10 transition-all duration-300 focus:border-primary"
             />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             {searchQuery && (
               <button
                 onClick={handleClearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 transition-colors hover:bg-muted"
+                aria-label="Clear search"
               >
                 <X className="h-4 w-4 text-muted-foreground" />
               </button>
@@ -79,88 +72,87 @@ export default function ServicesPage() {
           </div>
         </div>
 
-        {/* Search Results Info */}
+        {/* Standfirst */}
+        <div className="max-w-[62ch]">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-primary">
+            What we do
+          </span>
+          <p className="mt-4 text-xl font-medium leading-relaxed text-foreground md:text-2xl">
+            End-to-end renewable energy — from feasibility and engineering to
+            installation and long-term O&amp;M, delivered across Nigeria.
+          </p>
+        </div>
+
+        {/* Search result count */}
         {searchQuery && (
-          <div className="mb-6">
-            <Card className="border-primary/20 bg-primary/5">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm">
-                    <span className="font-medium">
-                      {filteredServices.length}
-                    </span>{' '}
-                    service{filteredServices.length !== 1 ? 's' : ''} found for{' '}
-                    <span className="font-medium">"{searchQuery}"</span>
-                  </p>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleClearSearch}
-                    className="text-xs"
-                  >
-                    <X className="h-3 w-3 mr-1" />
-                    Clear
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <p className="mt-8 border-t border-border pt-4 text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">
+              {filteredServices.length}
+            </span>{' '}
+            service{filteredServices.length !== 1 ? 's' : ''} found for{' '}
+            <span className="font-semibold text-foreground">
+              &ldquo;{searchQuery}&rdquo;
+            </span>
+          </p>
         )}
 
-        {/* Services Grid */}
+        {/* Grid */}
         {filteredServices.length === 0 ? (
-          <Card className="border-2 border-dashed">
-            <CardContent className="p-12 text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
-                <Search className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-2xl font-semibold mb-2">No services found</h3>
-              <p className="text-muted-foreground mb-6">
-                Try adjusting your search terms or browse all services.
-              </p>
-              <Button onClick={handleClearSearch}>
-                <X className="mr-2 h-4 w-4" />
-                View All Services
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="mt-10 rounded-xl border border-dashed border-border p-12 text-center">
+            <div className="mx-auto mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+              <Search className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="mb-2 text-2xl font-bold tracking-tight">
+              No services found
+            </h3>
+            <p className="mb-6 text-muted-foreground">
+              Try adjusting your search terms or browse all services.
+            </p>
+            <Button onClick={handleClearSearch}>
+              <X className="mr-2 h-4 w-4" />
+              View All Services
+            </Button>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
             {filteredServices.map((service, index) => (
-              <FadeIn key={service.id} delay={index * 0.15} direction="up">
-                <Link href={`/services/${service.slug}`} className="group">
-                  <Card className="overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-border hover:border-primary/50">
-                    {/* Image */}
-                    <div className="aspect-[16/9] overflow-hidden relative bg-muted">
+              <FadeIn
+                key={service.id}
+                delay={index * 0.06}
+                direction="up"
+                className="h-full"
+              >
+                <Link
+                  href={`/services/${service.slug}`}
+                  className="group block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                >
+                  <article className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-500 group-hover:-translate-y-1 group-hover:border-primary/40 group-hover:shadow-lg">
+                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
                       <Image
                         src={service.image}
                         alt={service.title}
                         fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       />
-                      {/* Gradient overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      <span className="absolute bottom-3 left-3 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-white/90">
+                        {service.category ?? 'Renewable Solutions'}
+                      </span>
                     </div>
-
-                    <CardContent className="p-6 flex flex-col flex-1">
-                      {/* Title */}
-                      <h3 className="text-lg font-bold mb-3 text-foreground group-hover:text-primary transition-colors duration-300 line-clamp-3">
+                    <div className="flex flex-1 flex-col p-4 md:p-5">
+                      <h3 className="text-base font-extrabold tracking-tight text-foreground line-clamp-2 md:text-lg">
                         {service.title}
                       </h3>
-
-                      {/* Description */}
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 mb-4 flex-1">
+                      <p className="mt-2 flex-1 text-xs leading-relaxed text-muted-foreground line-clamp-3 md:text-sm">
                         {service.excerpt}
                       </p>
-
-                      {/* View Service Link */}
-                      <div className="flex items-center text-sm font-medium text-primary group-hover:gap-2 transition-all duration-300">
-                        Learn More
-                        <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform duration-300" />
-                      </div>
-                    </CardContent>
-                  </Card>
+                      <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-primary md:text-sm">
+                        See solution
+                        <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1 md:h-4 md:w-4" />
+                      </span>
+                    </div>
+                  </article>
                 </Link>
               </FadeIn>
             ))}

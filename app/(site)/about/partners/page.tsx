@@ -5,7 +5,6 @@ import { Container } from '@/components/ui/container';
 import { Hero } from '@/components/ui/hero';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import Link from 'next/link';
 import { partners } from '@/lib/data/partners-data';
@@ -26,7 +25,7 @@ function PartnerCard({ partner, index }: { partner: Partner; index: number }) {
   const [isFlipped, setIsFlipped] = useState(false);
 
   return (
-    <FadeIn delay={0.1 + index * 0.05} direction="up">
+    <FadeIn delay={0.05 + index * 0.03} direction="up">
       <div
         className="group relative h-full min-h-[160px] perspective-1000 cursor-pointer w-full"
         onClick={() => setIsFlipped(!isFlipped)}
@@ -37,43 +36,39 @@ function PartnerCard({ partner, index }: { partner: Partner; index: number }) {
             isFlipped ? 'rotate-y-180' : 'group-hover:rotate-y-180',
           )}
         >
-          {/* Front - Logo */}
-          <Card className="absolute inset-0 backface-hidden border border-border bg-card hover:border-primary/50 transition-colors duration-300 hover:shadow-lg">
-            <CardContent className="p-4 sm:p-6 flex items-center justify-center h-full">
-              <div className="relative w-full h-full flex items-center justify-center rounded-lg p-3">
-                <Image
-                  src={partner.logo}
-                  alt={partner.name}
-                  width={150}
-                  height={100}
-                  className="h-auto w-full max-w-[120px] object-contain opacity-90 group-hover:opacity-100 transition-opacity duration-300"
-                  loading="lazy"
-                  quality={75}
-                  placeholder="blur"
-                  blurDataURL={getBlurDataURL()}
-                />
-              </div>
-            </CardContent>
-          </Card>
+          {/* Front — logo */}
+          <div className="absolute inset-0 flex h-full items-center justify-center rounded-lg border border-border bg-card backface-hidden transition-colors duration-300 hover:border-primary/50">
+            <div className="relative flex h-full w-full items-center justify-center p-3">
+              <Image
+                src={partner.logo}
+                alt={partner.name}
+                width={150}
+                height={100}
+                className="h-auto w-full max-w-[120px] object-contain opacity-90 transition-opacity duration-300 group-hover:opacity-100"
+                loading="lazy"
+                quality={75}
+                placeholder="blur"
+                blurDataURL={getBlurDataURL()}
+              />
+            </div>
+          </div>
 
-          {/* Back - Description */}
-          <Card className="absolute inset-0 backface-hidden rotate-y-180 border border-primary/50 bg-primary/5">
-            <CardContent className="p-3 sm:p-4 flex flex-col items-center justify-center h-full text-center gap-2">
-              <Badge className="text-[10px] px-2 py-0.5">
-                {partner.category}
-              </Badge>
-              <h3 className="font-semibold text-sm sm:text-base leading-tight text-foreground px-2">
-                {partner.fullName || partner.name}
-              </h3>
-              <Link
-                href={`/about/partners/${partner.slug}`}
-                className="text-xs text-primary font-medium mt-auto hover:underline p-1"
-                onClick={e => e.stopPropagation()}
-              >
-                Learn more →
-              </Link>
-            </CardContent>
-          </Card>
+          {/* Back — description */}
+          <div className="absolute inset-0 flex h-full flex-col items-center justify-center gap-2 rotate-y-180 border border-primary/40 bg-primary/5 p-3 text-center backface-hidden sm:p-4 rounded-lg">
+            <span className="text-[0.62rem] font-bold uppercase tracking-[0.16em] text-primary">
+              {partner.category}
+            </span>
+            <h3 className="px-2 text-sm font-semibold leading-tight text-foreground sm:text-base">
+              {partner.fullName || partner.name}
+            </h3>
+            <Link
+              href={`/about/partners/${partner.slug}`}
+              className="mt-auto p-1 text-xs font-semibold text-primary hover:underline"
+              onClick={e => e.stopPropagation()}
+            >
+              Learn more →
+            </Link>
+          </div>
         </div>
       </div>
     </FadeIn>
@@ -89,81 +84,74 @@ export default function PartnersPage() {
 
   const infraCreditPartner = partners.find(p => p.name === 'InfraCredit');
 
-  // Debug: Check if fullName exists
-  console.log('First partner:', partners[0]);
-  console.log('Has fullName?', partners[0]?.fullName);
-
   return (
     <>
       <Hero
         title="Our Partners"
-        description="Powering Progress Through Strategic Collaborations"
+        description="Stronger Together."
         image="/images/about/partners-collage.webp"
+        titleSize="display"
       />
 
-      <Container>
-        <Breadcrumb items={breadcrumbItems} className="mb-10" />
+      <Container className="px-4 py-8">
+        <Breadcrumb items={breadcrumbItems} className="mb-8 md:mb-12" />
 
-        {/* InfraCredit Featured Section */}
+        {/* Standfirst */}
+        <div className="max-w-[68ch]">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-primary">
+            Strategic collaborations
+          </span>
+          <p className="mt-4 text-xl font-medium leading-relaxed text-foreground md:text-2xl">
+            We collaborate with leading organizations, government agencies, and
+            technology providers to deliver sustainable energy solutions across
+            Nigeria.
+          </p>
+        </div>
+
+        {/* InfraCredit featured band */}
         {infraCreditPartner && (
-          <FadeIn delay={0.1} className="mb-16 w-full max-w-full">
-            <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background overflow-hidden w-full max-w-full">
-              <CardContent className="p-0 max-w-full overflow-hidden w-full">
-                <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-0 w-full max-w-full">
-                  {/* Video Section - Takes 60% (3/5) */}
-                  <div className="relative w-full max-w-full aspect-video lg:aspect-auto lg:h-full min-h-[250px] sm:min-h-[300px] lg:min-h-[400px] bg-muted/50 order-2 lg:order-1 overflow-hidden">
-                    <div className="absolute inset-0 w-full h-full max-w-full overflow-hidden">
+          <FadeIn>
+            <Card className="mt-12 w-full max-w-full overflow-hidden rounded-none border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background md:mt-16">
+              <CardContent className="w-full max-w-full overflow-hidden p-0">
+                <div className="grid w-full max-w-full grid-cols-1 gap-0 lg:grid-cols-[3fr_2fr]">
+                  <div className="relative order-2 aspect-video w-full max-w-full min-h-[250px] overflow-hidden bg-muted/50 sm:min-h-[300px] lg:order-1 lg:aspect-auto lg:h-full lg:min-h-[400px] rounded-lg">
+                    <div className="absolute inset-0 h-full w-full max-w-full overflow-hidden">
                       <iframe
                         src="https://www.youtube.com/embed/C6S2Qj-Dsc0"
-                        className="absolute top-0 left-0 w-full h-full border-0"
+                        className="absolute left-0 top-0 h-full w-full border-0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         allowFullScreen
                         title="ACOB & InfraCredit Partnership Video"
-                        style={{
-                          maxWidth: '100%',
-                          width: '100%',
-                          maxHeight: '100%',
-                          height: '100%',
-                          boxSizing: 'border-box',
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                        }}
                       />
                     </div>
-                    <div className="absolute top-4 left-4">
-                      <Badge className="bg-primary/90 text-primary-foreground backdrop-blur-sm">
-                        <Video className="h-3 w-3 mr-1" />
-                        Partnership Video
-                      </Badge>
-                    </div>
+                    <span className="absolute left-4 top-4 flex items-center gap-1.5 bg-primary/90 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-primary-foreground">
+                      <Video className="h-3 w-3" />
+                      Partnership Video
+                    </span>
                   </div>
 
-                  {/* Content Section - Takes 40% (2/5) */}
-                  <div className="p-6 sm:p-8 lg:p-10 flex flex-col justify-center order-1 lg:order-2">
-                    <div className="mb-4">
-                      <Badge className="bg-primary/10 text-primary border-primary/20 mb-4">
-                        Featured Partnership
-                      </Badge>
-                      <div className="relative h-16 w-auto mb-6">
-                        <Image
-                          src={infraCreditPartner.logo}
-                          alt={infraCreditPartner.name}
-                          width={200}
-                          height={80}
-                          className="h-full w-auto object-contain"
-                          quality={90}
-                        />
-                      </div>
+                  <div className="order-1 flex flex-col justify-center p-6 sm:p-8 lg:order-2 lg:p-10">
+                    <span className="text-[0.7rem] font-bold uppercase tracking-[0.2em] text-primary">
+                      Featured Partnership
+                    </span>
+                    <div className="relative mb-6 mt-4 h-16 w-auto">
+                      <Image
+                        src={infraCreditPartner.logo}
+                        alt={infraCreditPartner.name}
+                        width={200}
+                        height={80}
+                        className="h-full w-auto object-contain"
+                        quality={90}
+                      />
                     </div>
-                    <h2 className="text-2xl sm:text-3xl font-semibold mb-4 text-foreground">
-                      ACOB & InfraCredit Partnership
+                    <h2 className="mb-4 text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+                      ACOB &amp; InfraCredit Partnership
                     </h2>
-                    <p className="text-base leading-relaxed text-muted-foreground mb-6">
+                    <p className="mb-6 text-base leading-relaxed text-muted-foreground">
                       Discover how our strategic partnership with InfraCredit is
                       enabling sustainable energy access across rural Nigeria
                       through innovative green infrastructure financing.
-                      Together, we're scaling solar mini-grid solutions and
+                      Together, we&apos;re scaling solar mini-grid solutions and
                       empowering communities with reliable, clean energy.
                     </p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -179,31 +167,21 @@ export default function PartnersPage() {
           </FadeIn>
         )}
 
-        {/* All Partners Grid */}
-        <FadeIn delay={0.2}>
-          <div className="mb-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl font-semibold mb-3 text-foreground">
-                Trusted Partners & Collaborators
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                We collaborate with leading organizations, government agencies,
-                and technology providers to deliver sustainable energy solutions
-                across Nigeria.
-              </p>
-            </div>
+        {/* All partners */}
+        <section className="mt-16 md:mt-24">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+            Trusted collaborators
+          </span>
+          <h2 className="mt-2 text-3xl font-extrabold uppercase leading-[0.95] tracking-tight text-foreground md:text-4xl">
+            Partners &amp; alliances
+          </h2>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
-              {partners.map((partner, index) => (
-                <PartnerCard
-                  key={partner.slug}
-                  partner={partner}
-                  index={index}
-                />
-              ))}
-            </div>
+          <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+            {partners.map((partner, index) => (
+              <PartnerCard key={partner.slug} partner={partner} index={index} />
+            ))}
           </div>
-        </FadeIn>
+        </section>
       </Container>
     </>
   );
