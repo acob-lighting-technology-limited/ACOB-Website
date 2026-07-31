@@ -70,8 +70,8 @@ export function ProjectsSection({ projects = [] }: ProjectsSectionProps) {
           </FadeIn>
         </div>
 
-        {/* Card grid */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
+        {/* Card grid — swipeable on mobile, static grid from sm up */}
+        <div className="hide-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
           {displayProjects.map((project, index) => {
             const projectImage = project.projectImage
               ? applySanityImagePreset(project.projectImage, 'card')
@@ -82,7 +82,7 @@ export function ProjectsSection({ projects = [] }: ProjectsSectionProps) {
                 key={project._id}
                 delay={index * 0.08}
                 direction="up"
-                className="h-full"
+                className="h-full w-[85%] shrink-0 snap-start sm:w-auto sm:shrink"
               >
                 <Link
                   href={`/projects/${project.slug?.current}`}

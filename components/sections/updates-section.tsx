@@ -25,16 +25,16 @@ export function UpdatesSection({ posts }: UpdatesSectionProps) {
 
   if (!posts || posts.length === 0) {
     return (
-      <section className="py-12 sm:py-16 lg:py-20 xl:py-24 bg-white dark:bg-zinc-950 transition-colors duration-500">
+      <section className="py-12 sm:py-16 lg:py-20 xl:py-24 bg-background transition-colors duration-500">
         <Container className="px-4">
           <div className="text-center">
-            <div className="h-8 bg-gray-300 dark:bg-gray-700 rounded animate-pulse mx-auto max-w-md mb-4" />
-            <div className="h-12 bg-gray-300 dark:bg-gray-700 rounded animate-pulse mx-auto max-w-2xl mb-8" />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="h-3 bg-muted rounded animate-pulse mx-auto max-w-[7rem] mb-4" />
+            <div className="h-10 bg-muted rounded animate-pulse mx-auto max-w-md mb-8" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
               {[1, 2, 3].map(i => (
                 <div
                   key={i}
-                  className="h-64 bg-gray-300 dark:bg-gray-700 rounded animate-pulse"
+                  className="aspect-[16/10] bg-muted rounded-xl animate-pulse"
                 />
               ))}
             </div>
@@ -59,14 +59,14 @@ export function UpdatesSection({ posts }: UpdatesSectionProps) {
           </div>
         </FadeIn>
 
-        {/* Card grid */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3">
+        {/* Card grid — swipeable on mobile, static grid from sm up */}
+        <div className="hide-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
           {latestPosts.map((post, index) => (
             <FadeIn
               key={post._id}
               delay={index * 0.08}
               direction="up"
-              className="h-full"
+              className="h-full w-[85%] shrink-0 snap-start sm:w-auto sm:shrink"
             >
               <Link
                 href={`/updates/${post.slug.current}`}
