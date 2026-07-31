@@ -93,12 +93,12 @@ export default async function OurReachPage() {
         </div>
 
         {/* Map */}
-        <div className="mt-10 md:mt-14">
-          <NigeriaReachSection projects={projects} />
+        <div className="mt-8 md:mt-10">
+          <NigeriaReachSection projects={projects} embedded />
         </div>
 
         {/* Stat band */}
-        <section className="mt-4 border-y border-border py-10 md:py-12">
+        <section className="mt-8 border-y border-border py-10 md:mt-10 md:py-12">
           <dl className="grid grid-cols-2 gap-y-8 md:grid-cols-4">
             {reachHighlights.map((item, i) => (
               <FadeIn key={item.label} delay={i * 0.08}>

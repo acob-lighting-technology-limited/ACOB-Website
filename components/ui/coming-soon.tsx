@@ -11,6 +11,8 @@ interface ComingSoonProps {
   description?: string;
   breadcrumbItems?: Array<{ label: string; href?: string }>;
   backgroundImage?: string;
+  backHref?: string;
+  backLabel?: string;
 }
 
 export function ComingSoon({
@@ -18,6 +20,8 @@ export function ComingSoon({
   description = "We're working on something amazing. This page will be available soon!",
   breadcrumbItems,
   backgroundImage,
+  backHref = '/',
+  backLabel = 'Back to Home',
 }: ComingSoonProps) {
   return (
     <>
@@ -36,22 +40,22 @@ export function ComingSoon({
         )}
 
         <FadeIn>
-          <div className="max-w-[62ch] border-t-[3px] border-foreground pt-8 md:pt-10">
-            <span className="text-[0.72rem] font-bold uppercase tracking-[0.3em] text-primary">
+          <div className="flex min-h-[55vh] flex-col justify-center border-t-[3px] border-foreground py-12 md:min-h-[60vh] md:py-16">
+            <span className="text-sm font-bold uppercase tracking-[0.3em] text-primary">
               Coming soon
             </span>
-            <p className="mt-4 text-xl font-medium leading-relaxed text-foreground md:text-2xl">
+            <p className="mt-6 max-w-4xl text-3xl font-extrabold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
               {description}
             </p>
-            <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+            <p className="mt-6 max-w-[62ch] text-lg leading-relaxed text-muted-foreground md:text-xl">
               We&apos;re working hard to bring you an improved experience. Check
               back soon for updates.
             </p>
 
-            <Link href="/" className="mt-8 inline-block">
-              <Button variant="outline" className="group">
+            <Link href={backHref} className="mt-10 inline-block">
+              <Button variant="outline" size="lg" className="group">
                 <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
-                Back to Home
+                {backLabel}
               </Button>
             </Link>
           </div>

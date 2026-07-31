@@ -19,6 +19,8 @@ export default function CertificationsPage() {
       description="We're updating our certifications and awards information. This page will be available soon!"
       breadcrumbItems={breadcrumbItems}
       backgroundImage="/images/about/certifications.webp"
+      backHref="/about"
+      backLabel="Back to About"
     />
   );
 }

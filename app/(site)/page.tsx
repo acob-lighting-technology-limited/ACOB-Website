@@ -1,11 +1,10 @@
 import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
-import { HeroSection } from '@/components/sections/hero-section';
-import { AboutSection } from '@/components/sections/about-section';
+import { HeroSectionV2 } from '@/components/sections/hero-section-v2';
+import { AboutSectionV2 } from '@/components/sections/about-section-v2';
 import { ServicesSection } from '@/components/sections/services-section';
 import { ProjectsSection } from '@/components/sections/projects-section';
 import { UpdatesSection } from '@/components/sections/updates-section';
-import { CtaSection } from '@/components/sections/cta-section';
 import {
   getProjectsForListing,
   getFeaturedProjects,
@@ -17,18 +16,18 @@ import {
 } from '@/lib/constants/anniversary';
 
 // Lazy load below-the-fold sections
-const CompanySection = dynamic(
+const CompanySectionV2 = dynamic(
   () =>
-    import('@/components/sections/company-section').then(
-      mod => mod.CompanySection,
+    import('@/components/sections/company-section-v2').then(
+      mod => mod.CompanySectionV2,
     ),
   { ssr: true },
 );
 
-const PartnersSection = dynamic(
+const PartnersSectionV2 = dynamic(
   () =>
-    import('@/components/sections/partners-section').then(
-      mod => mod.PartnersSection,
+    import('@/components/sections/partners-section-v2').then(
+      mod => mod.PartnersSectionV2,
     ),
   { ssr: true },
 );
@@ -37,6 +36,14 @@ const NigeriaReachSection = dynamic(
   () =>
     import('@/components/sections/nigeria-reach-section').then(
       mod => mod.NigeriaReachSection,
+    ),
+  { ssr: true },
+);
+
+const CtaSectionV2 = dynamic(
+  () =>
+    import('@/components/sections/cta-section-v2').then(
+      mod => mod.CtaSectionV2,
     ),
   { ssr: true },
 );
@@ -103,15 +110,15 @@ export default async function HomePage() {
 
   return (
     <main role="main">
-      <HeroSection projects={featuredProjects} />
-      <AboutSection />
+      <HeroSectionV2 projects={featuredProjects} />
+      <AboutSectionV2 />
       <ServicesSection />
       <ProjectsSection projects={projects} />
-      <CompanySection />
+      <CompanySectionV2 />
       <NigeriaReachSection projects={projects} showMoreLink />
       <UpdatesSection posts={posts} />
-      <PartnersSection />
-      <CtaSection />
+      <PartnersSectionV2 />
+      <CtaSectionV2 />
     </main>
   );
 }

@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/container';
-import { MaskText } from '@/components/animations/MaskText';
 import { FadeIn } from '@/components/animations/FadeIn';
 import type { Project } from '@/lib/types';
 import { applySanityImagePreset } from '@/lib/utils/sanity-image';
@@ -55,16 +54,19 @@ export function ProjectsSection({ projects = [] }: ProjectsSectionProps) {
         {/* Header */}
         <div className="mb-10 max-w-2xl md:mb-14">
           <FadeIn delay={0.1}>
-            <MaskText
-              phrases={['Selected Energy Deployments']}
-              className="text-3xl font-semibold md:text-4xl lg:text-5xl"
-            />
-            <MaskText
-              phrases={[
-                'Each project is engineered to deliver bankable returns, resilient operations, and measurable socio-economic impact for communities across Nigeria.',
-              ]}
-              className="mt-4 text-base md:text-lg text-muted-foreground"
-            />
+            <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+              Our portfolio
+            </span>
+            <h2 className="mt-2 text-3xl font-extrabold uppercase leading-[0.95] tracking-tight text-foreground md:text-4xl lg:text-5xl">
+              Selected Energy
+              <br />
+              Deployments.
+            </h2>
+            <p className="mt-4 text-base text-muted-foreground md:text-lg">
+              Each project is engineered to deliver bankable returns, resilient
+              operations, and measurable socio-economic impact for communities
+              across Nigeria.
+            </p>
           </FadeIn>
         </div>
 

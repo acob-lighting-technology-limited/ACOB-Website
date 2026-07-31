@@ -20,6 +20,8 @@ export default function TeamPage() {
       description="We're updating our team information. This page will be available soon!"
       breadcrumbItems={breadcrumbItems}
       backgroundImage={aboutSection?.image || '/images/about/acob-team.webp'}
+      backHref="/about"
+      backLabel="Back to About"
     />
   );
 }

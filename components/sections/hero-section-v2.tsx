@@ -28,7 +28,7 @@ function formatHeroProjectTitle(title: string): string {
   return `${title.trim().split(',')[0].replace(/\.+$/u, '').trim()}.`;
 }
 
-export const HeroSection = React.memo(function HeroSection({
+export const HeroSectionV2 = React.memo(function HeroSectionV2({
   projects,
 }: HeroSectionProps) {
   const showAnniversary = isAnniversaryYear2026();
@@ -165,7 +165,7 @@ export const HeroSection = React.memo(function HeroSection({
 
       {/* Content */}
       <div
-        className="relative z-20 h-full flex items-end pb-6 lg:pb-6"
+        className=" relative z-20 h-full flex items-end pb-6 lg:pb-6"
         style={{
           backfaceVisibility: 'hidden',
           WebkitBackfaceVisibility: 'hidden',
@@ -291,7 +291,9 @@ export const HeroSection = React.memo(function HeroSection({
       >
         <div className="2xl:container max-w-7xl mx-auto px-4">
           <div className="flex justify-end">
-            <div className="relative overflow-hidden p-3 pb-2 max-w-md mr-6">
+            {/* The one accepted change: a vertical accent line before the
+                location + title, replacing the previous plain padded box. */}
+            <div className="relative max-w-md mr-6 border-l-2 border-primary py-1 pl-4">
               <div
                 key={`project-info-${current}`}
                 className="space-y-2"
@@ -316,8 +318,6 @@ export const HeroSection = React.memo(function HeroSection({
           </div>
         </div>
       </div>
-
-      {/* Mobile Project Info - Hidden on mobile */}
 
       {/* Slide Indicators - Bottom Center */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
@@ -347,4 +347,4 @@ export const HeroSection = React.memo(function HeroSection({
   );
 });
 
-HeroSection.displayName = 'HeroSection';
+HeroSectionV2.displayName = 'HeroSectionV2';

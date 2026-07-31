@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 
 import { Button, Container } from '@/components/ui';
-import { MaskText } from '../animations/MaskText';
 import { FadeIn } from '../animations/FadeIn';
 import { servicesData } from '@/lib/data';
 
@@ -19,17 +18,19 @@ const ServicesSection = React.memo(function ServicesSection() {
         {/* Header */}
         <div className="mb-10 grid gap-8 md:mb-14 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-end">
           <FadeIn delay={0.1}>
-            <div className="space-y-5">
-              <MaskText
-                phrases={['Integrated renewable energy for every scale']}
-                className="text-3xl font-bold leading-tight md:text-4xl lg:text-5xl"
-              />
-              <MaskText
-                phrases={[
-                  'From concept to long-term O&M, we help governments, developers, and operators unlock reliable, efficient power.',
-                ]}
-                className="max-w-xl text-base md:text-lg text-muted-foreground"
-              />
+            <div>
+              <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                What we do
+              </span>
+              <h2 className="mt-2 text-3xl font-extrabold uppercase leading-[0.95] tracking-tight text-foreground md:text-4xl lg:text-5xl">
+                Integrated Energy
+                <br />
+                for Every Scale.
+              </h2>
+              <p className="mt-4 max-w-xl text-base text-muted-foreground md:text-lg">
+                From concept to long-term O&amp;M, we help governments,
+                developers, and operators unlock reliable, efficient power.
+              </p>
             </div>
           </FadeIn>
           <FadeIn delay={0.15}>

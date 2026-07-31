@@ -111,23 +111,25 @@ export default function PartnersPage() {
         {/* InfraCredit featured band */}
         {infraCreditPartner && (
           <FadeIn>
-            <Card className="mt-12 w-full max-w-full overflow-hidden rounded-none border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background md:mt-16">
+            <Card className="mt-12 w-full max-w-full overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background md:mt-16">
               <CardContent className="w-full max-w-full overflow-hidden p-0">
                 <div className="grid w-full max-w-full grid-cols-1 gap-0 lg:grid-cols-[3fr_2fr]">
-                  <div className="relative order-2 aspect-video w-full max-w-full min-h-[250px] overflow-hidden bg-muted/50 sm:min-h-[300px] lg:order-1 lg:aspect-auto lg:h-full lg:min-h-[400px] rounded-lg">
-                    <div className="absolute inset-0 h-full w-full max-w-full overflow-hidden">
-                      <iframe
-                        src="https://www.youtube.com/embed/C6S2Qj-Dsc0"
-                        className="absolute left-0 top-0 h-full w-full border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                        title="ACOB & InfraCredit Partnership Video"
-                      />
+                  <div className="order-2 w-full p-6 sm:p-8 lg:order-1 lg:flex lg:h-full lg:items-center lg:p-10">
+                    <div className="relative aspect-video w-full max-w-full min-h-[250px] overflow-hidden rounded-lg bg-muted/50 sm:min-h-[300px] lg:aspect-auto lg:h-full lg:min-h-[400px]">
+                      <div className="absolute inset-0 h-full w-full max-w-full overflow-hidden">
+                        <iframe
+                          src="https://www.youtube.com/embed/C6S2Qj-Dsc0"
+                          className="absolute left-0 top-0 h-full w-full border-0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                          title="ACOB & InfraCredit Partnership Video"
+                        />
+                      </div>
+                      <span className="absolute left-4 top-4 flex items-center gap-1.5 bg-primary/90 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-primary-foreground">
+                        <Video className="h-3 w-3" />
+                        Partnership Video
+                      </span>
                     </div>
-                    <span className="absolute left-4 top-4 flex items-center gap-1.5 bg-primary/90 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wide text-primary-foreground">
-                      <Video className="h-3 w-3" />
-                      Partnership Video
-                    </span>
                   </div>
 
                   <div className="order-1 flex flex-col justify-center p-6 sm:p-8 lg:order-2 lg:p-10">

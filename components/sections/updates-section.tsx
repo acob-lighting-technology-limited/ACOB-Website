@@ -50,11 +50,11 @@ export function UpdatesSection({ posts }: UpdatesSectionProps) {
         {/* Header */}
         <FadeIn delay={0.1}>
           <div className="mb-10 text-center md:mb-14">
-            <div className="mb-4 inline-block rounded-full border border-primary/30 bg-primary/20 px-4 py-2 text-sm font-medium text-primary transition-colors duration-500 dark:bg-primary/30 dark:text-primary">
+            <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
               News &amp; Announcements
-            </div>
-            <h2 className="text-3xl font-bold text-zinc-900 transition-colors duration-500 dark:text-white md:text-4xl lg:text-5xl">
-              Recent Updates
+            </span>
+            <h2 className="mt-2 text-3xl font-extrabold uppercase leading-[0.95] tracking-tight text-foreground md:text-4xl lg:text-5xl">
+              Recent Updates.
             </h2>
           </div>
         </FadeIn>

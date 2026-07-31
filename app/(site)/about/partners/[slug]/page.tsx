@@ -143,13 +143,13 @@ export default async function PartnerDetailPage({
                   {partner.category}
                 </span>
               </div>
-              <div className="mt-4 flex h-24 w-full items-center justify-center bg-muted/30 p-4 rounded-lg">
+              <div className="mt-4 flex h-24 w-full items-center justify-center overflow-hidden rounded-lg bg-muted/30 p-4">
                 <Image
                   src={partner.logo}
                   alt={partner.name}
                   width={200}
                   height={100}
-                  className="h-auto w-full max-w-[180px] object-contain"
+                  className="h-full w-auto max-w-[180px] object-contain"
                   quality={90}
                   placeholder="blur"
                   blurDataURL={getBlurDataURL()}
