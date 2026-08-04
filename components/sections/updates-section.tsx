@@ -60,13 +60,13 @@ export function UpdatesSection({ posts }: UpdatesSectionProps) {
         </FadeIn>
 
         {/* Card grid — swipeable on mobile, static grid from sm up */}
-        <div className="hide-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
+        <div className="hide-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-[7.5%] pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
           {latestPosts.map((post, index) => (
             <FadeIn
               key={post._id}
               delay={index * 0.08}
               direction="up"
-              className="h-full w-[85%] shrink-0 snap-start sm:w-auto sm:shrink"
+              className="h-full w-[85%] shrink-0 snap-center sm:w-auto sm:shrink"
             >
               <Link
                 href={`/updates/${post.slug.current}`}
