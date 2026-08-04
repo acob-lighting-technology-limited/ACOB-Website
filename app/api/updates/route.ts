@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUpdatePostsPaginated } from '@/sanity/lib/client';
+import { getUpdatePostsPaginated } from '@/sanity/lib/queries';
 
 export async function GET(request: NextRequest) {
   try {

@@ -27,6 +27,13 @@ export const contactSections = [
     href: '/contact/careers',
     image: '/images/contact/careers.webp?height=200&width=300',
   },
+  {
+    title: 'Frequently Asked Questions',
+    description:
+      'Find answers to common questions about our solar solutions and company.',
+    href: '/contact/faq',
+    image: '/images/contact/faq-hero.webp?height=200&width=300',
+  },
 ];
 
 export const whyWorkItems = [
@@ -60,4 +67,5 @@ export const contactLinks = [
   { href: '/contact/quote', label: 'Get a Quote' },
   { href: '/contact/support', label: 'Technical Support' },
   { href: '/contact/careers', label: 'Career Opportunities' },
+  { href: '/contact/faq', label: 'Frequently Asked Questions' },
 ];

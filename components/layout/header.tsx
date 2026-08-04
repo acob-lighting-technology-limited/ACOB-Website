@@ -7,10 +7,11 @@ import { useTheme } from 'next-themes';
 import { usePathname } from 'next/navigation';
 import { Container } from '@/components/ui/container';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { ChevronDown, Menu, X, Package } from 'lucide-react';
+import { ChevronDown, ChevronRight, Menu, X, Package } from 'lucide-react';
 import { navigationItems } from '@/lib/data/navigation-data';
 import { LucideIcons } from '@/lib/data/lucide-icons';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSiteReveal } from '@/components/loader/site-reveal-provider';
 import {
   isChristmasPeriod,
   isTemporary2026LogoPeriod,
@@ -25,11 +26,19 @@ import {
 
 const LOGO_2026_VERSION = '3';
 
+interface SubSubItem {
+  name: string;
+  href: string;
+  description?: string;
+  icon?: string; // Lucide icon name
+}
+
 interface SubItem {
   name: string;
   href: string;
   description: string;
   icon: string; // Lucide icon name
+  subItems?: SubSubItem[]; // optional nested sub-categories (e.g. Healthcare → Primary/Tertiary)
 }
 
 interface NavigationItem {
@@ -58,89 +67,285 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
 }) => {
   const pathname = usePathname();
 
+  // Every dropdown opens from the top-left, anchored under its trigger's
+  // label (left-2 offsets the trigger's px-2 padding). For items near the
+  // right edge, a left-anchored panel can run off-screen, so we measure it
+  // once on open and nudge it left just enough to fit — keeping the top-left
+  // origin instead of flipping to a right anchor.
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [shiftX, setShiftX] = useState(0);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setShiftX(0);
+      return;
+    }
+    const el = panelRef.current;
+    if (!el || typeof window === 'undefined') {
+      return;
+    }
+    const gutter = 16;
+    const overflow =
+      el.getBoundingClientRect().right - (window.innerWidth - gutter);
+    if (overflow > 0) {
+      setShiftX(-(overflow + 8));
+    }
+  }, [isOpen]);
+
   const isSubItemActive = (subItemHref: string) => {
     return pathname === subItemHref || pathname.startsWith(`${subItemHref}/`);
   };
+
+  // Which category is showing in the right pane. Defaults to the active
+  // route's category, otherwise the first one.
+  const activeIndexForPath = Math.max(
+    0,
+    item.subItems.findIndex(subItem => isSubItemActive(subItem.href)),
+  );
+  const [activeIndex, setActiveIndex] = useState(activeIndexForPath);
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveIndex(activeIndexForPath);
+    }
+  }, [isOpen, activeIndexForPath]);
+
+  const activeSub = item.subItems[activeIndex] ?? item.subItems[0];
+  const activeChildren = activeSub?.subItems ?? [];
+
+  // Only Projects has real sub-categories today. Flat menus (About, Services,
+  // Updates, Contact) don't need a right pane to reveal anything — show all
+  // items in a panel sized to their own content instead (1 column for short
+  // lists, 2 for longer ones) rather than forcing every dropdown to match
+  // width with the Projects flyout.
+  const isHierarchical = item.subItems.some(
+    subItem => subItem.subItems && subItem.subItems.length > 0,
+  );
+
+  if (!isHierarchical) {
+    const useTwoColumns = item.subItems.length > 4;
+    const half = Math.ceil(item.subItems.length / 2);
+    const columns = useTwoColumns
+      ? [item.subItems.slice(0, half), item.subItems.slice(half)]
+      : [item.subItems];
+
+    return (
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            ref={panelRef}
+            style={{ marginLeft: shiftX }}
+            initial={{ opacity: 0, y: -10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className={`absolute top-full left-2 mt-2 grid overflow-hidden rounded-xl border-[0.5px] border-border bg-popover p-3 shadow-2xl ${
+              useTwoColumns
+                ? 'w-[560px] grid-cols-2 gap-x-4'
+                : 'w-[300px] grid-cols-1'
+            }`}
+          >
+            {columns.map((column, colIndex) => (
+              <div key={colIndex} className="flex flex-col gap-1">
+                {column.map(subItem => {
+                  const IconComponent = LucideIcons[subItem.icon];
+                  const isActive = isSubItemActive(subItem.href);
+                  return (
+                    <Link
+                      key={subItem.name}
+                      href={subItem.href}
+                      onClick={onClose}
+                      className={`group flex items-start gap-3 rounded-lg p-2.5 transition-all duration-200 ${
+                        isActive
+                          ? 'bg-background shadow-sm'
+                          : 'hover:bg-background hover:shadow-sm'
+                      }`}
+                    >
+                      {IconComponent && (
+                        <div
+                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${
+                            isActive
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground'
+                          }`}
+                        >
+                          <IconComponent className="h-[18px] w-[18px]" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className={`text-sm font-semibold transition-colors duration-200 ${
+                            isActive
+                              ? 'text-primary'
+                              : 'text-foreground group-hover:text-primary'
+                          }`}
+                        >
+                          {subItem.name}
+                        </div>
+                        <div className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                          {subItem.description}
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ opacity: 0, y: -10, scale: 0.95 }}
+          initial={{ opacity: 0, y: -10, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+          exit={{ opacity: 0, y: -10, scale: 0.98 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="absolute top-full left-0 mt-2 w-full max-w-[600px] min-w-[400px] bg-popover dark:bg-popover rounded-lg shadow-2xl border-[0.5px] border-border transition-colors duration-500"
+          ref={panelRef}
+          style={{ marginLeft: shiftX }}
+          className="absolute top-full left-2 mt-2 grid w-[720px] grid-cols-[300px_1fr] overflow-hidden rounded-xl border-[0.5px] border-border bg-popover shadow-2xl"
         >
-          <div className="p-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {item.subItems.map((subItem, index) => {
-                const IconComponent = LucideIcons[subItem.icon];
-                const isActive = isSubItemActive(subItem.href);
-                return (
-                  <motion.div
-                    key={subItem.name}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05, duration: 0.2 }}
-                  >
-                    <Link
-                      href={subItem.href}
-                      onClick={onClose}
-                      className={`group block p-3 rounded-lg transition-all duration-500 ${
-                        isActive
-                          ? 'bg-gradient-to-r from-primary/10 to-primary/15 dark:from-primary/20 dark:to-primary/25 shadow-md scale-105 -translate-y-1 border-l-2 border-primary'
-                          : 'hover:bg-gradient-to-r hover:from-primary/5 hover:to-primary/10 dark:hover:bg-zinc-950 hover:shadow-md transform hover:scale-105 hover:-translate-y-1'
+          {/* Left rail: categories */}
+          <div className="border-r-[0.5px] border-border bg-muted/30 p-2 rounded-lg">
+            {item.subItems.map((subItem, index) => {
+              const IconComponent = LucideIcons[subItem.icon];
+              const isActive = isSubItemActive(subItem.href);
+              const isHighlighted = index === activeIndex;
+              const hasChildren =
+                subItem.subItems && subItem.subItems.length > 0;
+              return (
+                <Link
+                  key={subItem.name}
+                  href={subItem.href}
+                  onClick={onClose}
+                  onMouseEnter={() => setActiveIndex(index)}
+                  className={`group flex items-start gap-3 rounded-lg p-2.5 transition-colors duration-200 ${
+                    isHighlighted
+                      ? 'bg-background shadow-sm'
+                      : 'hover:bg-background/60'
+                  }`}
+                >
+                  {IconComponent && (
+                    <div
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ${
+                        isHighlighted || isActive
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-primary/10 text-primary'
                       }`}
                     >
-                      <div className="flex gap-3 items-start">
-                        {IconComponent && (
-                          <div
-                            className={`relative w-10 h-10 rounded-full p-2 overflow-hidden transition-all duration-500 flex items-center justify-center ${
-                              isActive
-                                ? 'bg-primary scale-110'
-                                : 'bg-primary/10 group-hover:bg-primary group-hover:scale-110'
-                            }`}
-                          >
-                            {/* Animated fill effect */}
-                            {!isActive && (
-                              <div className="absolute inset-0 bg-primary transform scale-0 transition-transform duration-500 ease-out group-hover:scale-100 rounded-full origin-center" />
-                            )}
-                            <IconComponent
-                              className={`w-5 h-5 relative z-10 transition-colors duration-500 ${
-                                isActive
-                                  ? 'text-primary-foreground'
-                                  : 'text-muted-foreground group-hover:text-primary-foreground'
-                              }`}
-                            />
+                      <IconComponent className="h-[18px] w-[18px]" />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`text-sm font-semibold transition-colors duration-200 ${
+                          isHighlighted || isActive
+                            ? 'text-primary'
+                            : 'text-foreground group-hover:text-primary'
+                        }`}
+                      >
+                        {subItem.name}
+                      </span>
+                      {hasChildren && (
+                        <ChevronRight
+                          className={`h-4 w-4 shrink-0 transition-colors duration-200 ${
+                            isHighlighted
+                              ? 'text-primary'
+                              : 'text-muted-foreground'
+                          }`}
+                        />
+                      )}
+                    </div>
+                    <div className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                      {subItem.description}
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Right pane: sub-categories or category summary */}
+          <div className="p-4">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSub?.name}
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {activeSub?.name}
+                  </p>
+                  <Link
+                    href={activeSub?.href ?? item.href}
+                    onClick={onClose}
+                    className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                  >
+                    View all
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+
+                {activeChildren.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    {activeChildren.map(child => {
+                      const ChildIcon = child.icon
+                        ? LucideIcons[child.icon]
+                        : undefined;
+                      const childActive = isSubItemActive(child.href);
+                      return (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          onClick={onClose}
+                          className={`group flex flex-col gap-2 rounded-xl border-[0.5px] p-3.5 transition-all duration-200 ${
+                            childActive
+                              ? 'border-primary bg-primary/5'
+                              : 'border-border hover:-translate-y-0.5 hover:border-primary/50 hover:bg-primary/5 hover:shadow-md'
+                          }`}
+                        >
+                          {ChildIcon && (
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-primary-foreground">
+                              <ChildIcon className="h-[18px] w-[18px]" />
+                            </div>
+                          )}
+                          <div className="text-sm font-bold text-foreground group-hover:text-primary">
+                            {child.name}
                           </div>
-                        )}
-                        <div className="flex-1">
-                          <div
-                            className={`text-sm font-bold break-words transition-colors duration-500 ${
-                              isActive
-                                ? 'text-primary'
-                                : 'text-foreground group-hover:text-primary'
-                            }`}
-                          >
-                            {subItem.name}
-                          </div>
-                          <div
-                            className={`text-xs text-left mt-1 break-words transition-colors duration-500 ${
-                              isActive
-                                ? 'text-foreground'
-                                : 'text-muted-foreground group-hover:text-foreground'
-                            }`}
-                          >
-                            {subItem.description}
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  </motion.div>
-                );
-              })}
-            </div>
+                          {child.description && (
+                            <div className="text-xs leading-relaxed text-muted-foreground">
+                              {child.description}
+                            </div>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <Link
+                    href={activeSub?.href ?? item.href}
+                    onClick={onClose}
+                    className="group flex h-full flex-col justify-center gap-2 rounded-xl border-[0.5px] border-border p-5 transition-all duration-200 hover:border-primary/50 hover:bg-primary/5"
+                  >
+                    <div className="text-sm font-bold text-foreground group-hover:text-primary">
+                      {activeSub?.description}
+                    </div>
+                    <div className="flex items-center gap-1 text-xs font-medium text-primary">
+                      Explore {activeSub?.name}
+                      <ChevronRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+                    </div>
+                  </Link>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </motion.div>
       )}
@@ -375,6 +580,55 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                                       </div>
                                     </div>
                                   </Link>
+
+                                  {/* Nested sub-categories */}
+                                  {subItem.subItems &&
+                                    subItem.subItems.length > 0 && (
+                                      <div className="ml-8 mt-1 mb-1 flex flex-col border-l border-border pl-3">
+                                        {subItem.subItems.map(child => {
+                                          const childActive = isSubItemActive(
+                                            child.href,
+                                          );
+                                          return (
+                                            <Link
+                                              key={child.href}
+                                              href={child.href}
+                                              onClick={onClose}
+                                              className={`group/child relative flex items-center gap-2.5 rounded-md py-2.5 pl-3 pr-2 text-sm font-medium transition-all duration-300 ${
+                                                childActive
+                                                  ? 'bg-primary/10 text-primary'
+                                                  : 'text-muted-foreground hover:bg-primary/5 hover:text-primary'
+                                              }`}
+                                            >
+                                              <span
+                                                className={`absolute -left-[13px] h-px w-3 transition-colors duration-300 ${
+                                                  childActive
+                                                    ? 'bg-primary'
+                                                    : 'bg-border'
+                                                }`}
+                                              />
+                                              <span
+                                                className={`h-1.5 w-1.5 shrink-0 rounded-full transition-colors duration-300 ${
+                                                  childActive
+                                                    ? 'bg-primary'
+                                                    : 'bg-muted-foreground/40'
+                                                }`}
+                                              />
+                                              <span className="flex-1">
+                                                {child.name}
+                                              </span>
+                                              <ChevronRight
+                                                className={`h-4 w-4 shrink-0 transition-all duration-300 ${
+                                                  childActive
+                                                    ? 'translate-x-0 opacity-100'
+                                                    : 'opacity-40'
+                                                }`}
+                                              />
+                                            </Link>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
                                 </motion.div>
                               );
                             })}
@@ -450,8 +704,10 @@ export function Header() {
           ? `/images/acob-logo-light-2026.png?v=${LOGO_2026_VERSION}`
           : '/images/acob-logo-light.png';
   const [showHeader, setShowHeader] = useState(true);
+  const { revealed } = useSiteReveal();
   const [lastScrollY, setLastScrollY] = useState(0);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const headerRef = useRef<HTMLElement>(null);
 
   const isActiveRoute = (item: NavigationItem) => {
     if (pathname === item.href) {
@@ -465,8 +721,80 @@ export function Header() {
     setMounted(true);
   }, []);
 
+  // The header lives in the shared (site) layout, which Next.js does NOT
+  // remount between page navigations — only `pathname` changes. isScrolled
+  // otherwise only updates from a 'scroll' event, so if the previous page
+  // left it "solid" (or "transparent") and the new page's actual scroll
+  // position disagrees, the header can show the wrong state until the user
+  // scrolls again. Resync directly against window.scrollY on every route
+  // change so each page always starts from its own real scroll position.
+  useEffect(() => {
+    const currentScrollY = window.scrollY;
+    setIsScrolled(currentScrollY > 10);
+    setLastScrollY(currentScrollY);
+    setShowHeader(true);
+  }, [pathname]);
+
+  // The announcement banner sits in normal flow above this fixed header. Pin the
+  // header's top to the banner's current bottom edge so it renders just below the
+  // banner and rises to the top as the banner scrolls out of view.
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) {
+      return;
+    }
+
+    let raf = 0;
+    const measure = () => {
+      raf = 0;
+      const banner = document.querySelector('[data-announcement-banner]');
+      const bottom = banner
+        ? Math.max(0, banner.getBoundingClientRect().bottom)
+        : 0;
+      el.style.top = `${bottom}px`;
+    };
+    const schedule = () => {
+      if (!raf) {
+        raf = requestAnimationFrame(measure);
+      }
+    };
+
+    measure();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+
+    /* eslint-disable no-undef */
+    let resizeObserver: ResizeObserver | undefined;
+    const banner = document.querySelector('[data-announcement-banner]');
+    if (banner && typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(schedule);
+      resizeObserver.observe(banner);
+    }
+    /* eslint-enable no-undef */
+
+    return () => {
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      if (raf) {
+        cancelAnimationFrame(raf);
+      }
+      resizeObserver?.disconnect();
+    };
+  }, []);
+
   useEffect(() => {
     const handleScroll = () => {
+      // Ignore scroll events fired by a body-scroll-lock (chat bot / mobile
+      // menu). Those set body to position:fixed with a negative top, which
+      // momentarily resets window.scrollY to 0 — without this guard the header
+      // would read 0 and drop to its transparent (at-top) state even when the
+      // page is scrolled down behind the overlay. Freeze the scrolled state
+      // while locked; it recomputes when the lock is released and scroll is
+      // restored.
+      if (document.body.style.position === 'fixed') {
+        return;
+      }
+
       const currentScrollY = window.scrollY;
       const scrollDifference = Math.abs(currentScrollY - lastScrollY);
 
@@ -542,9 +870,10 @@ export function Header() {
   return (
     <>
       <header
+        ref={headerRef}
         className={`
           fixed inset-x-0 top-0 z-40 w-full transition-all duration-500 ease-out
-          ${showHeader ? 'translate-y-0' : '-translate-y-full'}
+          ${showHeader && revealed ? 'translate-y-0' : '-translate-y-full'}
           ${
             hasSolidHeader
               ? ' border-b border-border backdrop-blur-xl bg-background/95 shadow-lg '

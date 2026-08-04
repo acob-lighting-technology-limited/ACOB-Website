@@ -1,7 +1,7 @@
 /**
  * Update/Blog Post Queries
  *
- * All Sanity queries related to update posts (formerly blog posts).
+ * All Sanity queries related to update posts.
  * Handles fetching, filtering, and pagination of update content.
  */
 
@@ -10,48 +10,71 @@ import { PAGINATION } from '@/lib/constants/app.constants';
 import type { UpdatePost, PaginatedUpdatesResponse } from '@/lib/types';
 
 // ============================================================================
+// SHARED FIELDS PROJECTION
+// ============================================================================
+
+const UPDATE_POST_FIELDS = `
+  _id,
+  title,
+  slug,
+  excerpt,
+  publishedAt,
+  author->{
+    _id,
+    name,
+    "avatar": avatar.asset->url,
+    bio
+  },
+  "category": categories[0],
+  categories,
+  tags,
+  "featuredImage": coalesce(coverImage.asset->url, content[_type == "image"][0].asset->url) + "?w=800&h=600&fit=crop&auto=format&q=95",
+  "coverImage": coalesce(coverImage.asset->url, content[_type == "image"][0].asset->url) + "?w=800&h=600&fit=crop&auto=format&q=95",
+  content[] {
+    ...,
+    _type == "file" => {
+      ...,
+      "asset": asset->{
+        url,
+        _ref
+      }
+    },
+    _type == "video" => {
+      ...,
+      "asset": asset->{
+        url,
+        _ref
+      }
+    }
+  }
+`;
+
+const UPDATE_POST_LISTING_FIELDS = `
+  _id,
+  title,
+  slug,
+  excerpt,
+  publishedAt,
+  author->{
+    _id,
+    name,
+    "avatar": avatar.asset->url
+  },
+  "category": categories[0],
+  categories,
+  tags,
+  "featuredImage": coalesce(coverImage.asset->url, content[_type == "image"][0].asset->url) + "?w=800&h=600&fit=crop&auto=format&q=95",
+  "coverImage": coalesce(coverImage.asset->url, content[_type == "image"][0].asset->url) + "?w=800&h=600&fit=crop&auto=format&q=95"
+`;
+
+// ============================================================================
 // GET ALL UPDATE POSTS
 // ============================================================================
 
-/**
- * Get all update posts ordered by publish date
- *
- * @returns Array of all update posts with full content
- *
- * @example
- * ```typescript
- * const posts = await getUpdatePosts();
- * ```
- */
 export async function getUpdatePosts(): Promise<UpdatePost[]> {
   return await client.fetch(`
     *[_type == "updatePost"] | order(publishedAt desc) {
-      _id,
-      title,
-      slug,
-      excerpt,
-      publishedAt,
-      author,
-      category,
-      tags,
-      "featuredImage": featuredImage.asset->url + "?w=800&h=600&fit=crop&auto=format&q=95",
-      content[] {
-        ...,
-        _type == "file" => {
-          ...,
-          "asset": asset->{
-            url,
-            _ref
-          }
-        },
-        _type == "video" => {
-          ...,
-          "asset": asset->{
-            url,
-            _ref
-          }
-        }
-      }
+      ${UPDATE_POST_FIELDS}
     }
   `);
 }
@@ -60,24 +83,6 @@ export async function getUpdatePosts(): Promise<UpdatePost[]> {
 // GET UPDATE POSTS WITH PAGINATION
 // ============================================================================
 
-/**
- * Get update posts with pagination and search filtering
- *
- * @param options - Pagination and filter options
- * @param options.page - Page number (1-indexed)
- * @param options.limit - Number of items per page
- * @param options.search - Search query (searches title, excerpt, author, category, content)
- * @returns Paginated update posts with metadata
- *
- * @example
- * ```typescript
- * const result = await getUpdatePostsPaginated({
- *   page: 1,
- *   limit: 12,
- *   search: 'solar energy'
- * });
- * ```
- */
 export async function getUpdatePostsPaginated({
   page = 1,
   limit = PAGINATION.UPDATES_PER_PAGE,
@@ -98,7 +103,7 @@ export async function getUpdatePostsPaginated({
 
     // Add category filter
     if (category.trim()) {
-      query += ' && category == $category';
+      query += ' && $category in categories';
       params.category = category;
     }
 
@@ -107,55 +112,26 @@ export async function getUpdatePostsPaginated({
       query += ` && (
         title match $search ||
         excerpt match $search ||
-        author match $search ||
-        category match $search ||
-        pt::text(content) match $search
+        author->name match $search
       )`;
       params.search = `*${search}*`;
     }
 
     // Complete the query with ordering and pagination
     query += `] | order(publishedAt desc)[${offset}...${offset + limit}] {
-      _id,
-      title,
-      slug,
-      excerpt,
-      publishedAt,
-      author,
-      category,
-      tags,
-      "featuredImage": featuredImage.asset->url + "?w=800&h=600&fit=crop&auto=format&q=95",
-      content[] {
-        ...,
-        _type == "file" => {
-          ...,
-          "asset": asset->{
-            url,
-            _ref
-          }
-        },
-        _type == "video" => {
-          ...,
-          "asset": asset->{
-            url,
-            _ref
-          }
-        }
-      }
+      ${UPDATE_POST_LISTING_FIELDS}
     }`;
 
     // Get total count for pagination
     let countQuery = 'count(*[_type == "updatePost"';
     if (category.trim()) {
-      countQuery += ' && category == $category';
+      countQuery += ' && $category in categories';
     }
     if (search.trim()) {
       countQuery += ` && (
         title match $search ||
         excerpt match $search ||
-        author match $search ||
-        category match $search ||
-        pt::text(content) match $search
+        author->name match $search
       )`;
     }
     countQuery += '])';
@@ -204,47 +180,11 @@ export async function getUpdatePostsPaginated({
 // GET SINGLE UPDATE POST
 // ============================================================================
 
-/**
- * Get a single update post by slug
- *
- * @param slug - Update post slug
- * @returns Update post details or null if not found
- *
- * @example
- * ```typescript
- * const post = await getUpdatePost('new-solar-project-launch');
- * ```
- */
 export async function getUpdatePost(slug: string): Promise<UpdatePost | null> {
   return await client.fetch(
     `
     *[_type == "updatePost" && slug.current == $slug][0] {
-      _id,
-      title,
-      slug,
-      excerpt,
-      publishedAt,
-      author,
-      category,
-      tags,
-      "featuredImage": featuredImage.asset->url + "?w=800&h=600&fit=crop&auto=format&q=95",
-      content[] {
-        ...,
-        _type == "file" => {
-          ...,
-          "asset": asset->{
-            url,
-            _ref
-          }
-        },
-        _type == "video" => {
-          ...,
-          "asset": asset->{
-            url,
-            _ref
-          }
-        }
-      }
+      ${UPDATE_POST_FIELDS}
     }
   `,
     { slug },
@@ -255,19 +195,6 @@ export async function getUpdatePost(slug: string): Promise<UpdatePost | null> {
 // GET RELATED UPDATE POSTS
 // ============================================================================
 
-/**
- * Get related update posts by category (excluding current post)
- *
- * @param category - Post category
- * @param currentSlug - Current post slug to exclude
- * @param limit - Maximum number of related posts
- * @returns Array of related update posts
- *
- * @example
- * ```typescript
- * const related = await getRelatedUpdatePosts('News', 'current-post', 3);
- * ```
- */
 export async function getRelatedUpdatePosts(
   category: string,
   currentSlug: string,
@@ -275,16 +202,19 @@ export async function getRelatedUpdatePosts(
 ): Promise<UpdatePost[]> {
   return await client.fetch(
     `
-    *[_type == "updatePost" && category == $category && slug.current != $currentSlug]
+    *[_type == "updatePost" && $category in categories && slug.current != $currentSlug]
       | order(publishedAt desc)[0...$limit] {
       _id,
       title,
       slug,
       excerpt,
       publishedAt,
-      author,
-      category,
-      "featuredImage": featuredImage.asset->url + "?w=800&h=600&fit=crop&auto=format&q=75"
+      author->{
+        _id,
+        name
+      },
+      categories,
+      "coverImage": coalesce(coverImage.asset->url, content[_type == "image"][0].asset->url) + "?w=800&h=600&fit=crop&auto=format&q=75"
     }
   `,
     { category, currentSlug, limit },

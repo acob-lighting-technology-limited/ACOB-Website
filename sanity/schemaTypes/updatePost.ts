@@ -1,20 +1,32 @@
 import { DocumentTextIcon } from '@sanity/icons';
 import { defineField, defineType } from 'sanity';
+import { UPDATE_CATEGORY_OPTIONS } from '../constants/taxonomy';
 
 export const updatePostType = defineType({
-  name: 'updatePost', // Renamed from 'post' or 'blogPost'
-  title: 'Update Post', // Renamed from 'Post' or 'Blog Post'
+  name: 'updatePost',
+  title: 'Update',
   type: 'document',
   icon: DocumentTextIcon,
+  groups: [
+    { name: 'general', title: '📋 General Info' },
+    { name: 'content', title: '📝 Content & SEO' },
+  ],
   fields: [
+    // ===================================================
+    // GENERAL GROUP
+    // ===================================================
     defineField({
       name: 'title',
+      title: 'Title',
       type: 'string',
+      group: 'general',
       validation: Rule => Rule.required(),
     }),
     defineField({
       name: 'slug',
+      title: 'Slug',
       type: 'slug',
+      group: 'general',
       options: {
         source: 'title',
         maxLength: 96,
@@ -26,153 +38,55 @@ export const updatePostType = defineType({
       title: 'Excerpt',
       type: 'text',
       rows: 3,
+      group: 'general',
       validation: Rule => Rule.required().max(200),
-    }),
-    defineField({
-      name: 'content',
-      title: 'Content',
-      type: 'array',
-      of: [
-        {
-          title: 'Block',
-          type: 'block',
-          marks: {
-            annotations: [
-              {
-                name: 'link',
-                type: 'object',
-                title: 'Link',
-                fields: [
-                  {
-                    name: 'href',
-                    type: 'url',
-                    title: 'URL',
-                    validation: Rule =>
-                      Rule.uri({
-                        scheme: ['http', 'https', 'mailto', 'tel'],
-                      }),
-                  },
-                ],
-              },
-            ],
-          },
-        },
-        {
-          type: 'image',
-          options: {
-            hotspot: true,
-          },
-          fields: [
-            defineField({
-              name: 'alt',
-              type: 'string',
-              title: 'Alternative text',
-            }),
-          ],
-        },
-        {
-          type: 'file',
-          name: 'video',
-          title: 'Video',
-          options: {
-            accept: 'video/*',
-          },
-          fields: [
-            defineField({
-              name: 'title',
-              type: 'string',
-              title: 'Video Title',
-              description: 'Optional title for the video',
-            }),
-            defineField({
-              name: 'alt',
-              type: 'string',
-              title: 'Alternative text',
-              description: 'Describe the video for accessibility',
-            }),
-          ],
-        },
-      ],
-    }),
-    defineField({
-      name: 'featuredImage',
-      title: 'Featured Image',
-      type: 'image',
-      options: {
-        hotspot: true,
-      },
-      fields: [
-        defineField({
-          name: 'alt',
-          type: 'string',
-          title: 'Alternative text',
-        }),
-      ],
     }),
     defineField({
       name: 'publishedAt',
       title: 'Published At',
       type: 'datetime',
+      group: 'general',
       initialValue: () => new Date().toISOString(),
     }),
     defineField({
       name: 'author',
       title: 'Author',
-      type: 'string',
-      initialValue: 'ACOB LIGHTING',
+      type: 'reference',
+      group: 'general',
+      to: [{ type: 'author' }],
+      validation: Rule => Rule.required(),
     }),
     defineField({
-      name: 'category',
-      title: 'Category',
-      type: 'string',
+      name: 'categories',
+      title: 'Categories',
+      type: 'array',
+      group: 'general',
+      of: [{ type: 'string' }],
       options: {
-        list: [
-          { title: 'Announcements', value: 'announcements' },
-          { title: 'Case Studies', value: 'case-studies' },
-          { title: 'Press Releases', value: 'press-releases' },
-          { title: 'Events', value: 'events' },
-          { title: 'Celebrations', value: 'celebrations' },
-        ],
+        list: [...UPDATE_CATEGORY_OPTIONS],
+        layout: 'list',
       },
-      initialValue: 'announcements',
+      description:
+        'To add a new category, update sanity/constants/taxonomy.ts in code.',
+      validation: Rule => Rule.required().min(1),
     }),
     defineField({
       name: 'tags',
       title: 'Tags',
       type: 'array',
+      group: 'general',
       of: [{ type: 'string' }],
-      options: {
-        layout: 'tags',
-        list: [
-          { title: 'Solar Energy', value: 'solar-energy' },
-          { title: 'Mini-Grid', value: 'mini-grid' },
-          { title: 'Street Lighting', value: 'street-lighting' },
-          { title: 'Rural Electrification', value: 'rural-electrification' },
-          { title: 'Sustainability', value: 'sustainability' },
-          { title: 'Renewable Energy', value: 'renewable-energy' },
-          { title: 'Community Impact', value: 'community-impact' },
-          { title: 'Energy Access', value: 'energy-access' },
-          { title: 'Off-Grid', value: 'off-grid' },
-          { title: 'Installation', value: 'installation' },
-          { title: 'Technology', value: 'technology' },
-          { title: 'Innovation', value: 'innovation' },
-          { title: 'Partnership', value: 'partnership' },
-          { title: 'Training', value: 'training' },
-          { title: 'Maintenance', value: 'maintenance' },
-        ],
-      },
+      options: { layout: 'tags' },
+      description: 'Free-form tags. Press Enter to add each tag.',
     }),
     defineField({
       name: 'sharepointBackup',
       title: 'SharePoint Backup',
       type: 'object',
+      group: 'general',
       readOnly: true,
       fields: [
-        defineField({
-          name: 'status',
-          title: 'Status',
-          type: 'string',
-        }),
+        defineField({ name: 'status', title: 'Status', type: 'string' }),
         defineField({
           name: 'lastSyncedAt',
           title: 'Last Synced At',
@@ -196,16 +110,54 @@ export const updatePostType = defineType({
         }),
       ],
     }),
+
+    // ===================================================
+    // CONTENT, COVER IMAGE & SEO GROUP
+    // ===================================================
+    defineField({
+      name: 'coverImage',
+      title: 'Featured Image',
+      type: 'image',
+      group: 'content',
+      options: { hotspot: true },
+      fields: [
+        defineField({
+          name: 'alt',
+          type: 'string',
+          title: 'Alternative text',
+          validation: Rule =>
+            Rule.required().error(
+              'Alt text is required for SEO and accessibility.',
+            ),
+        }),
+      ],
+    }),
+    defineField({
+      name: 'content',
+      title: 'Content',
+      type: 'blockContent',
+      group: 'content',
+    }),
+    defineField({
+      name: 'seo',
+      title: 'SEO & Social Settings',
+      type: 'seo',
+      group: 'content',
+    }),
   ],
   preview: {
     select: {
       title: 'title',
-      author: 'author',
-      media: 'featuredImage',
+      authorName: 'author.name',
+      media: 'coverImage',
     },
     prepare(selection) {
-      const { author } = selection;
-      return { ...selection, subtitle: author && `by ${author}` };
+      const { title, authorName, media } = selection;
+      return {
+        title: title,
+        subtitle: authorName ? `by ${authorName}` : 'No author',
+        media: media,
+      };
     },
   },
 });

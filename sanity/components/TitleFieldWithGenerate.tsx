@@ -8,7 +8,9 @@ import {
 export function TitleFieldWithGenerate(props: StringInputProps) {
   const location = useFormValue(['location']) as string | undefined;
   const state = useFormValue(['state']) as string | undefined;
-  const category = useFormValue(['category']) as string | undefined;
+  const categories = useFormValue(['categories']) as string[] | undefined;
+  const subcategory = useFormValue(['subcategory']) as string | undefined;
+  const category = categories?.[0];
   const impactMetrics = useFormValue(['impactMetrics']) as
     | {
         kwp?: number;
@@ -22,6 +24,7 @@ export function TitleFieldWithGenerate(props: StringInputProps) {
     location,
     state,
     category,
+    subcategory,
     impactMetrics,
   });
 
@@ -30,6 +33,7 @@ export function TitleFieldWithGenerate(props: StringInputProps) {
       location,
       state,
       category,
+      subcategory,
       impactMetrics,
     });
     if (generated) {

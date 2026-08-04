@@ -42,7 +42,7 @@ export function AnnouncementBanner({
       icon: Award,
       message: ANNIVERSARY_2026.title,
       details: `${ANNIVERSARY_2026.period} • ${ANNIVERSARY_2026.tagline}`,
-      link: '/about/our-story',
+      link: '/journey',
       linkText: 'Explore the journey →',
       storageKey: ANNIVERSARY_STORAGE_KEY,
     });
@@ -144,95 +144,99 @@ export function AnnouncementBanner({
   const currentAnnouncement = announcements[currentIndex];
   const Icon = currentAnnouncement.icon;
 
+  // Always-present wrapper (height tracks the banner) so the fixed Header can
+  // measure it and offset itself to sit just below the banner.
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="bg-primary text-primary-foreground overflow-hidden relative"
-        >
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between py-3 gap-4">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentAnnouncement.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex items-center gap-3 flex-1 min-w-0"
-                >
-                  {currentAnnouncement.id === 'products' ? (
-                    <motion.div
-                      animate={{
-                        filter: [
-                          'drop-shadow(0 0 4px rgba(255,255,255,0.6))',
-                          'drop-shadow(0 0 12px rgba(255,255,255,1)) drop-shadow(0 0 16px rgba(255,255,255,0.8)) drop-shadow(0 0 20px rgba(255,255,255,0.6))',
-                          'drop-shadow(0 0 4px rgba(255,255,255,0.6))',
-                        ],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                      }}
-                    >
-                      <Icon className="h-5 w-5 flex-shrink-0" />
-                    </motion.div>
-                  ) : (
-                    <Icon className="h-5 w-5 flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">
-                      {currentAnnouncement.message}{' '}
-                      <span className="hidden sm:inline">
-                        {currentAnnouncement.details}
-                      </span>
-                    </p>
-                  </div>
-                  <Link
-                    href={currentAnnouncement.link}
-                    className="text-sm font-semibold hover:underline whitespace-nowrap"
+    <div data-announcement-banner>
+      <AnimatePresence>
+        {isVisible && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="bg-primary text-primary-foreground overflow-hidden relative"
+          >
+            <div className="container mx-auto px-4">
+              <div className="flex items-center justify-between py-3 gap-4">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentAnnouncement.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    className="flex items-center gap-3 flex-1 min-w-0"
                   >
-                    {currentAnnouncement.linkText}
-                  </Link>
-                </motion.div>
-              </AnimatePresence>
+                    {currentAnnouncement.id === 'products' ? (
+                      <motion.div
+                        animate={{
+                          filter: [
+                            'drop-shadow(0 0 4px rgba(255,255,255,0.6))',
+                            'drop-shadow(0 0 12px rgba(255,255,255,1)) drop-shadow(0 0 16px rgba(255,255,255,0.8)) drop-shadow(0 0 20px rgba(255,255,255,0.6))',
+                            'drop-shadow(0 0 4px rgba(255,255,255,0.6))',
+                          ],
+                        }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                        }}
+                      >
+                        <Icon className="h-5 w-5 flex-shrink-0" />
+                      </motion.div>
+                    ) : (
+                      <Icon className="h-5 w-5 flex-shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">
+                        {currentAnnouncement.message}{' '}
+                        <span className="hidden sm:inline">
+                          {currentAnnouncement.details}
+                        </span>
+                      </p>
+                    </div>
+                    <Link
+                      href={currentAnnouncement.link}
+                      className="text-sm font-semibold hover:underline whitespace-nowrap"
+                    >
+                      {currentAnnouncement.linkText}
+                    </Link>
+                  </motion.div>
+                </AnimatePresence>
 
-              <div className="flex items-center gap-2">
-                {/* Indicator dots for multiple announcements */}
-                {announcements.length > 1 && (
-                  <div className="flex gap-1.5 mr-2">
-                    {announcements.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentIndex(index)}
-                        className={`w-1.5 h-1.5 rounded-full transition-all ${
-                          index === currentIndex
-                            ? 'bg-primary-foreground w-4'
-                            : 'bg-primary-foreground/40 hover:bg-primary-foreground/60'
-                        }`}
-                        aria-label={`Go to announcement ${index + 1}`}
-                      />
-                    ))}
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  {/* Indicator dots for multiple announcements */}
+                  {announcements.length > 1 && (
+                    <div className="flex gap-1.5 mr-2">
+                      {announcements.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentIndex(index)}
+                          className={`w-1.5 h-1.5 rounded-full transition-all ${
+                            index === currentIndex
+                              ? 'bg-primary-foreground w-4'
+                              : 'bg-primary-foreground/40 hover:bg-primary-foreground/60'
+                          }`}
+                          aria-label={`Go to announcement ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
 
-                <button
-                  onClick={handleDismiss}
-                  className="flex-shrink-0 p-1 hover:bg-primary-foreground/10 rounded transition-colors"
-                  aria-label="Dismiss announcement"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                  <button
+                    onClick={handleDismiss}
+                    className="flex-shrink-0 p-1 hover:bg-primary-foreground/10 rounded transition-colors"
+                    aria-label="Dismiss announcement"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

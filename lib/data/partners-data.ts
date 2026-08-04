@@ -47,17 +47,17 @@ export const partners: Partner[] = [
   },
   {
     name: 'BAE',
-    fullName: 'BAE Systems',
+    fullName: 'BAE Batterien GmbH',
     slug: 'bae',
     logo: '/images/partners/bae.png?height=60&width=120',
-    category: 'Financial',
+    category: 'Technology',
     description:
-      'Banking partner supporting renewable energy financing solutions',
+      'Premium German industrial battery and energy storage systems manufacturer',
     details: {
       overview:
-        "BAE provides financial backing and banking services for ACOB Lighting's renewable energy projects across Nigeria, supporting the deployment of sustainable energy infrastructure.",
-      partnershipType: 'Financial Partnership',
-      website: 'https://www.baesystems.com',
+        "BAE Batterien GmbH supplies premium-grade industrial stationary batteries (such as the BAE Secura Solar series) for ACOB's mini-grid energy storage banks and hospital backup systems. Based in Berlin since 1899, BAE is renowned for manufacturing high-durability lead-acid and gel batteries that meet the rigorous requirements of critical off-grid infrastructure across Nigeria.",
+      partnershipType: 'Technology & Equipment Supply Partnership',
+      website: 'https://www.bae-berlin.de',
     },
   },
   {
@@ -344,16 +344,17 @@ export const partners: Partner[] = [
   },
   {
     name: 'SHOTO',
-    fullName: 'SHOTO Energy Management',
+    fullName: 'Shoto Battery (Shuangdeng Group)',
     slug: 'shoto',
     logo: '/images/partners/shoto.png?height=60&width=120',
     category: 'Technology',
-    description: 'Energy management and monitoring solutions',
+    description:
+      'Leading global battery manufacturer supplying energy storage solutions.',
     details: {
       overview:
-        "SHOTO provides advanced energy management and monitoring systems for ACOB Lighting's installations. Their smart energy solutions enable real-time monitoring, performance optimization, and predictive maintenance of mini-grid systems, ensuring maximum uptime and efficiency.",
-      partnershipType: 'Technology Partnership',
-      website: 'https://www.shoto.africa',
+        "Shoto (Shuangdeng Group) supplies advanced lithium-ion and gel battery systems for ACOB's solar projects and telecommunications infrastructure, ensuring maximum energy storage reliability and system lifespan.",
+      partnershipType: 'Technology & Equipment Supply Partnership',
+      website: 'https://www.chinashoto.com',
     },
   },
   {
@@ -375,13 +376,14 @@ export const partners: Partner[] = [
     fullName: 'Starsight Energy',
     slug: 'starsight',
     logo: '/images/partners/starsight.png?height=60&width=120',
-    category: 'Technology',
-    description: 'Energy monitoring and asset management platform',
+    category: 'Energy',
+    description:
+      'Leading commercial and industrial renewable energy service provider in Africa.',
     details: {
       overview:
-        "Starsight Energy provides digital monitoring and asset management solutions for ACOB Lighting's energy infrastructure. Their cloud-based platform enables remote monitoring, data analytics, and performance optimization of distributed energy assets, improving operational efficiency and reducing downtime.",
-      partnershipType: 'Technology Partnership',
-      website: 'https://www.starsight.energy',
+        'Starsight Energy partners with ACOB to deploy and maintain advanced commercial solar hybrid power systems (including Power-as-a-Service and cooling solutions) for corporate clients and bank branches across Nigeria.',
+      partnershipType: 'Commercial Clean Energy Partnership',
+      website: 'https://www.starsightenergy.com',
     },
   },
 ];

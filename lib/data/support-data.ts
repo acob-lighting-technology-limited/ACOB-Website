@@ -87,9 +87,3 @@ export const faqItems = [
       'Our installations meet international standards and local regulations. We use certified equipment and follow best practices for safety and performance. All our work is backed by proper warranties and certifications.',
   },
 ];
-
-export const contactLinks = [
-  { label: 'Get a Quote', href: '/contact/quote' },
-  { label: 'Office Locations', href: '/contact/locations' },
-  { label: 'Careers', href: '/contact/careers' },
-];

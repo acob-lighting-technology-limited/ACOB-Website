@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import sharp from 'sharp';
 import path from 'path';
 import fs from 'fs/promises';
+import { rateLimit } from '@/lib/utils/rate-limit';
+
+// Watermarking runs two sharp pipelines per request — cap input size so a
+// single oversized image can't exhaust memory.
+const MAX_IMAGE_BYTES = 15 * 1024 * 1024; // 15 MB
 
 const ALLOWED_EXTERNAL_HOSTNAMES = [
   'cdn.sanity.io',
@@ -23,6 +28,13 @@ function isAllowedUrl(rawUrl: string): boolean {
 }
 
 export async function GET(request: NextRequest) {
+  if (rateLimit(request)) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': '60' } },
+    );
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const imageUrl = searchParams.get('url');
@@ -48,7 +60,14 @@ export async function GET(request: NextRequest) {
       if (!imageResponse.ok) {
         throw new Error('Failed to fetch image');
       }
+      const contentLength = Number(imageResponse.headers.get('content-length'));
+      if (contentLength > MAX_IMAGE_BYTES) {
+        return NextResponse.json({ error: 'Image too large' }, { status: 413 });
+      }
       imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+      if (imageBuffer.length > MAX_IMAGE_BYTES) {
+        return NextResponse.json({ error: 'Image too large' }, { status: 413 });
+      }
     } else {
       // Local file from /public — normalise and prevent path traversal
       const safePath = path

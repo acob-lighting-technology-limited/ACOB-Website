@@ -23,27 +23,26 @@ export function ResourcesSection() {
     return matchesCategory && matchesSearch;
   });
 
-  // Separate featured resources
   const featuredResources = filteredResources.filter(r => r.featured);
   const regularResources = filteredResources.filter(r => !r.featured);
 
   return (
-    <div className="space-y-8">
-      {/* Search and Filter */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+    <div>
+      {/* Search and filter */}
+      <div className="flex flex-col items-center justify-between gap-4 border-t-[3px] border-foreground pt-8 md:flex-row">
         <div className="relative w-full md:w-96">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Search resources..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="h-11 border-2 bg-background pl-10 transition-all duration-300 focus:border-primary"
             aria-label="Search resources"
           />
         </div>
 
-        <div className="flex flex-wrap gap-2 justify-center">
+        <div className="flex flex-wrap justify-center gap-2">
           <Button
             variant={selectedCategory === 'all' ? 'default' : 'outline'}
             onClick={() => setSelectedCategory('all')}
@@ -64,11 +63,16 @@ export function ResourcesSection() {
         </div>
       </div>
 
-      {/* Featured Resources */}
+      {/* Featured resources */}
       {featuredResources.length > 0 && selectedCategory === 'all' && (
-        <div className="space-y-4">
-          <h3 className="text-2xl font-bold">Featured Resources</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="mt-12">
+          <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+            Highlighted
+          </span>
+          <h3 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground">
+            Featured Resources
+          </h3>
+          <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {featuredResources.map(resource => (
               <ResourceCard key={resource.id} resource={resource} featured />
             ))}
@@ -76,28 +80,28 @@ export function ResourcesSection() {
         </div>
       )}
 
-      {/* All Resources */}
-      <div className="space-y-4">
+      {/* All resources */}
+      <div className="mt-12">
         {selectedCategory !== 'all' && (
-          <h3 className="text-2xl font-bold">
+          <h3 className="text-2xl font-extrabold uppercase tracking-tight text-foreground">
             {resourceCategories.find(cat => cat.id === selectedCategory)?.name}
           </h3>
         )}
 
-        <div className="text-sm text-muted-foreground">
+        <div className="mt-2 text-sm text-muted-foreground">
           Showing {regularResources.length} resource
           {regularResources.length !== 1 && 's'}
         </div>
 
         {regularResources.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {regularResources.map(resource => (
               <ResourceCard key={resource.id} resource={resource} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground text-lg mb-4">
+          <div className="mt-6 rounded-xl border border-dashed border-border py-12 text-center">
+            <p className="mb-4 text-lg text-muted-foreground">
               No resources found matching your criteria.
             </p>
             <Button
@@ -113,18 +117,24 @@ export function ResourcesSection() {
         )}
       </div>
 
-      {/* Help Section */}
-      <div className="mt-12 p-8 bg-muted/50 rounded-lg border text-center">
-        <h3 className="text-2xl font-bold mb-2">Need Custom Documentation?</h3>
-        <p className="text-muted-foreground mb-6">
-          Can't find what you're looking for? Contact our support team for
-          custom documentation and technical assistance.
+      {/* Help band */}
+      <div className="mt-16 bg-primary px-6 py-10 text-center text-primary-foreground md:px-12 md:py-14">
+        <h3 className="text-2xl font-extrabold uppercase tracking-tight sm:text-3xl">
+          Need Custom Documentation?
+        </h3>
+        <p className="mx-auto mt-3 max-w-[52ch] text-primary-foreground/90">
+          Can&apos;t find what you&apos;re looking for? Contact our support team
+          for custom documentation and technical assistance.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button asChild>
+        <div className="mt-6 flex flex-col justify-center gap-4 sm:flex-row">
+          <Button asChild variant="secondary">
             <a href="/contact/support">Contact Support</a>
           </Button>
-          <Button variant="outline" asChild>
+          <Button
+            asChild
+            variant="outline"
+            className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground hover:text-primary"
+          >
             <a href={`mailto:${CONTACT_INFO.email.support}`}>Email Us</a>
           </Button>
         </div>

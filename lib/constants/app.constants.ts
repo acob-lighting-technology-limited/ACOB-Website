@@ -40,9 +40,9 @@ export const CONTACT_INFO = {
     area: 'Federal Ministry of Works & Housing Sites and Service Scheme',
     landmark: 'Setraco Gate',
     city: 'Gwarinpa',
-    state: 'Abuja',
+    state: 'FCT',
     country: 'Nigeria',
-    full: 'Plot 2, Block 14 Extension, Federal Ministry of Works & Housing Sites and Service Scheme, Setraco Gate, Gwarinpa, Abuja, Nigeria',
+    full: 'Plot 2, Block 14 Extension, Federal Ministry of Works & Housing Sites and Service Scheme, Setraco Gate, Gwarinpa, FCT, Nigeria',
   },
   workHours: {
     weekdays: 'Monday – Friday, 8:00 AM – 5:00 PM',
@@ -81,6 +81,38 @@ export const COMPANY_STATISTICS = {
   yearsOfExperience: 10,
   statesServed: 15,
   teamSize: 50,
+} as const;
+
+/**
+ * Stat values rendered across the About pages (mission, our-story,
+ * our-reach, overview cards). Migrated from the legacy lib/constants.ts —
+ * distinct from COMPANY_STATISTICS above, which uses different values and
+ * currently has no consumers. Not reconciled with COMPANY_STATISTICS yet.
+ */
+export const COMPANY_STATS = {
+  // Main company stats - all values only, no suffixes or units
+  projectsCompleted: 100,
+  totalCapacityMW: 7,
+  communitiesServed: 50,
+  staffStrength: 90,
+
+  // Detailed deployment stats
+  communitiesDeployed: 9,
+  communitiesUnderConstruction: 19,
+  totalConnections: 2306,
+  installedCapacityKwp: 690,
+
+  // Impact metrics
+  communitiesElectrified: 15,
+  connectionsEnergized: 5306,
+  installedCapacityDetailedKwp: 1500,
+  projectsUnderway: 19,
+
+  // Mission metrics
+  peopleToImpact: 5000000,
+  streetlights: 2000000,
+  miniGridDeployments: 150,
+  renewableEnergyCapacityMW: 50,
 } as const;
 
 // ============================================================================

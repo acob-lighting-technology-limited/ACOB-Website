@@ -5,10 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { Badge } from '@/components/ui/badge';
 import { Container } from '@/components/ui/container';
-import { MaskText } from '@/components/animations/MaskText';
 import { FadeIn } from '@/components/animations/FadeIn';
+import { cn } from '@/lib/utils';
 import type { Project } from '@/lib/types';
 
 const PROJECT_STATES = [
@@ -84,15 +83,20 @@ const projectPoint = (lat: number, lng: number) => {
 interface NigeriaReachSectionProps {
   projects?: Project[];
   showMoreLink?: boolean;
+  embedded?: boolean;
 }
 
 export function NigeriaReachSection({
   projects = [],
   showMoreLink = false,
+  embedded = false,
 }: NigeriaReachSectionProps) {
   const router = useRouter();
   const svgContainerRef = useRef<HTMLDivElement>(null);
-  const hasAnimatedRef = useRef(false);
+  // Set once the SVG markup is injected and styled. The colour animation waits
+  // on this so it never races ahead of the async SVG fetch (which would leave
+  // active states grey when the page loads slowly).
+  const [svgReady, setSvgReady] = useState(false);
   const hqPos = projectPoint(HQ_COORDS.lat, HQ_COORDS.lng);
   const projectsWithCoordinates = useMemo(
     () =>
@@ -366,6 +370,7 @@ export function NigeriaReachSection({
         });
 
         svg.appendChild(hqGroup);
+        setSvgReady(true);
       } catch (error) {
         console.error('Failed to load Nigeria SVG:', error);
       }
@@ -375,6 +380,7 @@ export function NigeriaReachSection({
 
     return () => {
       isCancelled = true;
+      setSvgReady(false);
 
       if (svgContainerRef.current) {
         svgContainerRef.current.innerHTML = '';
@@ -390,52 +396,70 @@ export function NigeriaReachSection({
   ]);
 
   useEffect(() => {
-    if (inView && !hasAnimatedRef.current && svgContainerRef.current) {
-      hasAnimatedRef.current = true;
-      const svg = svgContainerRef.current.querySelector('svg');
-      if (!svg) {
+    // Wait until BOTH the section is in view AND the SVG has been injected.
+    // Guarding on svgReady (rather than a fire-once ref) makes this self-heal:
+    // if the SVG loads after the section scrolls into view — or is re-injected
+    // — the active states still get coloured instead of being stranded grey.
+    if (!inView || !svgReady || !svgContainerRef.current) {
+      return;
+    }
+
+    const svg = svgContainerRef.current.querySelector('svg');
+    if (!svg) {
+      return;
+    }
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    activeProjectStates.forEach((project, index) => {
+      const path = svg.querySelector(`#${project.id}`) as HTMLElement | null;
+      if (!path) {
         return;
       }
+      path.setAttribute('fill', INACTIVE_COLOR);
+      timers.push(
+        setTimeout(
+          () => {
+            path.style.transition = 'fill 0.4s ease-out';
+            path.setAttribute('fill', ACTIVE_COLOR);
+            path.setAttribute('data-active', 'true');
+          },
+          100 + index * 100,
+        ),
+      );
+    });
 
-      activeProjectStates.forEach((project, index) => {
-        const path = svg.querySelector(`#${project.id}`) as HTMLElement | null;
-        if (path) {
-          path.setAttribute('fill', INACTIVE_COLOR);
-          setTimeout(
-            () => {
-              path.style.transition = 'fill 0.4s ease-out';
-              path.setAttribute('fill', ACTIVE_COLOR);
-              path.setAttribute('data-active', 'true');
-            },
-            100 + index * 100,
-          );
-        }
-      });
-    }
-  }, [activeProjectStates, inView]);
+    return () => {
+      timers.forEach(clearTimeout);
+    };
+  }, [activeProjectStates, inView, svgReady]);
 
   return (
     <section
       ref={ref}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-background via-background to-muted/30 py-12 sm:py-16 lg:py-20 xl:py-24"
+      className={cn(
+        'relative flex items-center justify-center overflow-hidden',
+        embedded
+          ? 'py-0'
+          : 'min-h-screen bg-gradient-to-b from-background via-background to-muted/30 py-12 sm:py-16 lg:py-20 xl:py-24',
+      )}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(22,_163,_74,_0.03),_transparent_70%)]" />
+      {!embedded && (
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(22,_163,_74,_0.03),_transparent_70%)]" />
+      )}
 
       <Container className="relative px-4">
         <div className="grid gap-4 lg:gap-6 xl:grid-cols-[0.9fr_2fr] items-center">
           <FadeIn delay={0.1}>
             <div className="space-y-5 text-center xl:text-left">
-              <div className="space-y-3">
-                <Badge
-                  variant="outline"
-                  className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary border-primary/20 bg-primary/5 rounded-full"
-                >
+              <div className="space-y-2">
+                <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
                   Our Reach
-                </Badge>
-                <MaskText
-                  phrases={['Electrifying Progress Across the Nation']}
-                  className="text-3xl font-bold md:text-3xl lg:text-4xl leading-tight"
-                />
+                </span>
+                <h2 className="text-3xl font-extrabold uppercase leading-[0.95] tracking-tight text-foreground md:text-3xl lg:text-4xl">
+                  Electrifying Progress
+                  <br />
+                  Across the Nation.
+                </h2>
               </div>
 
               <p className="text-base text-muted-foreground md:text-lg max-w-md mx-auto xl:mx-0 leading-relaxed">

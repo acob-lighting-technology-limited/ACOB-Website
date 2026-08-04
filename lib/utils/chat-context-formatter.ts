@@ -31,7 +31,7 @@ export function formatProjectsContext(projects: Project[]): string {
       const parts: string[] = [
         `${index + 1}. **${project.title}**`,
         `   - Location: ${project.location || 'N/A'}${project.state ? `, ${project.state}` : ''}`,
-        `   - Category: ${project.category || 'General'}`,
+        `   - Category: ${project.categories?.join(', ') || 'General'}`,
       ];
 
       if (project.projectDate) {

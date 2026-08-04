@@ -1,13 +1,9 @@
-'use client';
-
 import Link from 'next/link';
-import { ArrowLeft, Clock } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Container } from '@/components/ui/container';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Hero } from '@/components/ui/hero';
 import { Breadcrumb } from '@/components/ui/breadcrumb';
-import { MaskText } from '@/components/animations/MaskText';
 import { FadeIn } from '@/components/animations/FadeIn';
 
 interface ComingSoonProps {
@@ -15,6 +11,8 @@ interface ComingSoonProps {
   description?: string;
   breadcrumbItems?: Array<{ label: string; href?: string }>;
   backgroundImage?: string;
+  backHref?: string;
+  backLabel?: string;
 }
 
 export function ComingSoon({
@@ -22,56 +20,44 @@ export function ComingSoon({
   description = "We're working on something amazing. This page will be available soon!",
   breadcrumbItems,
   backgroundImage,
+  backHref = '/',
+  backLabel = 'Back to Home',
 }: ComingSoonProps) {
   return (
     <>
       {backgroundImage ? (
-        <Hero title={title} description={description} image={backgroundImage} />
+        <Hero
+          title={title}
+          description={title}
+          image={backgroundImage}
+          titleSize="display"
+        />
       ) : null}
 
-      <Container className="px-4 py-16 sm:py-20">
+      <Container className="px-4 py-8">
         {breadcrumbItems && breadcrumbItems.length > 0 && (
-          <Breadcrumb items={breadcrumbItems} className="mb-8" />
+          <Breadcrumb items={breadcrumbItems} className="mb-8 md:mb-12" />
         )}
 
-        <FadeIn delay={0.2}>
-          <div className="flex min-h-[60vh] items-center justify-center">
-            <Card className="w-full max-w-2xl text-center shadow-lg">
-              <CardContent className="p-8 sm:p-12">
-                <div className="mb-8">
-                  <div className="mb-6 flex justify-center">
-                    <div className="rounded-full bg-primary/10 p-6">
-                      <Clock className="h-16 w-16 text-primary" />
-                    </div>
-                  </div>
-                  <h1 className="mb-4 text-3xl font-semibold text-foreground sm:text-4xl md:text-5xl">
-                    <MaskText phrases={[title]} />
-                  </h1>
-                  <p className="mx-auto max-w-md text-base text-muted-foreground sm:text-lg">
-                    {description}
-                  </p>
-                </div>
+        <FadeIn>
+          <div className="flex min-h-[55vh] flex-col justify-center border-t-[3px] border-foreground py-12 md:min-h-[60vh] md:py-16">
+            <span className="text-sm font-bold uppercase tracking-[0.3em] text-primary">
+              Coming soon
+            </span>
+            <p className="mt-6 max-w-4xl text-3xl font-extrabold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
+              {description}
+            </p>
+            <p className="mt-6 max-w-[62ch] text-lg leading-relaxed text-muted-foreground md:text-xl">
+              We&apos;re working hard to bring you an improved experience. Check
+              back soon for updates.
+            </p>
 
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    We're working hard to bring you an improved experience.
-                    Check back soon for updates!
-                  </p>
-
-                  <div className="pt-6">
-                    <Link href="/">
-                      <Button
-                        variant="outline"
-                        className="group w-full sm:w-auto"
-                      >
-                        <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
-                        Back to Home
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <Link href={backHref} className="mt-10 inline-block">
+              <Button variant="outline" size="lg" className="group">
+                <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                {backLabel}
+              </Button>
+            </Link>
           </div>
         </FadeIn>
       </Container>

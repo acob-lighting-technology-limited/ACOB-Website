@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUpdatePost } from '@/sanity/lib/client';
+import { getUpdatePost } from '@/sanity/lib/queries';
 
 export async function GET(
   _request: NextRequest,

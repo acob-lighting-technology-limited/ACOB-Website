@@ -8,7 +8,7 @@ function Skeleton({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn('animate-pulse rounded-md bg-background', className)}
+      className={cn('animate-pulse rounded-md bg-muted', className)}
       {...props}
     />
   );
@@ -38,208 +38,124 @@ function ShimmerSkeleton({
   );
 }
 
-// PageHero skeleton component
+// PageHero skeleton component — mirrors the real Hero's height and
+// bottom-left anchored title-pill + heading so the page doesn't jump on mount.
 function PageHeroSkeleton() {
   return (
-    <div className="relative w-full h-[60vh] md:h-[70vh] bg-muted-foreground/30 dark:bg-muted/10 overflow-hidden">
-      {/* Background skeleton with shimmer */}
-      {/* <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10" /> */}
-      <div className="absolute inset-0 bg-secondary/30" />
-      {/* Content skeleton */}
-      <div className="relative z-10 flex flex-col items-start justify-end h-full 2xl:container max-w-7xl mx-auto py-16 px-4 text-center">
-        {/* Title skeleton with staggered animation */}
-        <ShimmerSkeleton
-          className="w-1/2 h-16 rounded-lg  animate-pulse !bg-background/80 before:!via-muted-foreground/30"
-          style={{ animationDelay: '0.1s' } as React.CSSProperties}
-        />
-
-        {/* Subtitle skeleton with staggered animation */}
-        {/* <ShimmerSkeleton
-          className="w-2/3 h-6 rounded-md mb-2 animate-pulse"
-          style={{ animationDelay: '0.2s' } as React.CSSProperties}
-        />
-        <ShimmerSkeleton
-          className="w-1/2 h-6 rounded-md animate-pulse"
-          style={{ animationDelay: '0.3s' } as React.CSSProperties}
-        /> */}
+    <div className="relative h-[calc(50vh+6rem)] w-full overflow-hidden bg-muted md:h-[calc(45vh+6rem)] lg:h-[calc(60vh+6rem)]">
+      <div className="absolute inset-0 flex items-end pb-4 sm:pb-6 xl:pb-10">
+        <div className="mx-auto w-full max-w-7xl px-4 2xl:container">
+          <div className="max-w-5xl space-y-3">
+            <ShimmerSkeleton
+              className="h-9 w-40 rounded-md"
+              style={{ animationDelay: '0.1s' } as React.CSSProperties}
+            />
+            <ShimmerSkeleton
+              className="h-12 w-full max-w-2xl rounded-lg md:h-14"
+              style={{ animationDelay: '0.2s' } as React.CSSProperties}
+            />
+          </div>
+        </div>
       </div>
-
-      {/* Overlay gradient */}
-      {/* <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" /> */}
     </div>
   );
 }
 
-// Content skeleton component
+// Content skeleton component — a flat standfirst (eyebrow + heading + a few
+// lines) followed by a generic card row, matching the current editorial page
+// shape instead of the old bordered-card-with-gallery layout.
 function ContentSkeleton() {
   const delay1: React.CSSProperties = { animationDelay: '0.1s' };
   const delay2: React.CSSProperties = { animationDelay: '0.2s' };
   const delay3: React.CSSProperties = { animationDelay: '0.3s' };
   const delay4: React.CSSProperties = { animationDelay: '0.4s' };
-  const delay5: React.CSSProperties = { animationDelay: '0.5s' };
-  const delay6: React.CSSProperties = { animationDelay: '0.6s' };
 
   return (
-    <Container className="space-y-6 p-6">
+    <Container className="space-y-10 px-4 py-8">
       {/* Breadcrumb skeleton */}
-      <div className="flex items-center space-x-2 mb-8">
-        <ShimmerSkeleton className="w-16 h-4 animate-pulse" />
-        <ShimmerSkeleton className="w-10 h-4 animate-pulse" style={delay1} />
-        <ShimmerSkeleton className="w-24 h-4 animate-pulse" style={delay2} />
+      <div className="flex items-center space-x-2">
+        <ShimmerSkeleton className="w-16 h-4" />
+        <ShimmerSkeleton className="w-10 h-4" style={delay1} />
+        <ShimmerSkeleton className="w-24 h-4" style={delay2} />
       </div>
 
-      {/* Main content skeleton - 3 columns, no sidebar */}
-      <div className="space-y-4">
-        <div>
-          {/* Card skeleton */}
-          <div className="border rounded-lg border-border bg-surface p-4 sm:p-6 xl:p-8">
-            <div className="max-w-3xl space-y-6">
-              {/* Title skeleton */}
-              <ShimmerSkeleton
-                className="w-1/3 h-8 rounded-lg animate-pulse"
-                style={delay1}
-              />
-
-              {/* Text content skeleton */}
-              <div className="space-y-3">
-                <ShimmerSkeleton
-                  className="w-full h-4 rounded animate-pulse"
-                  style={delay2}
-                />
-                <ShimmerSkeleton
-                  className="w-full h-4 rounded animate-pulse"
-                  style={delay3}
-                />
-                <ShimmerSkeleton
-                  className="w-5/6 h-4 rounded animate-pulse"
-                  style={delay4}
-                />
-                <ShimmerSkeleton
-                  className="w-full h-4 rounded animate-pulse"
-                  style={delay5}
-                />
-                <ShimmerSkeleton
-                  className="w-4/5 h-4 rounded animate-pulse"
-                  style={delay6}
-                />
-              </div>
-
-              {/* Gallery skeleton - 3 columns */}
-              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[1, 2, 3].map(i => {
-                  const galleryDelay: React.CSSProperties = {
-                    animationDelay: `${0.7 + i * 0.1}s`,
-                  };
-                  return (
-                    <ShimmerSkeleton
-                      key={i}
-                      className="aspect-[4/3] rounded-lg animate-pulse"
-                      style={galleryDelay}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+      {/* Standfirst skeleton */}
+      <div className="max-w-[62ch] space-y-4">
+        <ShimmerSkeleton className="h-3 w-32" style={delay1} />
+        <div className="space-y-3">
+          <ShimmerSkeleton className="h-6 w-full" style={delay2} />
+          <ShimmerSkeleton className="h-6 w-5/6" style={delay3} />
         </div>
+      </div>
+
+      {/* Generic card row skeleton */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3].map(i => {
+          const cardDelay: React.CSSProperties = {
+            animationDelay: `${0.4 + i * 0.1}s`,
+          };
+          return (
+            <div key={i} className="space-y-3">
+              <ShimmerSkeleton
+                className="aspect-[16/10] w-full rounded-xl"
+                style={cardDelay}
+              />
+              <ShimmerSkeleton className="h-5 w-3/4" style={delay4} />
+              <ShimmerSkeleton className="h-4 w-full" style={delay4} />
+            </div>
+          );
+        })}
       </div>
     </Container>
   );
 }
 
-// Card skeleton component
-function CardSkeleton({ delay = 0 }: { delay?: number }) {
+// Generic homepage-style section skeleton — eyebrow + heading + card row.
+// Used to approximate below-the-fold sections (Services/Projects/Updates)
+// while their data is still loading.
+function SectionSkeleton({ delay = 0 }: { delay?: number }) {
   return (
-    <div className="space-y-4">
-      <ShimmerSkeleton
-        className="aspect-[4/3] rounded-lg animate-pulse"
-        style={{ animationDelay: `${delay}s` } as React.CSSProperties}
-      />
-      <div className="space-y-2">
+    <Container className="space-y-8 px-4 py-12 sm:py-16">
+      <div className="max-w-xl space-y-3">
         <ShimmerSkeleton
-          className="w-3/4 h-5 animate-pulse"
+          className="h-3 w-28"
+          style={{ animationDelay: `${delay}s` } as React.CSSProperties}
+        />
+        <ShimmerSkeleton
+          className="h-8 w-full max-w-sm"
           style={{ animationDelay: `${delay + 0.1}s` } as React.CSSProperties}
         />
-        <ShimmerSkeleton
-          className="w-full h-4 animate-pulse"
-          style={{ animationDelay: `${delay + 0.2}s` } as React.CSSProperties}
-        />
-        <ShimmerSkeleton
-          className="w-2/3 h-4 animate-pulse"
-          style={{ animationDelay: `${delay + 0.3}s` } as React.CSSProperties}
-        />
       </div>
-    </div>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="space-y-3">
+            <ShimmerSkeleton
+              className="aspect-[16/10] w-full rounded-xl"
+              style={
+                {
+                  animationDelay: `${delay + 0.2 + i * 0.1}s`,
+                } as React.CSSProperties
+              }
+            />
+            <ShimmerSkeleton
+              className="h-5 w-3/4"
+              style={
+                {
+                  animationDelay: `${delay + 0.3 + i * 0.1}s`,
+                } as React.CSSProperties
+              }
+            />
+          </div>
+        ))}
+      </div>
+    </Container>
   );
 }
 
-// Text skeleton component
-function TextSkeleton({
-  lines = 3,
-  className,
-  staggered = true,
-}: {
-  lines?: number;
-  className?: string;
-  staggered?: boolean;
-}) {
-  return (
-    <div className={cn('space-y-2', className)}>
-      {Array.from({ length: lines }).map((_, i) => (
-        <ShimmerSkeleton
-          key={i}
-          className={cn(
-            'h-4 animate-pulse',
-            i === lines - 1 ? 'w-3/4' : 'w-full',
-          )}
-          style={
-            staggered
-              ? ({ animationDelay: `${i * 0.1}s` } as React.CSSProperties)
-              : undefined
-          }
-        />
-      ))}
-    </div>
-  );
-}
-function HeroSkeleton() {
-  return (
-    <div className="relative w-full h-[50vh] md:h-[45vh] lg:h-[60vh] bg-muted-foreground/30 dark:bg-muted/10 overflow-hidden">
-      {/* Background skeleton with shimmer */}
-      {/* <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10" /> */}
-      <div className="absolute inset-0 bg-secondary/30" />
-      {/* Content skeleton */}
-      <div className="relative z-10 flex flex-col items-start justify-end h-full 2xl:container p-6 sm:p-12 mx-auto py-16  text-center">
-        {/* Title skeleton with staggered animation */}
-        <div className="space-y-8 w-full">
-          {' '}
-          <ShimmerSkeleton
-            className="w-1/2 h-16 rounded-lg  animate-pulse !bg-background/80 before:!via-muted-foreground/30"
-            style={{ animationDelay: '0.1s' } as React.CSSProperties}
-          />{' '}
-          <ShimmerSkeleton
-            className="w-1/4 h-8 rounded-lg  animate-pulse !bg-background/80 before:!via-muted-foreground/30"
-            style={{ animationDelay: '0.1s' } as React.CSSProperties}
-          />{' '}
-          <ShimmerSkeleton
-            className="w-1/4 h-8 rounded-lg  animate-pulse !bg-background/80 before:!via-muted-foreground/30"
-            style={{ animationDelay: '0.1s' } as React.CSSProperties}
-          />{' '}
-          <ShimmerSkeleton
-            className="w-[20%] h-2 rounded-lg  animate-pulse !bg-background/80 before:!via-muted-foreground/30"
-            style={{ animationDelay: '0.1s' } as React.CSSProperties}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
 export {
   Skeleton,
   ShimmerSkeleton,
   PageHeroSkeleton,
   ContentSkeleton,
-  CardSkeleton,
-  HeroSkeleton,
-  TextSkeleton,
+  SectionSkeleton,
 };

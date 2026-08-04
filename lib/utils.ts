@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import type { ProjectImpactMetrics } from '@/lib/types';
 
 /**
  * Combines and merges Tailwind CSS classes intelligently
@@ -83,4 +84,65 @@ export function formatDate(dateString: string): string {
     month: 'short',
     day: 'numeric',
   });
+}
+
+/**
+ * Calculates impact metrics dynamically for a project based on its category
+ * and base inputs (Capacity/kWp and Beneficiaries).
+ *
+ * For rural-electrification projects, it enforces standard formulas:
+ * - annualEnergyOutput = kwp * 1460
+ * - annualCO2Reduction = round(annualEnergyOutput * 0.00053)
+ * - jobsCreatedDirectly = 95
+ * - jobsCreatedIndirectly = round(beneficiaries / 100)
+ *
+ * For other categories, it falls back to the manually entered metrics.
+ *
+ * @param project - Project object containing categories and subcategory
+ * @param metrics - Base impact metrics stored in Sanity
+ * @returns Recalculated/optimized impact metrics
+ */
+export function getCalculatedImpactMetrics(
+  project: { categories?: string[]; subcategory?: string } | undefined,
+  metrics: ProjectImpactMetrics | undefined,
+): ProjectImpactMetrics | undefined {
+  if (!metrics) {
+    return undefined;
+  }
+
+  const isIsolatedMiniGrid =
+    Array.isArray(project?.categories) &&
+    project.categories.includes('mini-grids') &&
+    project.subcategory === 'isolated';
+
+  if (!isIsolatedMiniGrid) {
+    return metrics;
+  }
+
+  const kwp = metrics.kwp;
+  const beneficiaries = metrics.beneficiaries;
+
+  // 1. Annual Energy Output = kwp * 1460
+  const annualEnergyOutput = kwp ? kwp * 1460 : metrics.annualEnergyOutput;
+
+  // 2. Annual CO2 Reduction = Energy * 0.00053
+  const annualCO2Reduction = annualEnergyOutput
+    ? Math.round(annualEnergyOutput * 0.00053 * 100) / 100
+    : metrics.annualCO2Reduction;
+
+  // 3. Direct Jobs = 95
+  const jobsCreatedDirectly = kwp ? 95 : metrics.jobsCreatedDirectly;
+
+  // 4. Indirect Jobs = round(Beneficiaries / 100)
+  const jobsCreatedIndirectly = beneficiaries
+    ? Math.round(beneficiaries / 100)
+    : metrics.jobsCreatedIndirectly;
+
+  return {
+    ...metrics,
+    annualEnergyOutput,
+    annualCO2Reduction,
+    jobsCreatedDirectly,
+    jobsCreatedIndirectly,
+  };
 }

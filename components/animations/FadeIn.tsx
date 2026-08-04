@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { ReactNode } from 'react';
 
@@ -25,6 +25,7 @@ export function FadeIn({
     threshold: 0.1,
     triggerOnce: once,
   });
+  const prefersReducedMotion = useReducedMotion();
 
   const directions = {
     up: { y: 24, x: 0 },
@@ -34,10 +35,12 @@ export function FadeIn({
     none: { y: 0, x: 0 },
   };
 
-  const initial = {
-    opacity: 0,
-    ...directions[direction],
-  };
+  const initial = prefersReducedMotion
+    ? { opacity: 0 }
+    : {
+        opacity: 0,
+        ...directions[direction],
+      };
 
   const animate = {
     opacity: 1,
@@ -51,8 +54,8 @@ export function FadeIn({
       initial={initial}
       animate={inView ? animate : initial}
       transition={{
-        duration,
-        delay,
+        duration: prefersReducedMotion ? 0.01 : duration,
+        delay: prefersReducedMotion ? 0 : delay,
         ease: [0.25, 0.4, 0.25, 1] as const, // Custom ease-out curve
       }}
       className={className}

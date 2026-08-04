@@ -23,7 +23,10 @@ export type DescriptionTemplate =
   | 'description4'
   | 'description5'
   | 'description6'
-  | 'description7';
+  | 'description7'
+  | 'healthcare1'
+  | 'healthcare2'
+  | 'healthcare3';
 
 export interface ProjectDescriptionData {
   kwp?: number;
@@ -36,6 +39,12 @@ export interface ProjectDescriptionData {
   jobsIndirect?: number;
   annualEnergyOutput?: number;
   annualCO2Reduction?: number;
+  // Healthcare-specific metrics
+  bess?: number;
+  dieselReduc?: number;
+  costSavings?: number;
+  patientCareInc?: number;
+  uptime?: number;
 }
 
 /** An inline run of text within a paragraph. */
@@ -121,6 +130,14 @@ const ENVIRONMENTAL_BLOCK =
   "emissions every year, contributing to Nigeria's climate action and " +
   'sustainability goals.';
 
+/** Healthcare impact paragraph — patients and critical care. Written once. */
+const HEALTHCARE_IMPACT_BLOCK =
+  'Through this intervention, the facility now serves over **{beneficiaries} annual patients** with stable, clean electricity. The project delivers a **{uptime}% system uptime** to power critical zones including **operating theatres, emergency wards, and laboratories**, enabling a **{patientCareInc}% increment in healthcare service capacity** and patient care.';
+
+/** Healthcare environmental and financial paragraph — battery storage, diesel reduction, cost savings, and CO₂. Written once. */
+const HEALTHCARE_ENVIRONMENTAL_BLOCK =
+  'Generating an estimated **{annualEnergyOutput} kWh** annually, the **{kwp} kWp Solar PV** and **{bess} kWh Battery Storage (BESS)** system has achieved an **{dieselReduc}% reduction in diesel generator dependence**. This clean transition reduces operating overhead by **{costSavings}% in energy costs** and avoids **{annualCO2Reduction} Tons of CO₂** emissions annually.';
+
 /** Opening framing — one per template. */
 const INTROS: Record<DescriptionTemplate, string> = {
   description1:
@@ -173,6 +190,21 @@ const INTROS: Record<DescriptionTemplate, string> = {
     'efforts and environmental sustainability goals. This project was designed to ' +
     'deliver clean, reliable energy while minimizing ecological impact and ' +
     'advancing climate resilience.',
+  healthcare1:
+    'The solarization project at **{location}** within **{lga} LGA**, **{state} State** ' +
+    'in the **{region} region of Nigeria**, represents a vital healthcare infrastructure ' +
+    'upgrade deployed by ACOB Lighting Technology Limited in partnership with the ' +
+    'Rural Electrification Agency (REA) and funded by the World Bank.',
+  healthcare2:
+    'ACOB Lighting Technology Limited successfully deployed a clean energy solution ' +
+    'at **{location}** in **{lga} LGA**, **{state} State** within the **{region} region ' +
+    'of Nigeria**, replacing unreliable power source with a sustainable solar micro-utility ' +
+    'system designed specifically for the healthcare sector.',
+  healthcare3:
+    'Designed to address chronic energy challenges and high operational costs, this ' +
+    'solar system at **{location}** in **{lga} LGA**, **{state} State** in the ' +
+    '**{region} region of Nigeria**, represents a significant step forward in clean ' +
+    'energy healthcare infrastructure.',
 };
 
 /** Closing framing — one per template. */
@@ -204,6 +236,17 @@ const CLOSINGS: Record<DescriptionTemplate, string> = {
     "This project underscores ACOB Lighting Technology's leadership in deploying " +
     'renewable energy infrastructure that protects the environment, supports ' +
     'livelihoods, and builds a sustainable future for all Nigerians.',
+  healthcare1:
+    'This installation underscores ACOB Lighting Technology’s dedication to ' +
+    'providing resilient, clinical-grade solar energy solutions that support ' +
+    'healthcare professionals and save patient lives.',
+  healthcare2:
+    'This project stands as a benchmark for hospital solarization across Nigeria, ' +
+    'demonstrating how clean energy can modernize healthcare delivery and ensure ' +
+    'critical care continuity.',
+  healthcare3:
+    'By investing in sustainable clinical power, ACOB continues to help build ' +
+    'stronger, greener, and healthier Nigerian communities for generations to come.',
 };
 
 /**
@@ -211,6 +254,15 @@ const CLOSINGS: Record<DescriptionTemplate, string> = {
  * The factual blocks are referenced, not duplicated.
  */
 function composeTemplate(template: DescriptionTemplate): string[] {
+  if (template.startsWith('healthcare')) {
+    return [
+      INTROS[template],
+      HEALTHCARE_IMPACT_BLOCK,
+      HEALTHCARE_ENVIRONMENTAL_BLOCK,
+      CLOSINGS[template],
+    ];
+  }
+
   return [
     INTROS[template],
     IMPACT_BLOCK,
@@ -270,6 +322,12 @@ export function generateProjectDescription(
       data.annualEnergyOutput?.toLocaleString() || '[annual energy output]',
     annualCO2Reduction:
       data.annualCO2Reduction?.toLocaleString() || '[CO₂ reduction]',
+    bess: data.bess?.toString() || '[bess]',
+    dieselReduc: data.dieselReduc?.toString() || '[diesel reduction]',
+    costSavings: data.costSavings?.toString() || '[cost savings]',
+    patientCareInc:
+      data.patientCareInc?.toString() || '[patient care increment]',
+    uptime: data.uptime?.toString() || '[uptime]',
   };
 
   return composeTemplate(template).map(fragment => {

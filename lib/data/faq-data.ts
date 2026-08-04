@@ -5,6 +5,84 @@ export interface FAQItem {
 }
 
 export const faqData: FAQItem[] = [
+  // About ACOB
+  {
+    question:
+      'Who is ACOB Lighting Technology Limited and when was it founded?',
+    answer:
+      'ACOB Lighting Technology Limited is a premier Nigerian renewable energy company founded in 2016 and led by CEO Mr. Alexander Chinedu Obiechina. Headquartered in Gwarinpa, Abuja, ACOB provides clean, sustainable, and cost-effective power solutions to unserved and underserved communities, commercial enterprises, healthcare centers, and public infrastructure across Nigeria and expanding across Africa.',
+    category: 'About ACOB',
+  },
+  {
+    question:
+      "What are ACOB Lighting's head office location and official business hours?",
+    answer:
+      'ACOB Lighting is headquartered at Plot 2, Block 14 Extension, Federal Ministry of Works & Housing Sites and Service Scheme, Setraco Gate, Gwarinpa, Abuja. Our official business hours are Monday through Friday, 8:00 AM – 5:00 PM. We are closed on Saturdays and Sundays.',
+    category: 'About ACOB',
+  },
+  {
+    question: 'What core services and clean energy solutions does ACOB offer?',
+    answer:
+      'ACOB offers end-to-end solar solutions including hybrid solar mini-grids, Commercial & Industrial (C&I) captive solar installations, healthcare facility solarization, smart high-density LED streetlighting, Productive Use of Energy (PUE) applications (such as solar water pumping and EV charging), professional energy auditing, and 24/7 Operations & Maintenance (O&M) services.',
+    category: 'About ACOB',
+  },
+  {
+    question:
+      'Where does ACOB Lighting operate and execute renewable energy projects?',
+    answer:
+      'ACOB operates across all geopolitical zones in Nigeria — with major project deployments in states such as Abuja (FCT), Lagos, Kano, Kaduna, Jigawa, Kogi, Delta, Ogun, and Akwa Ibom — and is actively expanding clean energy infrastructure across West Africa.',
+    category: 'About ACOB',
+  },
+  {
+    question:
+      'How does ACOB support rural electrification and health sector infrastructure?',
+    answer:
+      'ACOB has deployed over 15 hybrid solar mini-grids (totaling over 750kW peak capacity) powering rural communities across Nigeria. In healthcare, ACOB has delivered targeted solar hybrid energy systems for hospitals and clinics in states like Jigawa, Kano, and Kaduna to ensure round-the-clock power for lifesaving equipment.',
+    category: 'About ACOB',
+  },
+  {
+    question:
+      "What are ACOB Lighting's core corporate values and strategic vision?",
+    answer:
+      'ACOB is guided by three core values: Loyalty (building long-term trust and value), Accountability (transparency and integrity), and Professionalism (service delivery meeting international standards). Our vision is to be a flagship renewable energy company in Africa, aiming to power over 5 million Nigerians through mini-grids by 2030 and deploy 2 million solar streetlights by 2029.',
+    category: 'About ACOB',
+  },
+  {
+    question:
+      'What financial, government, and technical partners does ACOB work with?',
+    answer:
+      'ACOB works closely with key sector partners including the Rural Electrification Agency (REA), Federal Ministry of Power, InfraCredit, FCMB, NSIA, ECREEE, GIZ, SEforALL, and technology leaders such as SMA Solar Technology, JinkoSolar, and Hoppecke Batterien.',
+    category: 'About ACOB',
+  },
+  {
+    question:
+      'Does ACOB handle both residential and commercial solar projects?',
+    answer:
+      'Yes. ACOB designs and installs tailored solar systems for residential homes and estates, commercial offices, healthcare facilities, industrial sites, telecom infrastructure, and community mini-grids.',
+    category: 'About ACOB',
+  },
+  {
+    question:
+      'How can I get technical support or assistance for an existing installation?',
+    answer:
+      'For technical support, 24/7 system monitoring, or maintenance assistance, visit our Support page at /contact/support, email info@acoblighting.com, or call our customer service lines (+234 704 920 2634 / +234 803 290 2825).',
+    category: 'About ACOB',
+  },
+  {
+    question:
+      'How can I apply for a job or career opportunity at ACOB Lighting?',
+    answer:
+      'We are always looking for passionate energy innovators! You can view current job openings and submit your application on our Careers page at /contact/careers or email your CV directly to jobs@acoblighting.com.',
+    category: 'About ACOB',
+  },
+  {
+    question:
+      'How can I request a customized energy audit or project quotation from ACOB?',
+    answer:
+      'You can request a tailored quote or energy audit by navigating to our Get a Quote page at /contact/quote, emailing info@acoblighting.com, or contacting our engineering team directly via phone.',
+    category: 'About ACOB',
+  },
+
   // General Questions
   {
     question: 'What is solar energy and how does it work?',
@@ -152,6 +230,7 @@ export const faqData: FAQItem[] = [
 ];
 
 export const faqCategories = [
+  'About ACOB',
   'General',
   'Installation',
   'Cost & Savings',

@@ -10,24 +10,24 @@ import {
   Wrench,
 } from 'lucide-react';
 
-import { COMPANY_INFO } from '@/lib/constants';
+import { COMPANY_STATS } from '@/lib/constants/app.constants';
 
 export const aboutImpactMetrics = [
   {
     label: 'Communities Electrified',
-    value: `${COMPANY_INFO.stats.communitiesElectrified}+`,
+    value: `${COMPANY_STATS.communitiesElectrified}+`,
   },
   {
     label: 'Connections Energized',
-    value: COMPANY_INFO.stats.connectionsEnergized.toLocaleString(),
+    value: COMPANY_STATS.connectionsEnergized.toLocaleString(),
   },
   {
     label: 'Installed Capacity',
-    value: `${COMPANY_INFO.stats.installedCapacityDetailedKwp.toLocaleString()} kWp`,
+    value: `${COMPANY_STATS.installedCapacityDetailedKwp.toLocaleString()} kWp`,
   },
   {
     label: 'Projects Underway',
-    value: COMPANY_INFO.stats.projectsUnderway.toString(),
+    value: COMPANY_STATS.projectsUnderway.toString(),
   },
 ];
 

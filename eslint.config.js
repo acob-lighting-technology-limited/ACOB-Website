@@ -38,6 +38,8 @@ export default [
         HTMLParagraphElement: 'readonly',
         HTMLHeadingElement: 'readonly',
         HTMLLinkElement: 'readonly',
+        HTMLAudioElement: 'readonly',
+        Audio: 'readonly',
         SVGSVGElement: 'readonly',
         Element: 'readonly',
         Node: 'readonly',
@@ -178,9 +180,19 @@ export default [
     files: ['scripts/**/*.js', 'scripts/**/*.mjs', 'scripts/**/*.ts'],
     languageOptions: {
       globals: {
+        console: 'readonly',
         process: 'readonly',
         setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        Buffer: 'readonly',
+        fetch: 'readonly',
+        URL: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
       },
+    },
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
   {

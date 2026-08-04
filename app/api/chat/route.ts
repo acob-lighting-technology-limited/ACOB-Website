@@ -23,12 +23,13 @@ import {
 import { searchContent } from '@/lib/utils/chat-content-search';
 import { getCached } from '@/lib/utils/chat-data-cache';
 import { logAcobotWebsiteTurn } from '@/lib/utils/acobot-erp-log';
+import { getAcobSystemPrompt } from '@/lib/data';
 import {
   getProjects,
   getUpdatePosts,
   getProducts,
   getJobPostings,
-} from '@/sanity/lib/client';
+} from '@/sanity/lib/queries';
 
 export async function POST(req: NextRequest) {
   // Apply rate limiting
@@ -82,7 +83,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate messages
+    // Caps guard against runaway token costs on the upstream model.
+    const MAX_MESSAGES = 30;
+    const MAX_CONTENT_LENGTH = 4000;
+
+    if (messages.length > MAX_MESSAGES) {
+      return createErrorResponse(
+        ApiErrorCode.BAD_REQUEST,
+        `Too many messages: maximum is ${MAX_MESSAGES}`,
+        400,
+      );
+    }
+
+    // Validate messages. Only user/assistant roles are accepted — the system
+    // channel is reserved for server-injected context.
+    const ALLOWED_ROLES = ['user', 'assistant'] as const;
     for (let i = 0; i < messages.length; i++) {
       const msg = messages[i];
 
@@ -93,15 +108,40 @@ export async function POST(req: NextRequest) {
           400,
         );
       }
+
+      if (
+        typeof msg.content !== 'string' ||
+        !ALLOWED_ROLES.includes(msg.role)
+      ) {
+        return createErrorResponse(
+          ApiErrorCode.VALIDATION_ERROR,
+          `Invalid message at index ${i}: role must be 'user' or 'assistant' and content must be a string`,
+          400,
+        );
+      }
+
+      if (msg.content.length > MAX_CONTENT_LENGTH) {
+        return createErrorResponse(
+          ApiErrorCode.VALIDATION_ERROR,
+          `Message at index ${i} exceeds the ${MAX_CONTENT_LENGTH}-character limit`,
+          400,
+        );
+      }
     }
 
-    // Clean messages to remove unsupported properties
-    const cleanMessages = messages.map(
-      (msg: { role: string; content: string }) => ({
+    // Clean messages to remove unsupported properties. The persona/system
+    // prompt is injected server-side (authoritative) rather than trusted from
+    // the client — the request body only ever carries user/assistant turns.
+    const cleanMessages = [
+      {
+        role: 'system' as const,
+        content: getAcobSystemPrompt().content,
+      },
+      ...messages.map((msg: { role: string; content: string }) => ({
         role: msg.role as 'user' | 'assistant' | 'system',
         content: msg.content,
-      }),
-    );
+      })),
+    ];
 
     // === DYNAMIC CONTEXT INJECTION ===
     // Detect intent from the last user message
@@ -133,9 +173,11 @@ export async function POST(req: NextRequest) {
 
               if (intent.filters?.category) {
                 filteredProjects = filteredProjects.filter((p: Project) =>
-                  p.category
-                    ?.toLowerCase()
-                    .includes(intent.filters!.category!.toLowerCase()),
+                  p.categories?.some(c =>
+                    c
+                      .toLowerCase()
+                      .includes(intent.filters!.category!.toLowerCase()),
+                  ),
                 );
               }
 

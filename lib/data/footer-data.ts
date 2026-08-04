@@ -13,26 +13,33 @@ export const footerLinks = {
     { href: '/services', label: 'Services' },
   ],
   services: [
-    { href: '/services/mini-grid-solutions', label: 'Mini-Grid Solutions' },
+    {
+      href: '/services/mini-grid-solutions',
+      label: 'Rural Mini-Grid Utilities',
+    },
     {
       href: '/services/captive-power-solutions',
-      label: 'Captive Power Solutions',
+      label: 'Commercial & Industrial Captive Solar',
+    },
+    {
+      href: '/services/healthcare-solarization',
+      label: 'Healthcare Solarization & Infrastructure',
+    },
+    {
+      href: '/services/productive-use-of-energy',
+      label: 'Productive Use of Energy (PUE)',
     },
     {
       href: '/services/professional-energy-audit',
-      label: 'Professional Energy Audit',
-    },
-    {
-      href: '/services/engineering-procurement-construction',
-      label: 'Engineering Procurement & Construction',
+      label: 'Commercial Energy Auditing & Optimization',
     },
     {
       href: '/services/streetlighting-infrastructure',
-      label: 'Streetlighting Infrastructure',
+      label: 'Smart Streetlighting Infrastructure',
     },
     {
       href: '/services/operations-and-maintenance',
-      label: 'Operations and Maintenance',
+      label: 'Operations & Maintenance (O&M) Utilities',
     },
   ],
   support: [

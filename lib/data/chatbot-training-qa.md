@@ -70,10 +70,16 @@ A: Yes. Solar panel installation is one of ACOB's core services, for residential
 A: Yes. ACOB offers professional energy audit services to assess energy consumption and identify opportunities to reduce costs and improve efficiency. Visit /services/professional-energy-audit for more.
 
 **Q: What is EPC?**
-A: EPC stands for Engineering, Procurement, and Construction. ACOB provides end-to-end EPC services for energy projects, managing the entire process from design to installation. See /services/engineering-procurement-construction.
+A: EPC stands for Engineering, Procurement, and Construction. ACOB provides turnkey EPC delivery for all clean energy utility installations—including mini-grids, captive solar, healthcare, and streetlights—managing the entire lifecycle from audit to commissioning. Visit /services to learn more.
 
 **Q: Does ACOB install streetlights?**
-A: Yes. ACOB designs and installs high-density LED street lighting infrastructure for government and institutional clients. See /services/streetlighting-infrastructure-project-development.
+A: Yes. ACOB designs and installs high-density LED street lighting infrastructure for government and institutional clients. See /services/streetlighting-infrastructure.
+
+**Q: Does ACOB provide solar solutions for hospitals and healthcare?**
+A: Yes. ACOB specializes in Healthcare Solarization, deploying clinical-grade solar hybrid systems and battery storage (BESS) to guarantee 24/7 power for operating rooms, emergency wards, and vaccine refrigeration. See /services/healthcare-solarization.
+
+**Q: What is Productive Use of Energy (PUE)?**
+A: Productive Use of Energy (PUE) refers to clean energy systems that power income-generating activities. ACOB deploys solar-powered agricultural irrigation pumps, EV charging stations, and agro-processing milling systems. See /services/productive-use-of-energy.
 
 **Q: What is a captive power solution?**
 A: A captive power solution is a dedicated on-site power generation system for a business or facility, independent of the main utility grid. ACOB installs solar-based captive power systems for commercial and industrial clients. See /services/captive-power-solutions.
@@ -82,7 +88,7 @@ A: A captive power solution is a dedicated on-site power generation system for a
 A: Yes. Inverter systems are part of ACOB's product and service offering for backup power and solar energy conversion.
 
 **Q: Does ACOB do operations and maintenance?**
-A: Yes. ACOB provides O&M (Operations and Maintenance) services to ensure long-term performance and reliability of installed systems.
+A: Yes. ACOB provides O&M (Operations and Maintenance) services to ensure long-term performance and reliability of installed systems. See /services/operations-and-maintenance.
 
 **Q: Does ACOB provide smart energy meters?**
 A: Yes. Smart energy meters are part of ACOB's solutions for monitoring and managing energy consumption.
@@ -257,7 +263,7 @@ A: Visit /resources for company resources, documents, and downloads.
 A: Yes. Visit /faq for answers to frequently asked questions.
 
 **Q: Does ACOB have an impact report?**
-A: Visit /impact for information about ACOB's social and environmental impact.
+A: ACOB's social and environmental impact highlights are shared in our updates at /updates and in the About section at /about.
 
 ---
 
@@ -286,7 +292,7 @@ A: www.acoblighting.com
 A: Yes. ACOB's core mission is to provide clean, affordable, and reliable renewable energy — directly contributing to sustainability, carbon reduction, and community resilience.
 
 **Q: What is ACOB's social impact?**
-A: ACOB aims to impact over 5 million Nigerians with mini-grid power by 2030 and to deploy 2 million solar streetlights across Nigeria by 2029. Visit /impact for more.
+A: ACOB aims to impact over 5 million Nigerians with mini-grid power by 2030 and to deploy 2 million solar streetlights across Nigeria by 2029.
 
 **Q: Does ACOB support rural electrification?**
 A: Yes. Rural electrification is a key focus. ACOB works with REA and international partners to bring solar power to underserved communities.
@@ -344,7 +350,7 @@ A: Yes. ACOB's core value of Professionalism means delivering services aligned w
 ## 15. Product Testing
 
 **Q: Does ACOB test its products?**
-A: Yes. Visit /product-testing for information about ACOB's product testing processes and standards.
+A: Yes. All products are tested against international quality standards before deployment. For details about our product range, visit /products.
 
 ---
 

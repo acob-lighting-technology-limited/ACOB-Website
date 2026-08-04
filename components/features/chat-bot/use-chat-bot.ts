@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useChat } from 'ai/react';
-import { getAcobSystemPrompt } from '@/lib/data';
 import { extractNavigationIntent } from '@/lib/utils/navigation';
 
 const MESSAGE_LIMIT = 5;
@@ -55,7 +54,8 @@ export function useChatBot() {
     stop,
   } = useChat({
     api: '/api/chat',
-    initialMessages: [getAcobSystemPrompt()],
+    // The persona/system prompt is injected server-side in /api/chat; the
+    // client only sends user/assistant turns (system role is rejected there).
     onFinish: message => {
       // Extract navigation intent
       const route = extractNavigationIntent(message.content);

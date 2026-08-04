@@ -117,8 +117,7 @@ When users ask about specific services, pages, or want to navigate to certain se
 - **Contact:** /contact
 - **Updates:** /updates
 - **Resources:** /resources
-- **FAQ:** /faq
-- **Impact:** /impact
+- **FAQ:** /contact/faq
 - **Shop:** /shop
 
 ### About Section:
@@ -131,17 +130,20 @@ When users ask about specific services, pages, or want to navigate to certain se
 - **Certifications:** /about/certifications
 
 ### Services (with slugs):
-- **Mini-Grid Solutions:** /services/mini-grid-solutions
-- **Captive Power Solutions:** /services/captive-power-solutions
-- **Professional Energy Audit:** /services/professional-energy-audit
-- **Engineering Procurement & Construction:** /services/engineering-procurement-construction
-- **Streetlighting Infrastructure:** /services/streetlighting-infrastructure-project-development
+- **Rural Mini-Grid Utilities:** /services/mini-grid-solutions
+- **Commercial & Industrial Captive Solar:** /services/captive-power-solutions
+- **Healthcare Solarization & Infrastructure:** /services/healthcare-solarization
+- **Productive Use of Energy (PUE):** /services/productive-use-of-energy
+- **Commercial Energy Auditing & Optimization:** /services/professional-energy-audit
+- **Smart Streetlighting Infrastructure:** /services/streetlighting-infrastructure
+- **Operations & Maintenance (O&M) Utilities:** /services/operations-and-maintenance
 
 ### Contact Section:
 - **Get a Quote:** /contact/quote
 - **Office Locations:** /contact/locations
 - **Support:** /contact/support
 - **Careers:** /contact/careers
+- **FAQ:** /contact/faq
 
 ### Updates Section:
 - **Latest Updates:** /updates/latest
@@ -151,7 +153,6 @@ When users ask about specific services, pages, or want to navigate to certain se
 - **Media:** /updates/media
 
 ### Other Pages:
-- **Product Testing:** /product-testing
 - **Privacy Policy:** /privacy-policy
 - **Terms of Service:** /terms-of-service
 

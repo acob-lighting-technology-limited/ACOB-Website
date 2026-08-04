@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { FC, ReactNode, useMemo } from 'react';
 
+import { useSiteReveal } from '@/components/loader/site-reveal-provider';
+
 interface MaskTextProps {
   children?: ReactNode;
   phrases?: string[];
@@ -19,6 +21,12 @@ export const MaskText: FC<MaskTextProps> = ({
   duration = 0.6,
   className,
 }) => {
+  // Above-the-fold copy is "in view" from the first frame, so it would slide up
+  // behind the loader and be finished before anyone saw it. Wait for the
+  // curtain. Below-the-fold text is long since revealed by the time it scrolls
+  // into view, so this costs nothing there.
+  const { revealed } = useSiteReveal();
+
   const { ref, inView } = useInView({
     threshold: 0.1,
     triggerOnce: true,
@@ -38,7 +46,7 @@ export const MaskText: FC<MaskTextProps> = ({
           <motion.div
             initial={{ y: '100%' }}
             animate={
-              inView
+              inView && revealed
                 ? {
                     y: '0',
                     transition: {

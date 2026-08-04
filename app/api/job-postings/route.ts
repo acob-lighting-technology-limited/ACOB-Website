@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getJobPostings } from '@/sanity/lib/client';
+import { getJobPostings } from '@/sanity/lib/queries';
 
 export async function GET() {
   try {

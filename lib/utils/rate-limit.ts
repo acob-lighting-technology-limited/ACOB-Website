@@ -35,6 +35,29 @@ function maybePruneStore(): void {
 }
 
 /**
+ * Resolve a stable client identifier for rate limiting.
+ *
+ * Prefers x-real-ip (set by the hosting platform, e.g. Vercel) over
+ * x-forwarded-for. When falling back to x-forwarded-for, only the first
+ * entry is used — keying on the raw header would let clients mint a fresh
+ * bucket per request by varying appended values.
+ */
+export function getClientIdentifier(request: NextRequest): string {
+  const realIp = request.headers.get('x-real-ip')?.trim();
+  if (realIp) {
+    return realIp;
+  }
+
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  const firstHop = forwardedFor?.split(',')[0]?.trim();
+  if (firstHop) {
+    return firstHop;
+  }
+
+  return 'anonymous';
+}
+
+/**
  * Simple token bucket rate limiter
  * @param request - Next.js request object
  * @param config - Rate limit configuration
@@ -49,11 +72,7 @@ export function rateLimit(
 ): boolean {
   maybePruneStore();
 
-  // Get client identifier (IP address or custom header)
-  const identifier =
-    request.headers.get('x-forwarded-for') ||
-    request.headers.get('x-real-ip') ||
-    'anonymous';
+  const identifier = getClientIdentifier(request);
 
   const now = Date.now();
   const bucket = rateLimitStore.get(identifier);

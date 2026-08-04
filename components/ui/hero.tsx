@@ -3,8 +3,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { MaskText } from '../animations/MaskText';
+import { useSiteReveal } from '@/components/loader/site-reveal-provider';
 import { getBlurDataURL } from '@/lib/utils/image-optimization';
 
 interface HeroProps {
@@ -18,16 +20,31 @@ interface HeroProps {
         href?: string;
       }>;
   imagePosition?: 'top' | 'middle' | 'bottom';
+  /**
+   * 'default' — standard heading size.
+   * 'display' — oversized, uppercase, extra-bold heading for editorial pages
+   * where the Hero carries the page's single big title.
+   */
+  titleSize?: 'default' | 'display';
 }
 
 const DEFAULT_HERO_IMAGE = '/images/contact/office-location-hero.webp';
+
+const DESCRIPTION_CLASS: Record<'default' | 'display', string> = {
+  default: 'text-2xl sm:text-4xl md:text-4xl lg:text-5xl font-bold',
+  display:
+    'text-xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold uppercase tracking-tight leading-[0.95]',
+};
 
 export const Hero = React.memo(function Hero({
   title,
   description,
   image,
   imagePosition = 'middle',
+  titleSize = 'default',
 }: HeroProps) {
+  const { revealed } = useSiteReveal();
+
   // Use default image if not provided
   const imageToUse = image || DEFAULT_HERO_IMAGE;
 
@@ -66,13 +83,18 @@ export const Hero = React.memo(function Hero({
         <div className="absolute inset-0 z-10 flex items-end pb-4 sm:pb-6 xl:pb-10">
           <div className="2xl:container max-w-7xl mx-auto px-4 w-full">
             <div className="text-white max-w-5xl space-y-3">
-              <div className="inline-block">
+              <motion.div
+                className="inline-block"
+                initial={{ opacity: 0, y: 16 }}
+                animate={revealed ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              >
                 <p className="text-sm md:text-base font-semibold text-white bg-primary/90 px-4 py-2 rounded-md uppercase tracking-wider backdrop-blur-sm">
                   {title}
                 </p>
-              </div>
+              </motion.div>
               <div>
-                <MaskText className="text-2xl sm:text-4xl md:text-4xl lg:text-5xl font-bold">
+                <MaskText className={DESCRIPTION_CLASS[titleSize]}>
                   {description}
                 </MaskText>
               </div>
@@ -89,6 +111,7 @@ export const Hero = React.memo(function Hero({
       images={imageToUse as Array<{ src: string; alt: string; href?: string }>}
       title={title}
       description={description}
+      titleSize={titleSize}
     />
   );
 });
@@ -104,12 +127,14 @@ interface HeroCarouselProps {
   }>;
   title: string;
   description: string;
+  titleSize?: 'default' | 'display';
 }
 
 const HeroCarousel = React.memo(function HeroCarousel({
   images,
   title,
   description,
+  titleSize = 'default',
 }: HeroCarouselProps) {
   const [current, setCurrent] = useState(0);
   const [previous, setPrevious] = useState(0);
@@ -317,9 +342,7 @@ const HeroCarousel = React.memo(function HeroCarousel({
                         sizes="100vw"
                         placeholder="blur"
                         blurDataURL={getBlurDataURL()}
-                        style={{ pointerEvents: 'none' }}
-                        data-no-protection="true"
-                        draggable={false}
+                        style={{ objectPosition: 'center' }}
                       />
                     </div>
                     {/* Dark overlay */}
@@ -392,7 +415,7 @@ const HeroCarousel = React.memo(function HeroCarousel({
                 WebkitTransform: 'translateZ(0)',
               }}
             >
-              <MaskText className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold">
+              <MaskText className={DESCRIPTION_CLASS[titleSize]}>
                 {description}
               </MaskText>
             </div>

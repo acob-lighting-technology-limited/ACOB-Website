@@ -40,9 +40,33 @@ The full partner list is in `lib/data/partners-data.ts`. When adding a new partn
 - Run `npx tsc --noEmit` before committing.
 - All staged files must pass `eslint --fix` (enforced by lint-staged in pre-commit hook).
 - Do not introduce `any` types. Use narrow local interfaces.
+- Never do `npm run build` unless explicitly instructed to by the user, or if there is a prehook or explicitly stated requirement to do so.
 
 ## Commit Message Standard
 
 Format: `type: description` (lowercase, max 72 chars)
 
 Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `ci`, `build`, `revert`
+
+---
+
+## Sanity Asset & Image Standards
+
+### Rule: Sanity Image Optimization & Resolution
+
+- Do not upload raw uncompressed JPEGs or PNGs to Sanity.
+- All web uploads must be JPEGs optimized at **max 2560px width** (or height) and **80% quality** using local tools (like `sharp`) before upload.
+- Let the Next.js/Sanity CDN dynamically perform WebP/AVIF format conversions on request.
+
+### Rule: File Naming & Cross-Referencing
+
+- Name every image file using lowercase, descriptive, hyphen-separated names (e.g. `acob-village-solar-grid.jpg`).
+- The corresponding full-resolution original image must be archived in SharePoint under the exact same filename.
+
+### Rule: Alt Text is Mandatory
+
+- Always supply descriptive alternative (`alt`) text on all uploaded images. The schemas validate this; do not bypass it.
+
+### Rule: Lowercase Slugs
+
+- All page or post slugs must be entirely lowercase with hyphens only (e.g. `happy-new-month-hello-july-2026`).

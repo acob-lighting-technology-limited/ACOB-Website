@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -65,16 +64,18 @@ function FormContent({ postId }: { postId: string }) {
   };
 
   const fieldClass =
-    'bg-transparent border border-zinc-300 dark:border-white/10 focus-visible:ring-1 focus-visible:ring-primary/50 focus:border-primary/50 focus-visible:outline-none rounded-lg placeholder:text-zinc-400 transition-colors';
+    'bg-transparent border border-zinc-300 dark:border-white/10 focus-visible:ring-1 focus-visible:ring-primary/50 focus:border-primary/50 focus-visible:outline-none placeholder:text-zinc-400 transition-colors rounded-lg';
 
   return (
     <>
-      <div className="flex items-center gap-2 mb-6">
-        <h3 className="text-xl font-bold">Leave a Reply</h3>
+      <div className="mb-6 border-t-2 border-foreground pt-4">
+        <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-foreground">
+          Leave a Reply
+        </h3>
       </div>
 
       {isSuccess ? (
-        <div className="flex flex-col items-center justify-center gap-3 py-10 text-center rounded-xl border border-dashed border-primary/30 bg-primary/5">
+        <div className="flex flex-col items-center justify-center gap-3 border border-dashed border-primary/30 bg-primary/5 py-10 text-center rounded-xl">
           <CheckCircle2 className="h-10 w-10 text-primary" />
           <p className="font-semibold text-foreground">Comment received!</p>
           <p className="text-sm text-muted-foreground">
@@ -157,10 +158,8 @@ export function CommentForm({ postId, inline = false }: CommentFormProps) {
   }
 
   return (
-    <Card className="mt-8 sm:mt-12">
-      <CardContent className="p-4 sm:p-6 xl:p-8">
-        <FormContent postId={postId} />
-      </CardContent>
-    </Card>
+    <div className="mt-8 rounded-xl border border-border p-4 sm:mt-12 sm:p-6 xl:p-8">
+      <FormContent postId={postId} />
+    </div>
   );
 }
