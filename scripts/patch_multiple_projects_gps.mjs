@@ -16,6 +16,15 @@ function loadEnv(envPath) {
   return env;
 }
 
+function requireToken(env) {
+  const token = process.env.SANITY_API_TOKEN || env.SANITY_API_TOKEN;
+  if (!token) {
+    console.error('Missing SANITY_API_TOKEN. Set it in your environment or .env.local before running this script.');
+    process.exit(1);
+  }
+  return token;
+}
+
 const gpsData = {
   fagge: {
     search: "Infectious Disease Hospital",
@@ -40,7 +49,7 @@ async function run() {
     projectId: env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'x16t7huo',
     dataset: env.NEXT_PUBLIC_SANITY_DATASET || 'production',
     apiVersion: '2025-07-16',
-    token: env.SANITY_API_TOKEN || 'skAFjnxe4tjVIElvHX8JlaHGEAh1G3ayOzkF7DLivuUlAU3e5GbBeyKDbWWSJyJ8fZJ3FBpCKhpcjpQqdNfuE5hbaOrzLDa6Eurf3bUfzR23DeXbJex5XJJQ2J2PgEN63bvDXLvYJfqbhd9J0vuKqeF2Zujvo9WYnAkGWqvrhBHEOYIndCp6',
+    token: requireToken(env),
     useCdn: false,
   });
 
