@@ -7,7 +7,7 @@ try {
   const { default: sharpModule } = await import('sharp');
   sharp = sharpModule;
   console.log("sharp module loaded successfully.");
-} catch (e) {
+} catch {
   console.log("sharp module not found, falling back to simple file copy.");
 }
 

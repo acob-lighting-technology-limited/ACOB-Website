@@ -49,15 +49,12 @@ async function run() {
   });
 
   console.log("--- Projects grouped by Image Asset Reference ---");
-  let placeholderCount = 0;
-  
   for (const [ref, list] of Object.entries(imageGroups)) {
     if (list.length > 1 && ref !== 'no-image') {
       console.log(`\nPlaceholder Reference: ${ref} (Shared by ${list.length} projects):`);
       list.forEach(p => {
         console.log(` - ${p.title} (${p.categories?.join(', ') || 'No category'})`);
       });
-      placeholderCount += list.length;
     }
   }
 

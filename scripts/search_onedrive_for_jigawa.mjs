@@ -11,7 +11,7 @@ function search(dir) {
       let stat;
       try {
         stat = fs.statSync(fullPath);
-      } catch (e) {
+      } catch {
         continue;
       }
       if (stat.isDirectory()) {
@@ -26,7 +26,7 @@ function search(dir) {
         }
       }
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
 }
