@@ -39,7 +39,7 @@ export async function generateMetadata({
       authors: [
         typeof post.author === 'string'
           ? post.author
-          : (post.author as any)?.name || 'ACOB Lighting',
+          : (post.author as { name?: string })?.name || 'ACOB Lighting',
       ],
       images: [
         {

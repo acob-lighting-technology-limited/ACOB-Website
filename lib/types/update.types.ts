@@ -5,7 +5,7 @@
  */
 
 import type { PortableTextBlock } from '@portabletext/types';
-import type { SanitySlug } from './sanity.types';
+import type { SanitySlug, SanityImage } from './sanity.types';
 
 // ============================================================================
 // TAXONOMY TYPES
@@ -34,7 +34,7 @@ export interface Tag {
 export interface SEOMetadata {
   metaTitle?: string;
   metaDescription?: string;
-  shareImage?: any;
+  shareImage?: SanityImage | unknown;
 }
 
 // ============================================================================
@@ -102,10 +102,10 @@ export interface BlogPost {
     /** Author name */
     name: string;
     /** Author image */
-    image?: any;
+    image?: SanityImage | unknown;
   };
   /** Main post image */
-  mainImage?: any;
+  mainImage?: SanityImage | unknown;
   /** Post categories */
   categories: string[];
   /** Creation timestamp */
