@@ -191,6 +191,9 @@ export default [
         __filename: 'readonly',
       },
     },
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
   },
   {
     // Test files configuration
