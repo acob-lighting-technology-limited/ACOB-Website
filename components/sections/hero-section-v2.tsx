@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -63,6 +64,13 @@ export const HeroSectionV2 = React.memo(function HeroSectionV2({
   const [current, setCurrent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const imageRefsMap = React.useRef<Map<number, HTMLDivElement>>(new Map());
+  const heroRef = useRef<HTMLElement>(null);
+  // Same slow-exit parallax as the shared Hero component (components/ui/hero.tsx).
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+  const imageY = useTransform(scrollYProgress, [0, 1], ['0%', '35%']);
 
   // Auto-advance slides
   useEffect(() => {
@@ -112,9 +120,12 @@ export const HeroSectionV2 = React.memo(function HeroSectionV2({
   }, []);
 
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-black">
+    <section
+      ref={heroRef}
+      className="relative h-screen w-full overflow-hidden bg-black"
+    >
       {/* Background Images with Ken Burns Effect */}
-      <div className="absolute inset-0 bg-black">
+      <motion.div className="absolute inset-0 bg-black" style={{ y: imageY }}>
         {allSlides.map((slide, index) => (
           <div
             key={slide.id}
@@ -161,7 +172,7 @@ export const HeroSectionV2 = React.memo(function HeroSectionV2({
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
           </div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Content */}
       <div

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { MaskText } from '../animations/MaskText';
 import { useSiteReveal } from '@/components/loader/site-reveal-provider';
@@ -44,6 +44,18 @@ export const Hero = React.memo(function Hero({
   titleSize = 'default',
 }: HeroProps) {
   const { revealed } = useSiteReveal();
+  const heroRef = useRef<HTMLDivElement>(null);
+  // Slow-exit parallax: as the Hero scrolls from fully in view to fully
+  // scrolled past, the image only travels a small fraction of that distance
+  // instead of 100% — so it visually lags behind the rest of the page as it
+  // leaves, without pinning the Hero itself (no sticky, no stacking-order
+  // issues to fight). Kept subtle on purpose — it should read as a bit of
+  // polish, not as an obvious "sticky" gimmick.
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+  const imageY = useTransform(scrollYProgress, [0, 1], ['0%', '35%']);
 
   // Use default image if not provided
   const imageToUse = image || DEFAULT_HERO_IMAGE;
@@ -60,10 +72,16 @@ export const Hero = React.memo(function Hero({
     }[imagePosition];
 
     return (
-      <div className="relative w-full h-[calc(50vh+6rem)] md:h-[calc(45vh+6rem)] lg:h-[calc(60vh+6rem)] overflow-hidden">
+      <div
+        ref={heroRef}
+        className="relative w-full h-[calc(50vh+6rem)] md:h-[calc(45vh+6rem)] lg:h-[calc(60vh+6rem)] overflow-hidden"
+      >
         {/* Background Image */}
         <div className="absolute inset-0 bg-black">
-          <div className="absolute inset-0 overflow-hidden">
+          <motion.div
+            className="absolute inset-0 overflow-hidden"
+            style={{ y: imageY }}
+          >
             <Image
               src={imageToUse}
               alt={title || description || 'Hero image'}
@@ -75,7 +93,7 @@ export const Hero = React.memo(function Hero({
               placeholder="blur"
               blurDataURL={getBlurDataURL()}
             />
-          </div>
+          </motion.div>
           <div className="absolute inset-0 bg-black/60" />
         </div>
 
@@ -140,6 +158,13 @@ const HeroCarousel = React.memo(function HeroCarousel({
   const [previous, setPrevious] = useState(0);
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
+  const heroRef = useRef<HTMLDivElement>(null);
+  // Same slow-exit parallax as the static Hero — see comment there.
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  });
+  const imageY = useTransform(scrollYProgress, [0, 1], ['0%', '35%']);
   const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null);
   const imageRefsMap = useRef<Map<number, HTMLDivElement>>(new Map());
   const hasSwiped = useRef<boolean>(false);
@@ -271,13 +296,14 @@ const HeroCarousel = React.memo(function HeroCarousel({
 
   return (
     <div
+      ref={heroRef}
       className="relative w-full overflow-hidden touch-pan-y h-[calc(50vh+6rem)] md:h-[calc(45vh+6rem)] lg:h-[calc(60vh+6rem)]"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {/* Background Images with seamless carousel transition */}
-      <div className="absolute inset-0 bg-black">
+      <motion.div className="absolute inset-0 bg-black" style={{ y: imageY }}>
         {slides.map((slide, index) => {
           let position = 'translate-x-full'; // Default: off-screen right
           let zIndex = 'z-0';
@@ -385,7 +411,7 @@ const HeroCarousel = React.memo(function HeroCarousel({
             </div>
           );
         })}
-      </div>
+      </motion.div>
 
       {/* Content Overlay - Title and Description */}
       <div
