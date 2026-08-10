@@ -4,6 +4,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { Container } from '@/components/ui/container';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselDots,
+  CarouselItem,
+} from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
 import { FadeIn } from '@/components/animations/FadeIn';
 import type { UpdatePost } from '@/lib/types';
@@ -59,63 +65,72 @@ export function UpdatesSection({ posts }: UpdatesSectionProps) {
           </div>
         </FadeIn>
 
-        {/* Card grid — swipeable on mobile, static grid from sm up */}
-        <div className="hide-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-[7.5%] pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
-          {latestPosts.map((post, index) => (
-            <FadeIn
-              key={post._id}
-              delay={index * 0.08}
-              direction="up"
-              className="h-full w-[85%] shrink-0 snap-center sm:w-auto sm:shrink"
-            >
-              <Link
-                href={`/updates/${post.slug.current}`}
-                className="group block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        {/* Swipeable on mobile; embla deactivates at sm and up, leaving a
+            static 2/3-column row. */}
+        <Carousel
+          opts={{
+            containScroll: false,
+            breakpoints: { '(min-width: 640px)': { active: false } },
+          }}
+        >
+          <CarouselContent className="-ml-4 sm:-ml-6">
+            {latestPosts.map((post, index) => (
+              <CarouselItem
+                key={post._id}
+                className="basis-[85%] pl-4 sm:basis-1/2 sm:pl-6 lg:basis-1/3"
               >
-                <article className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-500 group-hover:-translate-y-1 group-hover:border-primary/40 group-hover:shadow-lg">
-                  <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
-                    {post.featuredImage ? (
-                      <Image
-                        src={post.featuredImage}
-                        alt={post.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-muted">
-                        <span className="text-sm text-muted-foreground">
-                          No image available
+                <FadeIn delay={index * 0.08} direction="up" className="h-full">
+                  <Link
+                    href={`/updates/${post.slug.current}`}
+                    className="group block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  >
+                    <article className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-500 group-hover:-translate-y-1 group-hover:border-primary/40 group-hover:shadow-lg">
+                      <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+                        {post.featuredImage ? (
+                          <Image
+                            src={post.featuredImage}
+                            alt={post.title}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-muted">
+                            <span className="text-sm text-muted-foreground">
+                              No image available
+                            </span>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        <span className="absolute bottom-3 left-3 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-white/90">
+                          {post.category || 'News'}
                         </span>
                       </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    <span className="absolute bottom-3 left-3 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-white/90">
-                      {post.category || 'News'}
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col p-4 md:p-5">
-                    <div className="mb-2 flex items-center gap-2 text-[0.7rem] text-muted-foreground">
-                      <span>{authorName(post.author)}</span>
-                      <span>•</span>
-                      <span>{formatDate(post.publishedAt)}</span>
-                    </div>
-                    <h3 className="text-base font-extrabold tracking-tight text-foreground line-clamp-2 md:text-lg">
-                      {post.title}
-                    </h3>
-                    <p className="mt-2 flex-1 text-xs leading-relaxed text-muted-foreground line-clamp-3 md:text-sm">
-                      {post.excerpt}
-                    </p>
-                    <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-primary md:text-sm">
-                      Read more
-                      <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1 md:h-4 md:w-4" />
-                    </span>
-                  </div>
-                </article>
-              </Link>
-            </FadeIn>
-          ))}
-        </div>
+                      <div className="flex flex-1 flex-col p-4 md:p-5">
+                        <div className="mb-2 flex items-center gap-2 text-[0.7rem] text-muted-foreground">
+                          <span>{authorName(post.author)}</span>
+                          <span>•</span>
+                          <span>{formatDate(post.publishedAt)}</span>
+                        </div>
+                        <h3 className="text-base font-extrabold tracking-tight text-foreground line-clamp-2 md:text-lg">
+                          {post.title}
+                        </h3>
+                        <p className="mt-2 flex-1 text-xs leading-relaxed text-muted-foreground line-clamp-3 md:text-sm">
+                          {post.excerpt}
+                        </p>
+                        <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-primary md:text-sm">
+                          Read more
+                          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1 md:h-4 md:w-4" />
+                        </span>
+                      </div>
+                    </article>
+                  </Link>
+                </FadeIn>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselDots className="mt-6 sm:hidden" />
+        </Carousel>
 
         {/* View All */}
         <FadeIn delay={0.25}>

@@ -2,28 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { X, Briefcase, Package, Award } from 'lucide-react';
+import { X, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ANNIVERSARY_2026,
-  isAnniversaryYear2026,
-} from '@/lib/constants/anniversary';
 
 interface AnnouncementBannerProps {
   jobCount: number;
-  productCount: number;
 }
 
-export function AnnouncementBanner({
-  jobCount,
-  productCount,
-}: AnnouncementBannerProps) {
+export function AnnouncementBanner({ jobCount }: AnnouncementBannerProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const isAnniversaryYear = isAnniversaryYear2026();
-  const ANNIVERSARY_STORAGE_KEY = 'acob-anniversary-banner-dismissed';
   const JOB_STORAGE_KEY = 'acob-job-banner-dismissed';
-  const PRODUCT_STORAGE_KEY = 'acob-product-banner-dismissed';
 
   // Build announcements array based on what's available
   const announcements: Array<{
@@ -36,18 +25,6 @@ export function AnnouncementBanner({
     storageKey: string;
   }> = [];
 
-  if (isAnniversaryYear) {
-    announcements.push({
-      id: 'anniversary',
-      icon: Award,
-      message: ANNIVERSARY_2026.title,
-      details: `${ANNIVERSARY_2026.period} • ${ANNIVERSARY_2026.tagline}`,
-      link: '/journey',
-      linkText: 'Explore the journey →',
-      storageKey: ANNIVERSARY_STORAGE_KEY,
-    });
-  }
-
   if (jobCount > 0) {
     announcements.push({
       id: 'jobs',
@@ -57,18 +34,6 @@ export function AnnouncementBanner({
       link: '/contact/careers',
       linkText: 'View openings →',
       storageKey: JOB_STORAGE_KEY,
-    });
-  }
-
-  if (productCount > 0) {
-    announcements.push({
-      id: 'products',
-      icon: Package,
-      message: 'New products available!',
-      details: `${productCount} ${productCount === 1 ? 'product' : 'products'} in stock.`,
-      link: '/products',
-      linkText: 'Browse products →',
-      storageKey: PRODUCT_STORAGE_KEY,
     });
   }
 
@@ -93,7 +58,7 @@ export function AnnouncementBanner({
     if (shouldShow) {
       setIsVisible(true);
     }
-  }, [jobCount, productCount, announcements.length]);
+  }, [jobCount, announcements.length]);
 
   // Rotate through announcements every 5 seconds if there are multiple
   useEffect(() => {
@@ -168,26 +133,7 @@ export function AnnouncementBanner({
                     transition={{ duration: 0.3 }}
                     className="flex items-center gap-3 flex-1 min-w-0"
                   >
-                    {currentAnnouncement.id === 'products' ? (
-                      <motion.div
-                        animate={{
-                          filter: [
-                            'drop-shadow(0 0 4px rgba(255,255,255,0.6))',
-                            'drop-shadow(0 0 12px rgba(255,255,255,1)) drop-shadow(0 0 16px rgba(255,255,255,0.8)) drop-shadow(0 0 20px rgba(255,255,255,0.6))',
-                            'drop-shadow(0 0 4px rgba(255,255,255,0.6))',
-                          ],
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: 'easeInOut',
-                        }}
-                      >
-                        <Icon className="h-5 w-5 flex-shrink-0" />
-                      </motion.div>
-                    ) : (
-                      <Icon className="h-5 w-5 flex-shrink-0" />
-                    )}
+                    <Icon className="h-5 w-5 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">
                         {currentAnnouncement.message}{' '}

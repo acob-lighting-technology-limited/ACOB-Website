@@ -27,22 +27,24 @@ export function ScrollToTop() {
     };
   }, [pathname]);
 
+  // Depending on 'scroll' alone leaves this stale across navigations: the
+  // button lives in the shared (site) layout, which Next.js keeps mounted, so
+  // a page left scrolled past 300px hands the next page a visible button even
+  // when that page starts at the top. Re-read the real scroll position on every
+  // route change instead of waiting for a scroll event that may never come.
   useEffect(() => {
     const toggleVisibility = () => {
       // Show button when page is scrolled down 300px
-      if (window.pageYOffset > 300) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
+      setIsVisible(window.scrollY > 300);
     };
 
-    window.addEventListener('scroll', toggleVisibility);
+    toggleVisibility();
+    window.addEventListener('scroll', toggleVisibility, { passive: true });
 
     return () => {
       window.removeEventListener('scroll', toggleVisibility);
     };
-  }, []);
+  }, [pathname]);
 
   // Don't render on mobile for products slug pages
   if (shouldHide) {

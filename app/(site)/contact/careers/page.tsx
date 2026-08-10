@@ -70,99 +70,80 @@ export default async function CareersPage() {
         <div className="mt-12 grid grid-cols-1 items-start gap-10 border-t-[3px] border-foreground pt-10 lg:grid-cols-[1fr_300px] lg:gap-14 md:mt-16">
           {/* Main column */}
           <div className="space-y-14 md:space-y-20">
-            {/* Why work here */}
-            <section>
-              <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
-                Our culture
-              </span>
-              <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
-                Why work at ACOB Lighting?
-              </h2>
-
-              <div className="mt-8 border-t border-border">
-                {whyWorkItems.map(({ title, description }, index) => (
-                  <FadeIn
-                    key={title}
-                    delay={index * 0.08}
-                    className="grid grid-cols-[48px_1fr] gap-x-5 border-b border-border py-6 md:grid-cols-[72px_1fr] md:gap-x-8"
-                  >
-                    <div className="text-2xl font-extrabold leading-none tabular-nums text-primary md:text-3xl">
-                      {String(index + 1).padStart(2, '0')}
-                    </div>
-                    <div className="max-w-[62ch]">
-                      <h3 className="text-lg font-extrabold tracking-tight text-foreground md:text-xl">
-                        {title}
-                      </h3>
-                      <p className="mt-2 leading-relaxed text-muted-foreground">
-                        {description}
-                      </p>
-                    </div>
-                  </FadeIn>
-                ))}
-              </div>
-            </section>
-
             {/* Openings */}
-            <section>
-              <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
-                Opportunities
-              </span>
-              <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+            <section id="openings" className="scroll-mt-28">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                  Opportunities
+                </span>
+                {jobPostings.length > 0 && (
+                  <span className="bg-primary px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-primary-foreground">
+                    {jobPostings.length} open{' '}
+                    {jobPostings.length === 1 ? 'role' : 'roles'}
+                  </span>
+                )}
+              </div>
+              <h2 className="mt-2 text-3xl font-extrabold uppercase tracking-tight text-foreground md:text-4xl">
                 {jobPostings.length > 0
                   ? 'Current openings'
                   : 'Career opportunities'}
               </h2>
 
               {jobPostings.length > 0 ? (
-                <div className="mt-8 border-t border-border">
-                  {jobPostings.map((job: JobPosting) => (
+                <div className="mt-8 space-y-6">
+                  {jobPostings.map((job: JobPosting, index: number) => (
                     <article
                       key={job._id}
-                      className="border-b border-border py-7 md:py-8"
+                      className="group relative border-l-4 border-primary bg-muted/50 p-6 transition-colors hover:bg-muted md:p-8"
                     >
-                      <h3 className="text-xl font-extrabold tracking-tight text-foreground md:text-2xl">
-                        {job.title}
-                      </h3>
+                      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                        <span className="text-sm font-extrabold tabular-nums text-primary">
+                          {String(index + 1).padStart(2, '0')}
+                        </span>
+                        <h3 className="text-2xl font-extrabold tracking-tight text-foreground md:text-3xl">
+                          {job.title}
+                        </h3>
+                      </div>
 
-                      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
+                      <div className="mt-4 flex flex-wrap items-center gap-2">
                         {job.department && (
-                          <span className="flex items-center gap-1.5">
-                            <Briefcase className="h-4 w-4 text-primary" />
+                          <span className="flex items-center gap-1.5 border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground">
+                            <Briefcase className="h-3.5 w-3.5 text-primary" />
                             {job.department}
                           </span>
                         )}
                         {job.location && (
-                          <span className="flex items-center gap-1.5">
-                            <LocationIcon className="h-4 w-4 text-primary" />
+                          <span className="flex items-center gap-1.5 border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground">
+                            <LocationIcon className="h-3.5 w-3.5 text-primary" />
                             {job.location}
                           </span>
                         )}
                         {job.employmentType && (
-                          <span className="flex items-center gap-1.5">
-                            <Calendar className="h-4 w-4 text-primary" />
+                          <span className="flex items-center gap-1.5 border border-border bg-background px-3 py-1.5 text-xs font-semibold capitalize text-foreground">
+                            <Briefcase className="h-3.5 w-3.5 text-primary" />
                             {job.employmentType}
                           </span>
                         )}
                       </div>
 
                       {job.description && (
-                        <p className="mt-4 max-w-[64ch] leading-relaxed text-muted-foreground">
+                        <p className="mt-5 max-w-[64ch] leading-relaxed text-muted-foreground">
                           {job.description}
                         </p>
                       )}
 
-                      <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+                      <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
                         <Link
                           href={`/contact/careers/${job.slug.current}`}
-                          className="group inline-flex items-center gap-2 border-b-2 border-foreground pb-1 text-sm font-bold text-foreground transition-all hover:gap-3 hover:border-primary hover:text-primary"
+                          className="inline-flex items-center gap-2 bg-foreground px-5 py-3 text-sm font-bold uppercase tracking-wide text-background transition-colors hover:bg-primary hover:text-primary-foreground"
                         >
                           View details
-                          <ArrowRight className="h-4 w-4" />
+                          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                         </Link>
                         {job.applicationDeadline && (
-                          <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                            <Calendar className="h-4 w-4" />
-                            Deadline:{' '}
+                          <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                            <Calendar className="h-4 w-4 text-primary" />
+                            Apply by{' '}
                             {new Date(
                               job.applicationDeadline,
                             ).toLocaleDateString()}
@@ -193,6 +174,38 @@ export default async function CareersPage() {
                   </Link>
                 </div>
               )}
+            </section>
+
+            {/* Why work here */}
+            <section>
+              <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                Our culture
+              </span>
+              <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+                Why work at ACOB Lighting?
+              </h2>
+
+              <div className="mt-8 border-t border-border">
+                {whyWorkItems.map(({ title, description }, index) => (
+                  <FadeIn
+                    key={title}
+                    delay={index * 0.08}
+                    className="grid grid-cols-[48px_1fr] gap-x-5 border-b border-border py-6 md:grid-cols-[72px_1fr] md:gap-x-8"
+                  >
+                    <div className="text-2xl font-extrabold leading-none tabular-nums text-primary md:text-3xl">
+                      {String(index + 1).padStart(2, '0')}
+                    </div>
+                    <div className="max-w-[62ch]">
+                      <h3 className="text-lg font-extrabold tracking-tight text-foreground md:text-xl">
+                        {title}
+                      </h3>
+                      <p className="mt-2 leading-relaxed text-muted-foreground">
+                        {description}
+                      </p>
+                    </div>
+                  </FadeIn>
+                ))}
+              </div>
             </section>
           </div>
 
