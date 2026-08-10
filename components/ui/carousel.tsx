@@ -238,11 +238,66 @@ function CarouselNext({
   );
 }
 
+function CarouselDots({ className, ...props }: React.ComponentProps<'div'>) {
+  const { api } = useCarousel();
+  const [snaps, setSnaps] = React.useState<number[]>([]);
+  const [selected, setSelected] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!api) {
+      return;
+    }
+    const sync = () => {
+      setSnaps(api.scrollSnapList());
+      setSelected(api.selectedScrollSnap());
+    };
+    sync();
+    api.on('select', sync);
+    api.on('reInit', sync);
+    return () => {
+      api.off('select', sync);
+      api.off('reInit', sync);
+    };
+  }, [api]);
+
+  if (snaps.length <= 1) {
+    return null;
+  }
+
+  return (
+    <div
+      className={cn('flex items-center justify-center', className)}
+      data-slot="carousel-dots"
+      {...props}
+    >
+      {snaps.map((_, index) => (
+        <button
+          key={index}
+          type="button"
+          onClick={() => api?.scrollTo(index)}
+          aria-label={`Go to slide ${index + 1}`}
+          aria-current={index === selected}
+          // Dot is 8px tall but the button is a 32px touch target.
+          className="flex h-8 w-6 items-center justify-center"
+        >
+          <span
+            className={cn(
+              'h-2 rounded-full transition-all duration-300',
+              index === selected ? 'w-6 bg-primary' : 'w-2 bg-border',
+            )}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export {
   type CarouselApi,
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselDots,
   CarouselPrevious,
   CarouselNext,
 };

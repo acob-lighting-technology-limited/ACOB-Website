@@ -8,7 +8,7 @@ import { SkipNavigation } from '@/components/ui/skip-navigation';
 import { AnnouncementBanner } from '@/components/ui/announcement-banner';
 import { JourneyProvider } from '@/components/features/journey/journey-provider';
 import SiteRevealProvider from '@/components/loader/site-reveal-provider';
-import { getJobPostings, getProducts } from '@/sanity/lib/queries';
+import { getJobPostings } from '@/sanity/lib/queries';
 
 export const revalidate = 300;
 
@@ -17,10 +17,7 @@ export default async function SiteLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [jobPostings, products] = await Promise.all([
-    getJobPostings(),
-    getProducts(),
-  ]);
+  const jobPostings = await getJobPostings();
 
   // Journey overlay mounts here so any /journey link opens it in place.
   return (
@@ -28,10 +25,7 @@ export default async function SiteLayout({
       <SiteRevealProvider>
         <div className="flex min-h-screen flex-col w-full bg-background transition-colors duration-500 selection:bg-primary selection:text-primary-foreground">
           <SkipNavigation />
-          <AnnouncementBanner
-            jobCount={jobPostings.length}
-            productCount={products.length}
-          />
+          <AnnouncementBanner jobCount={jobPostings.length} />
           <Header />
           <main id="main-content" className="flex-1 border-b border-b-muted">
             {children}

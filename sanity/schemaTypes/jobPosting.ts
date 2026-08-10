@@ -44,11 +44,33 @@ export default {
       validation: (Rule: any) => Rule.required(),
     },
     {
+      name: 'keyDuties',
+      title: 'Key Duties & Responsibilities',
+      type: 'array',
+      of: [{ type: 'string' }],
+      description: 'List of key duties and responsibilities',
+    },
+    {
       name: 'requirements',
       title: 'Requirements',
       type: 'array',
       of: [{ type: 'string' }],
       description: 'List of requirements for the position',
+    },
+    {
+      name: 'skills',
+      title: 'Skills & Competencies',
+      type: 'array',
+      of: [{ type: 'string' }],
+      description: 'List of skills and competencies',
+    },
+    {
+      name: 'howToApply',
+      title: 'How to Apply',
+      type: 'text',
+      rows: 3,
+      description:
+        'Specific application instructions if they differ from the default email',
     },
     {
       name: 'applicationDeadline',
@@ -68,6 +90,25 @@ export default {
       title: 'Published At',
       type: 'datetime',
       initialValue: () => new Date().toISOString(),
+    },
+    {
+      name: 'coverImage',
+      title: 'Cover Image',
+      type: 'image',
+      options: {
+        hotspot: true,
+      },
+      fields: [
+        {
+          name: 'alt',
+          type: 'string',
+          title: 'Alternative text',
+          validation: (Rule: any) =>
+            Rule.required().error(
+              'Alt text is required for SEO and accessibility.',
+            ),
+        },
+      ],
     },
     {
       name: 'slug',

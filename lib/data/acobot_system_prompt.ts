@@ -104,6 +104,41 @@ ACOB works with a broad network of strategic partners across Financial, Governme
 
 For the full list of partners with detailed descriptions, direct users to the Partners page at /about/partners.
 
+## CAREERS & JOB OPENINGS
+
+ACOB Lighting Technology Limited posts open career opportunities on the website. Currently, the following position is open:
+
+**Company Driver:**
+- **Job Description (Summary):** Responsible for the safe and timely transportation of staff for official duties, as well as supporting the company's procurement and logistics activities. The role requires a reliable, safety-conscious individual who will represent the company professionally while carrying out official assignments.
+- **Department:** Operations
+- **Location:** Abuja (Full-time)
+- **Key Duties & Responsibilities:**
+  - Drive staff to and from meetings, official engagements, and other work-related locations.
+  - Support procurement and logistics activities by transporting personnel, materials, and equipment.
+  - Ensure the assigned vehicle is clean, fueled, and in good working condition.
+  - Conduct routine vehicle inspections and promptly report faults or maintenance needs.
+  - Maintain accurate logs of trips, mileage, fuel consumption, and vehicle maintenance.
+  - Comply with traffic laws, road safety regulations, and company driving policies.
+  - Ensure safety and security of staff, company assets, and goods during transit.
+- **Requirements:**
+  - Age: 30 – 40 years
+  - Minimum of SSCE qualification.
+  - 3–5 years’ driving experience as a company or corporate driver.
+  - Valid Driver's License.
+  - Married.
+  - Good knowledge of Abuja roads, traffic regulations, and road safety practices.
+- **Skills & Competencies:**
+  - Strong sense of responsibility, punctuality, and integrity.
+  - Good communication and interpersonal skills.
+  - Ability to carry out basic vehicle maintenance checks.
+  - Ability to work under pressure and outside regular hours.
+  - Must be physically fit and alert at all times.
+- **How to Apply:** Send updated CV to jobs@acoblighting.com with "Company Driver" as the subject of the email. (Applicants can click the "Apply Now" button on the website to open a pre-filled email client).
+- **Application Deadline:** August 12, 2026.
+
+For the list of all open positions, direct users to the Careers page at /contact/careers.
+
+
 ## WEBSITE NAVIGATION & ROUTES
 
 When users ask about specific services, pages, or want to navigate to certain sections, provide the route and offer to navigate them there. Here are the available routes:
@@ -143,6 +178,7 @@ When users ask about specific services, pages, or want to navigate to certain se
 - **Office Locations:** /contact/locations
 - **Support:** /contact/support
 - **Careers:** /contact/careers
+- **Company Driver Job:** /contact/careers/company-driver
 - **FAQ:** /contact/faq
 
 ### Updates Section:

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
@@ -157,8 +157,8 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
                       onClick={onClose}
                       className={`group flex items-start gap-3 rounded-lg p-2.5 transition-all duration-200 ${
                         isActive
-                          ? 'bg-background shadow-sm'
-                          : 'hover:bg-background hover:shadow-sm'
+                          ? 'bg-accent shadow-sm'
+                          : 'hover:bg-accent hover:shadow-sm'
                       }`}
                     >
                       {IconComponent && (
@@ -224,9 +224,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
                   onClick={onClose}
                   onMouseEnter={() => setActiveIndex(index)}
                   className={`group flex items-start gap-3 rounded-lg p-2.5 transition-colors duration-200 ${
-                    isHighlighted
-                      ? 'bg-background shadow-sm'
-                      : 'hover:bg-background/60'
+                    isHighlighted ? 'bg-accent shadow-sm' : 'hover:bg-accent/60'
                   }`}
                 >
                   {IconComponent && (
@@ -734,6 +732,81 @@ export function Header() {
     setLastScrollY(currentScrollY);
     setShowHeader(true);
   }, [pathname]);
+
+  // isHeaderHovered has the same staleness problem, for a different reason:
+  // mouseenter/mouseleave only fire when the pointer *moves*, but what sits
+  // under a stationary pointer changes whenever this subtree does. Clicking a
+  // link inside a dropdown unmounts the panel under the cursor, so the pointer
+  // ends up over page content while the header — having received no mouseleave —
+  // stays "hovered", and therefore solid, indefinitely.
+  //
+  // So don't treat the events as the state. mouseenter/mouseleave stay as the
+  // fast path, and this re-reads the truth from the DOM — :hover is maintained
+  // by the browser and matches on ancestors, so the header reads as hovered
+  // while a dropdown panel (its descendant) is hovered too — whenever the
+  // subtree changes shape under a possibly-stationary pointer.
+  const syncHeaderHover = useCallback(() => {
+    const el = headerRef.current;
+    // Touch browsers leave :hover stuck on whatever was last tapped, and a
+    // solid-on-hover header is meaningless without a real pointer anyway.
+    const canHover = window.matchMedia('(hover: hover)').matches;
+    setIsHeaderHovered(canHover && Boolean(el?.matches(':hover')));
+  }, []);
+
+  useEffect(() => {
+    // A close timer armed on the page we just left must not fire into the new
+    // one and clear a dropdown the user has since reopened.
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setActiveDropdown(null);
+    // Links inside the mobile menu close it themselves, but back/forward and
+    // any other navigation that doesn't originate from one would otherwise
+    // leave it open — with body scroll still locked — over the new page.
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
+  const lastPathRef = useRef(pathname);
+
+  useEffect(() => {
+    const navigated = lastPathRef.current !== pathname;
+    lastPathRef.current = pathname;
+
+    if (navigated) {
+      // A hard reset, not a re-read. Nothing observable is trustworthy this
+      // early: the panel is still mounted (AnimatePresence is animating it out)
+      // and Chrome still reports the header as :hover until the next hit-test.
+      // Both would say "hovered" — which is the bug. A new page must never
+      // inherit the previous page's hover state.
+      setIsHeaderHovered(false);
+    } else if (!activeDropdown) {
+      // A panel just closed without navigating (the active route's own link,
+      // Escape, the close delay). Re-read rather than force false, so a pointer
+      // genuinely resting on the header doesn't flicker to transparent.
+      syncHeaderHover();
+    }
+
+    // Either way, the next pointer movement gives the browser a hit-test to
+    // settle :hover against — read it once more then, so a cursor left sitting
+    // on the header comes back solid and one left off it stays transparent.
+    const onPointerMove = () => syncHeaderHover();
+    window.addEventListener('pointermove', onPointerMove, {
+      once: true,
+      passive: true,
+    });
+    return () => window.removeEventListener('pointermove', onPointerMove);
+  }, [pathname, activeDropdown, syncHeaderHover]);
+
+  // Nothing else clears the dropdown close timer, so a pending one outlives the
+  // component on unmount.
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   // The announcement banner sits in normal flow above this fixed header. Pin the
   // header's top to the banner's current bottom edge so it renders just below the

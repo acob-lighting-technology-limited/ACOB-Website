@@ -18,11 +18,21 @@ interface JobPosting {
   location: string;
   employmentType: string;
   description: string;
+  keyDuties?: string[];
   requirements: string[];
+  skills?: string[];
+  howToApply?: string;
   applicationDeadline: string;
   publishedAt: string;
   slug: {
     current: string;
+  };
+  coverImage?: {
+    asset: {
+      _id: string;
+      url: string;
+    };
+    alt: string;
   };
 }
 
@@ -50,10 +60,20 @@ export async function getJobPostings(): Promise<JobPosting[]> {
         location,
         employmentType,
         description,
+        keyDuties,
         requirements,
+        skills,
+        howToApply,
         applicationDeadline,
         publishedAt,
-        slug
+        slug,
+        coverImage {
+          asset-> {
+            _id,
+            url
+          },
+          alt
+        }
       }
     `);
     return jobs;
@@ -91,10 +111,20 @@ export async function getJobPosting(slug: string): Promise<JobPosting | null> {
         location,
         employmentType,
         description,
+        keyDuties,
         requirements,
+        skills,
+        howToApply,
         applicationDeadline,
         publishedAt,
-        slug
+        slug,
+        coverImage {
+          asset-> {
+            _id,
+            url
+          },
+          alt
+        }
       }
     `,
       { slug },

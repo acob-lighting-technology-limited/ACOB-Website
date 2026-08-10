@@ -14,12 +14,32 @@ import {
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getJobPosting } from '@/sanity/lib/queries';
+import { urlFor } from '@/sanity/lib/image';
 import { CONTACT_INFO } from '@/lib/constants/app.constants';
 
 interface JobPostingPageProps {
   params: Promise<{
     slug: string;
   }>;
+}
+
+function formatHowToApplyText(text: string, title: string) {
+  const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/g;
+  const parts = text.split(emailRegex);
+  return parts.map((part, index) => {
+    if (emailRegex.test(part)) {
+      return (
+        <a
+          key={index}
+          href={`mailto:${part}?subject=Application%20for%20${encodeURIComponent(title)}`}
+          className="font-semibold text-primary hover:underline"
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
 }
 
 export default async function JobPostingPage({ params }: JobPostingPageProps) {
@@ -43,7 +63,11 @@ export default async function JobPostingPage({ params }: JobPostingPageProps) {
       <Hero
         title="Careers"
         description={job.title}
-        image="/images/contact/careers.webp?height=400&width=1200"
+        image={
+          job.coverImage
+            ? urlFor(job.coverImage).width(1200).auto('format').url()
+            : '/images/contact/careers.webp?height=400&width=1200'
+        }
         titleSize="display"
       />
 
@@ -88,6 +112,33 @@ export default async function JobPostingPage({ params }: JobPostingPageProps) {
               </p>
             </div>
 
+            {/* Key Duties & Responsibilities */}
+            {job.keyDuties && job.keyDuties.length > 0 && (
+              <div className="mt-12">
+                <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                  The Role
+                </span>
+                <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+                  Key Duties & Responsibilities
+                </h2>
+                <div className="mt-6 border-t border-border">
+                  {job.keyDuties.map((duty: string, index: number) => (
+                    <div
+                      key={index}
+                      className="grid grid-cols-[36px_1fr] gap-x-4 border-b border-border py-4"
+                    >
+                      <span className="text-sm font-extrabold tabular-nums text-primary">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <p className="max-w-[64ch] leading-relaxed text-muted-foreground">
+                        {duty}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Requirements */}
             {job.requirements && job.requirements.length > 0 && (
               <div className="mt-12">
@@ -117,18 +168,59 @@ export default async function JobPostingPage({ params }: JobPostingPageProps) {
               </div>
             )}
 
-            {/* Deadline */}
-            {job.applicationDeadline && (
-              <div className="mt-10 flex items-center gap-2 border-t border-border pt-6 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4 text-primary" />
-                <span>
-                  <strong className="font-semibold text-foreground">
-                    Application deadline:
-                  </strong>{' '}
-                  {new Date(job.applicationDeadline).toLocaleDateString()}
+            {/* Skills & Competencies */}
+            {job.skills && job.skills.length > 0 && (
+              <div className="mt-12">
+                <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                  Professional Attributes
                 </span>
+                <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+                  Skills & Competencies
+                </h2>
+                <div className="mt-6 border-t border-border">
+                  {job.skills.map((skill: string, index: number) => (
+                    <div
+                      key={index}
+                      className="grid grid-cols-[36px_1fr] gap-x-4 border-b border-border py-4"
+                    >
+                      <span className="text-sm font-extrabold tabular-nums text-primary">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <p className="max-w-[64ch] leading-relaxed text-muted-foreground">
+                        {skill}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
+
+            {/* How to Apply */}
+            <div className="mt-12 border-t border-border pt-8">
+              <span className="text-[0.72rem] font-bold uppercase tracking-[0.28em] text-primary">
+                Application Instructions
+              </span>
+              <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
+                How to Apply
+              </h2>
+              <p className="mt-4 max-w-[68ch] leading-relaxed text-muted-foreground">
+                {job.howToApply ? (
+                  formatHowToApplyText(job.howToApply, job.title)
+                ) : (
+                  <>
+                    Interested and qualified candidates should send their
+                    updated CV to{' '}
+                    <a
+                      href={`mailto:jobs@acoblighting.com?subject=Application%20for%20${encodeURIComponent(job.title)}`}
+                      className="font-semibold text-primary hover:underline"
+                    >
+                      jobs@acoblighting.com
+                    </a>{' '}
+                    with the job title as the subject of the email.
+                  </>
+                )}
+              </p>
+            </div>
 
             {/* Actions */}
             <div className="mt-10 flex flex-col gap-4 border-t border-border pt-8 sm:flex-row">
@@ -138,12 +230,15 @@ export default async function JobPostingPage({ params }: JobPostingPageProps) {
                   Back to Careers
                 </Button>
               </Link>
-              <Link href={`/contact/careers/${slug}/apply`}>
-                <Button className="group w-full sm:w-auto">
+              <a
+                href={`mailto:jobs@acoblighting.com?subject=Application%20for%20${encodeURIComponent(job.title)}`}
+                className="w-full sm:w-auto"
+              >
+                <Button className="group w-full">
                   Apply Now
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Button>
-              </Link>
+              </a>
             </div>
           </div>
 
@@ -246,6 +341,16 @@ export default async function JobPostingPage({ params }: JobPostingPageProps) {
                     </span>
                     <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">
                       {new Date(job.publishedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
+                {job.applicationDeadline && (
+                  <div className="py-3.5">
+                    <span className="text-[0.66rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                      Deadline
+                    </span>
+                    <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">
+                      {new Date(job.applicationDeadline).toLocaleDateString()}
                     </p>
                   </div>
                 )}
