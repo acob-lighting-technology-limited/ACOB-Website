@@ -23,6 +23,7 @@ import { ShareCopy } from '@/components/updates/share-copy';
 import { CommentForm } from '@/components/updates/comment-form';
 import { Hero } from '@/components/ui/hero';
 import { UpdateContent } from './update-content';
+import { formatDate } from '@/lib/utils/date';
 
 interface UpdatePageProps {
   params: Promise<{
@@ -109,7 +110,7 @@ export default async function UpdatePage({ params }: UpdatePageProps) {
           </span>
           <span className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-primary" />
-            {new Date(post.publishedAt).toLocaleDateString()}
+            {formatDate(post.publishedAt)}
           </span>
           {post.category && (
             <span className="text-[0.7rem] font-bold uppercase tracking-[0.18em] text-primary">

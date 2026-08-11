@@ -16,6 +16,7 @@ import { notFound } from 'next/navigation';
 import { getJobPosting } from '@/sanity/lib/queries';
 import { urlFor } from '@/sanity/lib/image';
 import { CONTACT_INFO } from '@/lib/constants/app.constants';
+import { formatDate } from '@/lib/utils/date';
 
 interface JobPostingPageProps {
   params: Promise<{
@@ -340,7 +341,7 @@ export default async function JobPostingPage({ params }: JobPostingPageProps) {
                       Posted
                     </span>
                     <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">
-                      {new Date(job.publishedAt).toLocaleDateString()}
+                      {formatDate(job.publishedAt)}
                     </p>
                   </div>
                 )}
@@ -350,7 +351,7 @@ export default async function JobPostingPage({ params }: JobPostingPageProps) {
                       Deadline
                     </span>
                     <p className="mt-1 text-sm font-semibold tabular-nums text-foreground">
-                      {new Date(job.applicationDeadline).toLocaleDateString()}
+                      {formatDate(job.applicationDeadline)}
                     </p>
                   </div>
                 )}

@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { whyWorkItems } from '@/lib/data/contact-data';
 import { getJobPostings } from '@/sanity/lib/queries';
 import { FadeIn } from '@/components/animations/FadeIn';
+import { formatDate } from '@/lib/utils/date';
 import {
   QuickContact,
   MoreContactOptions,
@@ -143,10 +144,7 @@ export default async function CareersPage() {
                         {job.applicationDeadline && (
                           <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
                             <Calendar className="h-4 w-4 text-primary" />
-                            Apply by{' '}
-                            {new Date(
-                              job.applicationDeadline,
-                            ).toLocaleDateString()}
+                            Apply by {formatDate(job.applicationDeadline)}
                           </span>
                         )}
                       </div>
