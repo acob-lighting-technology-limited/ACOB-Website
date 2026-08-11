@@ -106,7 +106,7 @@ For the full list of partners with detailed descriptions, direct users to the Pa
 
 ## CAREERS & JOB OPENINGS
 
-ACOB Lighting Technology Limited posts open career opportunities on the website. Currently, the following position is open:
+ACOB Lighting Technology Limited posts open career opportunities on the website. Currently, the following positions are open:
 
 **Company Driver:**
 - **Job Description (Summary):** Responsible for the safe and timely transportation of staff for official duties, as well as supporting the company's procurement and logistics activities. The role requires a reliable, safety-conscious individual who will represent the company professionally while carrying out official assignments.
@@ -135,6 +135,43 @@ ACOB Lighting Technology Limited posts open career opportunities on the website.
   - Must be physically fit and alert at all times.
 - **How to Apply:** Send updated CV to jobs@acoblighting.com with "Company Driver" as the subject of the email. (Applicants can click the "Apply Now" button on the website to open a pre-filled email client).
 - **Application Deadline:** August 12, 2026.
+
+**Business Development Officer:**
+- **Job Description (Summary):** Responsible for identifying and developing business opportunities that drive the growth of ACOB's renewable energy portfolio, especially in Productive Use of Energy (PUE).
+- **Department:** Business Development
+- **Location:** Abuja (Full-time)
+- **Key Duties & Responsibilities:**
+  - Identify, develop, and pursue new business opportunities within the renewable energy sector.
+  - Develop and implement business development strategies to drive revenue growth.
+  - Build and maintain strategic relationships with clients, partners, and industry stakeholders.
+  - Identify funding opportunities, strategic partnerships, and investment prospects.
+  - Conduct market research, competitor analysis, and feasibility studies.
+  - Develop business proposals and bid documents for prospective projects.
+- **Requirements:**
+  - BSc in Business Administration, Economics, Marketing, Renewable Energy, or related discipline.
+  - Minimum of 3–5 years relevant experience in business development, with experience in Productive Use of Energy (PUE) business management.
+  - Experience working in the Renewable Energy sector is highly desirable.
+- **How to Apply:** Send updated CV to jobs@acoblighting.com with "Business Development Officer" as the subject of the email.
+- **Application Deadline:** August 13, 2026.
+
+**Project Officer / Supervisor:**
+- **Job Description (Summary):** Responsible for managing and coordinating large scale Solar Electrification projects from planning through implementation and post-deployment support.
+- **Department:** Engineering & Operations
+- **Location:** Abuja (Full-time)
+- **Key Duties & Responsibilities:**
+  - Plan, coordinate, and supervise small, medium & large scale solar mini-grids and renewable energy related projects from inception to completion.
+  - Conduct in-depth project specific assessments and develop high-level technical reports.
+  - Develop and implement project work plans, schedules, and budgets.
+  - Conduct advance site mapping & desk research using tools like VIDA, SE4ALL, Google-Earth.
+  - Track project progress and prepare periodic status reports to Line Manager.
+  - Support Project development design preparations & applications using Odyssey, Homer & simulation tools.
+- **Requirements:**
+  - Bachelor’s Degree (BEng) in Engineering (Electrical, Engineering Management, or related field).
+  - Experience in Renewable Energy projects and mini-grid development or deployment is highly desirable.
+  - Minimum of 3–5 years' relevant experience in project management, project supervision, or renewable energy project implementation.
+  - Certification in COREN MGD (Mini-Grid Design) is an added advantage.
+- **How to Apply:** Send updated CV to jobs@acoblighting.com with "Project Officer/Supervisor" as the subject of the email.
+- **Application Deadline:** August 13, 2026.
 
 For the list of all open positions, direct users to the Careers page at /contact/careers.
 
