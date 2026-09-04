@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export async function GET() {
-  redirect('https://premium21.web-hosting.com:2096');
+  redirect('https://webmail-p21.web-hosting.com/');
 }
