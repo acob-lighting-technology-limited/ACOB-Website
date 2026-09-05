@@ -139,12 +139,26 @@ export default {
       department: 'department',
       location: 'location',
       isActive: 'isActive',
+      applicationDeadline: 'applicationDeadline',
     },
     prepare(selection: any) {
-      const { title, department, location, isActive } = selection;
+      const { title, department, location, isActive, applicationDeadline } =
+        selection;
+      const isExpired =
+        applicationDeadline &&
+        new Date(`${applicationDeadline.slice(0, 10)}T23:59:59Z`).getTime() <
+          Date.now();
+
+      let statusBadge = '• Active';
+      if (!isActive) {
+        statusBadge = '• Inactive';
+      } else if (isExpired) {
+        statusBadge = `• Expired (${applicationDeadline})`;
+      }
+
       return {
         title: title,
-        subtitle: `${department || 'No Department'} • ${location || 'No Location'} ${!isActive ? '• Inactive' : ''}`,
+        subtitle: `${department || 'No Department'} • ${location || 'No Location'} ${statusBadge}`,
       };
     },
   },

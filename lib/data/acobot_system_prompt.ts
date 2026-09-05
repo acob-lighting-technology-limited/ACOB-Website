@@ -106,75 +106,12 @@ For the full list of partners with detailed descriptions, direct users to the Pa
 
 ## CAREERS & JOB OPENINGS
 
-ACOB Lighting Technology Limited posts open career opportunities on the website. Currently, the following positions are open:
-
-**Company Driver:**
-- **Job Description (Summary):** Responsible for the safe and timely transportation of staff for official duties, as well as supporting the company's procurement and logistics activities. The role requires a reliable, safety-conscious individual who will represent the company professionally while carrying out official assignments.
-- **Department:** Operations
-- **Location:** Abuja (Full-time)
-- **Key Duties & Responsibilities:**
-  - Drive staff to and from meetings, official engagements, and other work-related locations.
-  - Support procurement and logistics activities by transporting personnel, materials, and equipment.
-  - Ensure the assigned vehicle is clean, fueled, and in good working condition.
-  - Conduct routine vehicle inspections and promptly report faults or maintenance needs.
-  - Maintain accurate logs of trips, mileage, fuel consumption, and vehicle maintenance.
-  - Comply with traffic laws, road safety regulations, and company driving policies.
-  - Ensure safety and security of staff, company assets, and goods during transit.
-- **Requirements:**
-  - Age: 30 – 40 years
-  - Minimum of SSCE qualification.
-  - 3–5 years’ driving experience as a company or corporate driver.
-  - Valid Driver's License.
-  - Married.
-  - Good knowledge of Abuja roads, traffic regulations, and road safety practices.
-- **Skills & Competencies:**
-  - Strong sense of responsibility, punctuality, and integrity.
-  - Good communication and interpersonal skills.
-  - Ability to carry out basic vehicle maintenance checks.
-  - Ability to work under pressure and outside regular hours.
-  - Must be physically fit and alert at all times.
-- **How to Apply:** Send updated CV to jobs@acoblighting.com with "Company Driver" as the subject of the email. (Applicants can click the "Apply Now" button on the website to open a pre-filled email client).
-- **Application Deadline:** August 12, 2026.
-
-**Business Development Officer:**
-- **Job Description (Summary):** Responsible for identifying and developing business opportunities that drive the growth of ACOB's renewable energy portfolio, especially in Productive Use of Energy (PUE).
-- **Department:** Business Development
-- **Location:** Abuja (Full-time)
-- **Key Duties & Responsibilities:**
-  - Identify, develop, and pursue new business opportunities within the renewable energy sector.
-  - Develop and implement business development strategies to drive revenue growth.
-  - Build and maintain strategic relationships with clients, partners, and industry stakeholders.
-  - Identify funding opportunities, strategic partnerships, and investment prospects.
-  - Conduct market research, competitor analysis, and feasibility studies.
-  - Develop business proposals and bid documents for prospective projects.
-- **Requirements:**
-  - BSc in Business Administration, Economics, Marketing, Renewable Energy, or related discipline.
-  - Minimum of 3–5 years relevant experience in business development, with experience in Productive Use of Energy (PUE) business management.
-  - Experience working in the Renewable Energy sector is highly desirable.
-- **How to Apply:** Send updated CV to jobs@acoblighting.com with "Business Development Officer" as the subject of the email.
-- **Application Deadline:** August 13, 2026.
-
-**Project Officer / Supervisor:**
-- **Job Description (Summary):** Responsible for managing and coordinating large scale Solar Electrification projects from planning through implementation and post-deployment support.
-- **Department:** Engineering & Operations
-- **Location:** Abuja (Full-time)
-- **Key Duties & Responsibilities:**
-  - Plan, coordinate, and supervise small, medium & large scale solar mini-grids and renewable energy related projects from inception to completion.
-  - Conduct in-depth project specific assessments and develop high-level technical reports.
-  - Develop and implement project work plans, schedules, and budgets.
-  - Conduct advance site mapping & desk research using tools like VIDA, SE4ALL, Google-Earth.
-  - Track project progress and prepare periodic status reports to Line Manager.
-  - Support Project development design preparations & applications using Odyssey, Homer & simulation tools.
-- **Requirements:**
-  - Bachelor’s Degree (BEng) in Engineering (Electrical, Engineering Management, or related field).
-  - Experience in Renewable Energy projects and mini-grid development or deployment is highly desirable.
-  - Minimum of 3–5 years' relevant experience in project management, project supervision, or renewable energy project implementation.
-  - Certification in COREN MGD (Mini-Grid Design) is an added advantage.
-- **How to Apply:** Send updated CV to jobs@acoblighting.com with "Project Officer/Supervisor" as the subject of the email.
-- **Application Deadline:** August 13, 2026.
-
-For the list of all open positions, direct users to the Careers page at /contact/careers.
-
+ACOB Lighting Technology Limited posts career opportunities on the website as positions become available.
+Currently, there are no active job openings (all previous application deadlines have passed).
+When users ask about career opportunities, jobs, or hiring at ACOB:
+- Inform them that ACOB is not actively hiring for any open positions at the moment.
+- Advise them to check the Careers page at /contact/careers regularly for upcoming openings.
+- Candidates interested in future opportunities can reach out to jobs@acoblighting.com.
 
 ## WEBSITE NAVIGATION & ROUTES
 
@@ -215,7 +152,6 @@ When users ask about specific services, pages, or want to navigate to certain se
 - **Office Locations:** /contact/locations
 - **Support:** /contact/support
 - **Careers:** /contact/careers
-- **Company Driver Job:** /contact/careers/company-driver
 - **FAQ:** /contact/faq
 
 ### Updates Section:
@@ -228,6 +164,8 @@ When users ask about specific services, pages, or want to navigate to certain se
 ### Other Pages:
 - **Privacy Policy:** /privacy-policy
 - **Terms of Service:** /terms-of-service
+- **Webmail Redirect:** /mail
+
 
 ## NAVIGATION INSTRUCTIONS
 
