@@ -1,7 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import { isAnniversaryYear2026 } from '@/lib/constants/anniversary';
 import {
   createContext,
   useCallback,
@@ -11,31 +9,19 @@ import {
   useState,
 } from 'react';
 
-/**
- * Loaded client-only, with no SSR fallback.
- *
- * The overlay ('use client') would otherwise still be rendered into the
- * initial server HTML. Framer Motion's `initial` styles are only applied once
- * JS hydrates, so that server markup paints as fully-formed text — visible for
- * one frame before hydration snaps it back to its starting state and the
- * intro plays. Excluding it from SSR means it doesn't exist in the DOM at all
- * until React mounts it client-side, so there's nothing to flash.
- */
-const AcobLoaderOverlay = dynamic(() => import('./acob-loader-overlay'), {
-  ssr: false,
-  loading: () => (
-    <div className="fixed inset-0 z-[99999] bg-[hsl(var(--loader-surface))]" />
-  ),
-});
+import { EXIT_DURATION, INTRO_PANEL_ID } from './intro-timeline';
 
 /**
  * Coordinates the intro loader with the page underneath it.
  *
- * The overlay owns its own lifetime: it loops the ACOB wordmark until the page
- * has actually finished loading, then plays the curtain lift. `revealed` flips
- * a beat *before* the curtain has fully cleared, so the header and hero are
- * already moving as the panel rises — the two read as one motion instead of
- * two separate events.
+ * The panel itself is server-rendered and animates in CSS (see intro-panel.tsx)
+ * so it paints on the first byte. This provider only decides *when it leaves*:
+ * at whichever comes later, the end of the build sequence or the page being
+ * ready — with a hard ceiling either way.
+ *
+ * `revealed` flips a beat *before* the curtain has fully cleared, so the header
+ * and hero are already moving as the panel rises — the two read as one motion
+ * instead of two separate events.
  */
 
 type SiteRevealValue = {
@@ -64,37 +50,19 @@ const REVEAL_LEAD = 0.35;
 /** Spacing between staggered elements once the reveal fires. */
 const REVEAL_STEP = 0.09;
 /** Never hold the loader longer than this, whatever the network is doing. */
-const MAX_LOADER_MS = 12000;
-
-const SESSION_KEY = 'acob-intro-shown';
+const MAX_LOADER_MS = 4000;
 
 /**
- * The intro is a first-impression moment, not a toll booth. Showing it on
- * every reload is the part that reads as dated, so it runs once per browsing
- * session — reloads and return visits within the session go straight to the
- * page.
- *
- * Read during the initial render (not in an effect) so a repeat load never
- * mounts the overlay at all, rather than flashing a panel for a frame.
+ * The pre-paint script in intro-panel.tsx has already settled whether the
+ * intro runs at all (repeat visit within the session, or reduced motion). Read
+ * its verdict rather than re-deriving it — and read it during render, so a
+ * skipped intro never leaves the page held hidden for a frame.
  */
-function introAlreadyShown(): boolean {
-  if (typeof window === 'undefined') {
+function introSkipped(): boolean {
+  if (typeof document === 'undefined') {
     return false;
   }
-  try {
-    return sessionStorage.getItem(SESSION_KEY) === '1';
-  } catch {
-    // Private mode / storage disabled — treat as unseen rather than break.
-    return false;
-  }
-}
-
-function markIntroShown(): void {
-  try {
-    sessionStorage.setItem(SESSION_KEY, '1');
-  } catch {
-    /* nothing to do — the intro simply repeats next load */
-  }
+  return document.documentElement.classList.contains('intro-skip');
 }
 
 export default function SiteRevealProvider({
@@ -102,84 +70,118 @@ export default function SiteRevealProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const seenThisSession = introAlreadyShown();
+  const [revealed, setRevealed] = useState(introSkipped);
 
-  const [showLoader, setShowLoader] = useState(!seenThisSession);
-  const [revealed, setRevealed] = useState(seenThisSession);
-  const [pageReady, setPageReady] = useState(false);
+  const finish = useCallback((panel: HTMLElement) => {
+    panel.classList.add('intro-leaving');
 
-  /* Skip the whole thing for reduced-motion users. */
-  useEffect(() => {
-    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (query.matches) {
-      setShowLoader(false);
-      setRevealed(true);
-    }
-  }, []);
-
-  /* Claim the session slot as soon as the intro actually runs. */
-  useEffect(() => {
-    if (showLoader) {
-      markIntroShown();
-    }
-  }, [showLoader]);
-
-  /* Readiness: real load event, with a hard ceiling as a safety net. */
-  useEffect(() => {
-    if (document.readyState === 'complete') {
-      setPageReady(true);
-      return;
-    }
-
-    const onLoad = () => setPageReady(true);
-    window.addEventListener('load', onLoad);
-    const cap = setTimeout(() => setPageReady(true), MAX_LOADER_MS);
-
-    return () => {
-      window.removeEventListener('load', onLoad);
-      clearTimeout(cap);
-    };
-  }, []);
-
-  /* Hold the page still until the overlay is completely gone. */
-  useEffect(() => {
-    if (!showLoader) {
-      return;
-    }
-
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.overflow = previous;
-    };
-  }, [showLoader]);
-
-  /*
-   * Freeze the page's own CSS entrance animations until the reveal — not until
-   * the overlay unmounts. They need to start *with* the rising curtain, the
-   * same beat the header and hero text move on; waiting for the overlay to
-   * finish would leave the page a step behind its own reveal.
-   */
-  useEffect(() => {
-    if (revealed) {
+    /*
+     * The page's own CSS entrance animations are frozen by data-loader-active
+     * (set pre-paint, alongside the panel). They need to start *with* the
+     * rising curtain, on the same beat the header and hero text move — not
+     * once the panel is gone, which would leave the page a step behind its
+     * own reveal.
+     */
+    const lead = window.setTimeout(() => {
       document.documentElement.removeAttribute('data-loader-active');
+      setRevealed(true);
+    }, REVEAL_LEAD * 1000);
+
+    const done = window.setTimeout(() => {
+      panel.remove();
+      document.documentElement.classList.remove('intro-active');
+      document.documentElement.removeAttribute('data-loader-active');
+      setRevealed(true);
+    }, EXIT_DURATION * 1000);
+
+    return () => {
+      window.clearTimeout(lead);
+      window.clearTimeout(done);
+    };
+  }, []);
+
+  useEffect(() => {
+    const panel = document.getElementById(INTRO_PANEL_ID);
+
+    /* Skipped, or already torn down by an earlier mount. */
+    if (!panel || introSkipped()) {
+      panel?.remove();
+      document.documentElement.classList.remove('intro-active');
+      document.documentElement.removeAttribute('data-loader-active');
+      setRevealed(true);
       return;
     }
 
-    document.documentElement.setAttribute('data-loader-active', '');
-    return () => document.documentElement.removeAttribute('data-loader-active');
-  }, [revealed]);
+    let cancelled = false;
+    let cleanupExit: (() => void) | undefined;
 
-  /** Fired by the overlay the moment the curtain starts rising. */
-  const handleExitStart = useCallback(() => {
-    setTimeout(() => setRevealed(true), REVEAL_LEAD * 1000);
-  }, []);
+    /*
+     * The panel started animating when the document painted, which is well
+     * before this effect runs — so the build's remaining time is measured from
+     * that stamp, not from hydration.
+     */
+    const started = window.__acobIntroStart ?? Date.now();
+    const buildMs = Number(panel.dataset.buildDuration ?? 0) * 1000;
 
-  const handleFinished = useCallback(() => {
-    setShowLoader(false);
-    setRevealed(true);
-  }, []);
+    const lift = () => {
+      if (cancelled) {
+        return;
+      }
+      cancelled = true;
+      cleanupExit = finish(panel);
+    };
+
+    /* Case 1: the page is ready first — hold for the rest of the build. */
+    /* Case 2: the build finishes first — the wordmark breathes until ready. */
+    const liftWhenBuildDone = () => {
+      const remaining = Math.max(0, started + buildMs - Date.now());
+      window.setTimeout(lift, remaining);
+    };
+
+    /*
+     * Readiness means "the page behind the curtain is worth looking at", not
+     * "every byte has arrived". The `load` event is the wrong bar: it waits on
+     * every image and embed on the route, so on a media-heavy page it fires
+     * long after the view is painted and settled. What has to be true is that
+     * React has hydrated (this effect is running) and the webfonts are in —
+     * otherwise the reveal lands on fallback type and reflows a beat later.
+     */
+    const fonts =
+      'fonts' in document ? document.fonts.ready : Promise.resolve(null);
+
+    fonts
+      .catch(() => null)
+      .then(() => {
+        /*
+         * A frame past the font swap, so the reveal never catches a reflow --
+         * but rAF never fires in a background tab, and a link opened in one is
+         * an ordinary way to arrive here. Race it against a timer so a hidden
+         * page still lifts on schedule instead of waiting out the ceiling.
+         */
+        let settled = false;
+        const once = () => {
+          if (settled) {
+            return;
+          }
+          settled = true;
+          liftWhenBuildDone();
+        };
+        requestAnimationFrame(() => requestAnimationFrame(once));
+        window.setTimeout(once, 50);
+      });
+
+    /* Safety net: never hold the page past the ceiling, build or no build. */
+    const cap = window.setTimeout(
+      lift,
+      Math.max(0, started + MAX_LOADER_MS - Date.now()),
+    );
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(cap);
+      cleanupExit?.();
+    };
+  }, [finish]);
 
   const value = useMemo<SiteRevealValue>(
     () => ({
@@ -192,16 +194,6 @@ export default function SiteRevealProvider({
   return (
     <SiteRevealContext.Provider value={value}>
       {children}
-      {showLoader && (
-        <AcobLoaderOverlay
-          exit="curtain"
-          ready={pageReady}
-          loop
-          showAnniversary={isAnniversaryYear2026()}
-          onExitStart={handleExitStart}
-          onFinished={handleFinished}
-        />
-      )}
     </SiteRevealContext.Provider>
   );
 }

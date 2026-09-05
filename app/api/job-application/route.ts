@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit } from '@/lib/utils/rate-limit';
 import { RATE_LIMITS } from '@/lib/constants/ui';
 import { CONTACT_INFO } from '@/lib/constants/app.constants';
+import { getJobPosting, getJobPostings } from '@/sanity/lib/queries';
+import { isDeadlineActive } from '@/lib/utils/date';
 
 /** Escape HTML special characters to prevent XSS in email templates */
 function escapeHtml(str: string): string {
@@ -57,6 +59,7 @@ export async function POST(request: NextRequest) {
 
     // Extract form fields
     const jobTitle = formData.get('jobTitle') as string;
+    const jobSlug = formData.get('jobSlug')?.toString().trim();
     const fullName = formData.get('fullName') as string;
     const email = formData.get('email') as string;
     const phone = formData.get('phone') as string;
@@ -84,6 +87,33 @@ export async function POST(request: NextRequest) {
     if (missingFields.length > 0) {
       return NextResponse.json(
         { error: 'Missing required fields', fields: missingFields },
+        { status: 400 },
+      );
+    }
+
+    // Verify that the job is currently active and within application deadline
+    let isJobOpen = false;
+    if (jobSlug) {
+      const job = await getJobPosting(jobSlug);
+      if (job && job.isActive && isDeadlineActive(job.applicationDeadline)) {
+        isJobOpen = true;
+      }
+    } else if (jobTitle) {
+      const activeJobs = await getJobPostings();
+      isJobOpen = activeJobs.some(
+        j =>
+          j.title.toLowerCase() === jobTitle.toLowerCase().trim() &&
+          j.isActive &&
+          isDeadlineActive(j.applicationDeadline),
+      );
+    }
+
+    if (!isJobOpen) {
+      return NextResponse.json(
+        {
+          error: 'Applications for this position are currently closed.',
+          code: 'JOB_CLOSED',
+        },
         { status: 400 },
       );
     }

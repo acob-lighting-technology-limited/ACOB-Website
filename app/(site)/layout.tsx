@@ -1,31 +1,30 @@
-import type React from 'react';
+import { type ReactNode, Suspense } from 'react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { ScrollToTop } from '@/components/ui/scroll-to-top';
 import { ChatBot } from '@/components/features/chat-bot';
 import { ChatErrorBoundary } from '@/components/error-boundary/error-boundary';
 import { SkipNavigation } from '@/components/ui/skip-navigation';
-import { AnnouncementBanner } from '@/components/ui/announcement-banner';
+import AnnouncementBannerSlot from '@/components/ui/announcement-banner-slot';
 import { JourneyProvider } from '@/components/features/journey/journey-provider';
 import SiteRevealProvider from '@/components/loader/site-reveal-provider';
-import { getJobPostings } from '@/sanity/lib/queries';
+import IntroPanel from '@/components/loader/intro-panel';
+import { isAnniversaryYear2026 } from '@/lib/constants/anniversary';
 
 export const revalidate = 300;
 
-export default async function SiteLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const jobPostings = await getJobPostings();
-
+export default function SiteLayout({ children }: { children: ReactNode }) {
   // Journey overlay mounts here so any /journey link opens it in place.
   return (
     <JourneyProvider>
+      {/* Server-rendered so it paints on the first byte, before any JS. */}
+      <IntroPanel showAnniversary={isAnniversaryYear2026()} />
       <SiteRevealProvider>
         <div className="flex min-h-screen flex-col w-full bg-background transition-colors duration-500 selection:bg-primary selection:text-primary-foreground">
           <SkipNavigation />
-          <AnnouncementBanner jobCount={jobPostings.length} />
+          <Suspense fallback={null}>
+            <AnnouncementBannerSlot />
+          </Suspense>
           <Header />
           <main id="main-content" className="flex-1 border-b border-b-muted">
             {children}

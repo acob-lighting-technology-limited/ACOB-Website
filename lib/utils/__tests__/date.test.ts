@@ -3,6 +3,8 @@ import {
   formatDateTime,
   getRelativeTime,
   getCurrentDate,
+  isDeadlineActive,
+  isDeadlinePassed,
 } from '../date';
 
 describe('formatDate', () => {
@@ -49,5 +51,26 @@ describe('getRelativeTime', () => {
 describe('getCurrentDate', () => {
   it('returns today in DD/MM/YYYY format', () => {
     expect(getCurrentDate()).toBe(formatDate(new Date().toISOString()));
+  });
+});
+
+describe('isDeadlineActive & isDeadlinePassed', () => {
+  it('treats undefined or null deadline as active', () => {
+    expect(isDeadlineActive(null)).toBe(true);
+    expect(isDeadlineActive(undefined)).toBe(true);
+    expect(isDeadlinePassed(null)).toBe(false);
+    expect(isDeadlinePassed(undefined)).toBe(false);
+  });
+
+  it('returns active for future deadlines', () => {
+    const futureDate = '2099-12-31';
+    expect(isDeadlineActive(futureDate)).toBe(true);
+    expect(isDeadlinePassed(futureDate)).toBe(false);
+  });
+
+  it('returns passed for past deadlines', () => {
+    const pastDate = '2020-01-01';
+    expect(isDeadlineActive(pastDate)).toBe(false);
+    expect(isDeadlinePassed(pastDate)).toBe(true);
   });
 });

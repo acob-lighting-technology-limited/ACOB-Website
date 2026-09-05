@@ -14,7 +14,7 @@ type Props = {
   exit?: LoaderExit;
   /** Flip to true when the page has finished loading. */
   ready?: boolean;
-  /** Replay the intro if the page still isn't ready when a pass ends. */
+  /** Hold on the finished mark if the page still isn't ready when a pass ends. */
   loop?: boolean;
   /** Fires the moment the exit animation begins. */
   onExitStart?: () => void;
@@ -32,9 +32,11 @@ const PANEL_CLASS =
 /**
  * Full-screen loader overlay.
  *
- * The intro runs on its own clock. When a pass ends it either exits (page is
- * ready) or starts over (page still loading) — so the loader never cuts off
- * mid-sequence and never leaves the user staring at a frozen wordmark.
+ * The build sequence always plays through — cutting it off mid-swing looks
+ * broken. But once the mark is finished it does *not* replay: it holds,
+ * breathing, and leaves the moment the page reports ready. Replaying meant a
+ * page that became ready one frame after a pass ended paid for a whole second
+ * pass, which is what made a fast load feel slow.
  */
 export default function AcobLoaderOverlay({
   exit = 'curtain',
@@ -48,32 +50,26 @@ export default function AcobLoaderOverlay({
   const def = LOADER_EXITS[exit];
 
   const [visible, setVisible] = useState(true);
-  const [runId, setRunId] = useState(0);
   const [passDone, setPassDone] = useState(false);
 
   const handlePassComplete = useCallback(() => setPassDone(true), []);
 
+  /*
+   * Leave as soon as both are true, in whichever order they land: the build
+   * has played out, and the page is ready. No pass boundary to wait for.
+   */
   useEffect(() => {
-    if (!passDone) {
+    if (!passDone || !ready) {
       return;
     }
-
-    if (ready) {
-      setVisible(false);
-      onExitStart?.();
-      return;
-    }
-
-    if (loop) {
-      setPassDone(false);
-      setRunId(id => id + 1);
-    }
-  }, [passDone, ready, loop, onExitStart]);
+    setVisible(false);
+    onExitStart?.();
+  }, [passDone, ready, onExitStart]);
 
   const content = (withCallback: boolean) => (
     <AcobWordmarkLoader
-      key={runId}
       onComplete={withCallback ? handlePassComplete : undefined}
+      idle={loop && passDone && !ready}
       showAnniversary={showAnniversary}
       tempo={tempo}
       wordmarkVariants={def.wordmark}

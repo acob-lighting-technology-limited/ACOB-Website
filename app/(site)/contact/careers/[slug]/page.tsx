@@ -16,7 +16,7 @@ import { notFound } from 'next/navigation';
 import { getJobPosting } from '@/sanity/lib/queries';
 import { urlFor } from '@/sanity/lib/image';
 import { CONTACT_INFO } from '@/lib/constants/app.constants';
-import { formatDate } from '@/lib/utils/date';
+import { formatDate, isDeadlinePassed } from '@/lib/utils/date';
 
 interface JobPostingPageProps {
   params: Promise<{
@@ -52,6 +52,8 @@ export default async function JobPostingPage({ params }: JobPostingPageProps) {
     notFound();
   }
 
+  const isClosed = !job.isActive || isDeadlinePassed(job.applicationDeadline);
+
   const breadcrumbItems = [
     { label: 'Home', href: '/' },
     { label: 'Contact', href: '/contact' },
@@ -78,6 +80,29 @@ export default async function JobPostingPage({ params }: JobPostingPageProps) {
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1fr_300px] lg:gap-14">
           {/* Main content */}
           <div>
+            {/* Closed position banner */}
+            {isClosed && (
+              <div className="mb-8 border-l-4 border-destructive bg-destructive/10 p-5 text-destructive dark:bg-destructive/20">
+                <p className="text-sm font-bold uppercase tracking-wide">
+                  Applications Closed
+                </p>
+                <p className="mt-1 text-sm text-foreground/80">
+                  This position is no longer accepting applications
+                  {job.applicationDeadline
+                    ? ` (application deadline was ${formatDate(job.applicationDeadline)})`
+                    : ''}
+                  . Please check our{' '}
+                  <Link
+                    href="/contact/careers"
+                    className="font-semibold text-primary underline"
+                  >
+                    Careers page
+                  </Link>{' '}
+                  for current openings.
+                </p>
+              </div>
+            )}
+
             {/* Meta */}
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-border pb-6 text-sm text-muted-foreground">
               {job.department && (
@@ -204,23 +229,38 @@ export default async function JobPostingPage({ params }: JobPostingPageProps) {
               <h2 className="mt-2 text-2xl font-extrabold uppercase tracking-tight text-foreground md:text-3xl">
                 How to Apply
               </h2>
-              <p className="mt-4 max-w-[68ch] leading-relaxed text-muted-foreground">
-                {job.howToApply ? (
-                  formatHowToApplyText(job.howToApply, job.title)
-                ) : (
-                  <>
-                    Interested and qualified candidates should send their
-                    updated CV to{' '}
-                    <a
-                      href={`mailto:jobs@acoblighting.com?subject=Application%20for%20${encodeURIComponent(job.title)}`}
-                      className="font-semibold text-primary hover:underline"
-                    >
-                      jobs@acoblighting.com
-                    </a>{' '}
-                    with the job title as the subject of the email.
-                  </>
-                )}
-              </p>
+              {isClosed ? (
+                <p className="mt-4 max-w-[68ch] leading-relaxed text-muted-foreground">
+                  Applications for this position are currently closed. Please
+                  visit our{' '}
+                  <Link
+                    href="/contact/careers"
+                    className="font-semibold text-primary hover:underline"
+                  >
+                    Careers page
+                  </Link>{' '}
+                  to view other opportunities or express interest in future
+                  openings.
+                </p>
+              ) : (
+                <p className="mt-4 max-w-[68ch] leading-relaxed text-muted-foreground">
+                  {job.howToApply ? (
+                    formatHowToApplyText(job.howToApply, job.title)
+                  ) : (
+                    <>
+                      Interested and qualified candidates should send their
+                      updated CV to{' '}
+                      <a
+                        href={`mailto:jobs@acoblighting.com?subject=Application%20for%20${encodeURIComponent(job.title)}`}
+                        className="font-semibold text-primary hover:underline"
+                      >
+                        jobs@acoblighting.com
+                      </a>{' '}
+                      with the job title as the subject of the email.
+                    </>
+                  )}
+                </p>
+              )}
             </div>
 
             {/* Actions */}
@@ -231,15 +271,17 @@ export default async function JobPostingPage({ params }: JobPostingPageProps) {
                   Back to Careers
                 </Button>
               </Link>
-              <a
-                href={`mailto:jobs@acoblighting.com?subject=Application%20for%20${encodeURIComponent(job.title)}`}
-                className="w-full sm:w-auto"
-              >
-                <Button className="group w-full">
-                  Apply Now
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Button>
-              </a>
+              {!isClosed && (
+                <a
+                  href={`mailto:jobs@acoblighting.com?subject=Application%20for%20${encodeURIComponent(job.title)}`}
+                  className="w-full sm:w-auto"
+                >
+                  <Button className="group w-full">
+                    Apply Now
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </Button>
+                </a>
+              )}
             </div>
           </div>
 
@@ -248,11 +290,13 @@ export default async function JobPostingPage({ params }: JobPostingPageProps) {
             <section>
               <div className="border-t-2 border-foreground pt-4">
                 <h2 className="text-sm font-bold uppercase tracking-[0.18em] text-foreground">
-                  Apply for this Position
+                  {isClosed ? 'Position Status' : 'Apply for this Position'}
                 </h2>
               </div>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Interested in this role? Get in touch with us to apply.
+                {isClosed
+                  ? 'This position has closed and is no longer accepting applications.'
+                  : 'Interested in this role? Get in touch with us to apply.'}
               </p>
               <div className="mt-4 divide-y divide-border border-y border-border">
                 <div className="py-3.5">

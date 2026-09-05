@@ -6,12 +6,13 @@
  */
 
 import { client } from '../config';
+import { isDeadlineActive } from '@/lib/utils/date';
 
 // ============================================================================
 // JOB POSTING TYPE
 // ============================================================================
 
-interface JobPosting {
+export interface JobPosting {
   _id: string;
   title: string;
   department: string;
@@ -22,7 +23,8 @@ interface JobPosting {
   requirements: string[];
   skills?: string[];
   howToApply?: string;
-  applicationDeadline: string;
+  applicationDeadline?: string;
+  isActive?: boolean;
   publishedAt: string;
   slug: {
     current: string;
@@ -41,7 +43,7 @@ interface JobPosting {
 // ============================================================================
 
 /**
- * Get all active job postings
+ * Get all active job postings whose application deadline has not passed
  *
  * @returns Array of active job postings ordered by publish date
  *
@@ -52,8 +54,8 @@ interface JobPosting {
  */
 export async function getJobPostings(): Promise<JobPosting[]> {
   try {
-    const jobs = await client.fetch(`
-      *[_type == "jobPosting" && isActive == true] | order(publishedAt desc) {
+    const jobs = await client.fetch<JobPosting[]>(`
+      *[_type == "jobPosting" && isActive == true && (!defined(applicationDeadline) || dateTime(applicationDeadline + "T23:59:59Z") >= dateTime(now()))] | order(publishedAt desc) {
         _id,
         title,
         department,
@@ -65,6 +67,7 @@ export async function getJobPostings(): Promise<JobPosting[]> {
         skills,
         howToApply,
         applicationDeadline,
+        isActive,
         publishedAt,
         slug,
         coverImage {
@@ -76,7 +79,10 @@ export async function getJobPostings(): Promise<JobPosting[]> {
         }
       }
     `);
-    return jobs;
+    return (jobs || []).filter(
+      job =>
+        !job.applicationDeadline || isDeadlineActive(job.applicationDeadline),
+    );
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.error('Error fetching job postings from Sanity:', error);
@@ -90,10 +96,10 @@ export async function getJobPostings(): Promise<JobPosting[]> {
 // ============================================================================
 
 /**
- * Get a single active job posting by slug
+ * Get a single job posting by slug
  *
  * @param slug - Job posting slug
- * @returns Job posting details or null if not found/inactive
+ * @returns Job posting details or null if not found
  *
  * @example
  * ```typescript
@@ -102,9 +108,9 @@ export async function getJobPostings(): Promise<JobPosting[]> {
  */
 export async function getJobPosting(slug: string): Promise<JobPosting | null> {
   try {
-    const job = await client.fetch(
+    const job = await client.fetch<JobPosting | null>(
       `
-      *[_type == "jobPosting" && slug.current == $slug && isActive == true][0] {
+      *[_type == "jobPosting" && slug.current == $slug][0] {
         _id,
         title,
         department,
@@ -116,6 +122,7 @@ export async function getJobPosting(slug: string): Promise<JobPosting | null> {
         skills,
         howToApply,
         applicationDeadline,
+        isActive,
         publishedAt,
         slug,
         coverImage {
@@ -131,9 +138,6 @@ export async function getJobPosting(slug: string): Promise<JobPosting | null> {
     );
 
     if (!job) {
-      if (process.env.NODE_ENV === 'development') {
-        // Job not found
-      }
       return null;
     }
 
@@ -151,7 +155,7 @@ export async function getJobPosting(slug: string): Promise<JobPosting | null> {
 // ============================================================================
 
 /**
- * Get count of active job postings
+ * Get count of active job postings whose application deadline has not passed
  *
  * @returns Number of active job postings
  *
@@ -163,8 +167,8 @@ export async function getJobPosting(slug: string): Promise<JobPosting | null> {
  */
 export async function getActiveJobCount(): Promise<number> {
   try {
-    const count = await client.fetch(`
-      count(*[_type == "jobPosting" && isActive == true])
+    const count = await client.fetch<number>(`
+      count(*[_type == "jobPosting" && isActive == true && (!defined(applicationDeadline) || dateTime(applicationDeadline + "T23:59:59Z") >= dateTime(now()))])
     `);
     return count || 0;
   } catch (error) {

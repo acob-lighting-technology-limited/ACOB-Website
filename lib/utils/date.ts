@@ -61,3 +61,24 @@ export function getCurrentDate(): string {
   const year = now.getFullYear();
   return `${day}/${month}/${year}`;
 }
+
+/**
+ * Check if an application deadline is still active (inclusive of the deadline date until 23:59:59 UTC)
+ */
+export function isDeadlineActive(deadlineDateString?: string | null): boolean {
+  if (!deadlineDateString) {
+    return true;
+  }
+  const deadline = new Date(`${deadlineDateString.slice(0, 10)}T23:59:59Z`);
+  return !isNaN(deadline.getTime()) && deadline.getTime() >= Date.now();
+}
+
+/**
+ * Check if an application deadline has passed
+ */
+export function isDeadlinePassed(deadlineDateString?: string | null): boolean {
+  if (!deadlineDateString) {
+    return false;
+  }
+  return !isDeadlineActive(deadlineDateString);
+}
