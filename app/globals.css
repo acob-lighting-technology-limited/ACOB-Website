@@ -137,7 +137,7 @@
 
     /* Intro loader — brand green-700 is far too dark to read against a
        zinc-950 panel, so dark mode gets a lifted, more luminous green. */
-    --loader-surface: 240 6% 6%; /* a touch deeper than the page */
+    --loader-surface: 0 0% 0%; /* pure black */
     --loader-ink: 0 0% 100%; /* white */
     --loader-accent: 132 62% 52%; /* lifted green */
     --loader-sub: 240 5% 64%; /* zinc-400 */

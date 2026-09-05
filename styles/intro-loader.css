@@ -1,0 +1,222 @@
+/*
+ * Intro loader — server-rendered panel.
+ *
+ * This markup ships in the initial HTML and animates with pure CSS, so it
+ * paints on the first byte instead of waiting for React to hydrate. That
+ * window — HTML received, bundle still downloading — is the one the old
+ * client-mounted overlay could never cover; it used to be a bare dark screen.
+ *
+ * React's only job now is to take the panel away (see site-reveal-provider).
+ * Timings mirror LOADER_TIMELINES.tight in acob-wordmark-loader.tsx, which
+ * still drives the /try playground.
+ */
+
+:root {
+  --intro-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --intro-ease-quint: cubic-bezier(0.83, 0, 0.17, 1);
+  --intro-letter-duration: 0.4s;
+  --intro-exit-duration: 1s;
+}
+
+/* Locks scrolling while the panel is up. Set by the pre-paint script. */
+html.intro-active,
+html.intro-active body {
+  overflow: hidden;
+}
+
+/*
+ * Repeat visit within the session, or reduced-motion: the script adds this
+ * before first paint, so the panel is never painted at all rather than
+ * flashing for a frame.
+ */
+html.intro-skip #acob-intro {
+  display: none;
+}
+
+#acob-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: hsl(var(--loader-surface));
+  will-change: transform;
+}
+
+.intro-wordmark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  perspective: 1000px;
+}
+
+/* Idle breath once the build has played out and we're still waiting. */
+.intro-breath {
+  animation: intro-breath 1.8s var(--intro-build-duration, 2.12s) ease-in-out
+    infinite;
+}
+
+@keyframes intro-breath {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.intro-line {
+  display: flex;
+  align-items: baseline;
+  white-space: nowrap;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  color: hsl(var(--loader-ink));
+  font-size: clamp(2.25rem, 9vw, 5.5rem);
+  transform-style: preserve-3d;
+}
+
+.intro-accent {
+  color: hsl(var(--loader-accent));
+}
+
+.intro-gold {
+  color: hsl(var(--loader-gold));
+  font-weight: 700;
+}
+
+/*
+ * Each letter is two nested spans: the outer opens up horizontally so the
+ * line keeps re-centering, the inner swings out from its left edge. Framer
+ * animated the outer to `width: auto`; CSS can't, so it animates max-width to
+ * a cap wider than any glyph — same reveal, and the resting layout is the
+ * element's natural width either way.
+ */
+.intro-letter {
+  display: inline-block;
+  transform-style: preserve-3d;
+  max-width: 0;
+  animation: intro-letter-open var(--intro-letter-duration)
+    var(--intro-ease-out) var(--intro-delay, 0s) both;
+}
+
+.intro-letter > span {
+  display: inline-block;
+  transform-origin: left center;
+  white-space: nowrap;
+  backface-visibility: hidden;
+  animation: intro-letter-in var(--intro-letter-duration) var(--intro-ease-out)
+    var(--intro-delay, 0s) both;
+}
+
+@keyframes intro-letter-open {
+  from {
+    max-width: 0;
+  }
+  to {
+    max-width: var(--intro-letter-cap, 2em);
+  }
+}
+
+@keyframes intro-letter-in {
+  from {
+    opacity: 0;
+    transform: rotateY(-105deg) translateZ(-140px) scaleX(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The gap between ACOB and LIGHTING, opening up alongside the L. */
+.intro-gap {
+  display: inline-block;
+  width: 0;
+  animation: intro-gap-open var(--intro-letter-duration) var(--intro-ease-out)
+    var(--intro-delay, 0s) both;
+}
+
+@keyframes intro-gap-open {
+  to {
+    width: 0.32em;
+  }
+}
+
+/* TECHNOLOGY slides down from underneath the line above. */
+.intro-tech-clip {
+  overflow: hidden;
+  max-height: 0;
+  animation: intro-tech-clip var(--intro-tech-duration, 0.42s)
+    var(--intro-ease-out) var(--intro-delay, 0s) both;
+}
+
+@keyframes intro-tech-clip {
+  to {
+    max-height: 3em;
+  }
+}
+
+.intro-tech {
+  padding-top: 0.5rem;
+  text-align: center;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: hsl(var(--loader-sub));
+  font-size: clamp(0.8rem, 3vw, 1.6rem);
+  animation: intro-tech-in var(--intro-tech-duration, 0.42s)
+    var(--intro-ease-out) var(--intro-delay, 0s) both;
+}
+
+@keyframes intro-tech-in {
+  from {
+    opacity: 0;
+    transform: translateY(-110%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.intro-tech-inner {
+  display: inline-flex;
+  align-items: baseline;
+  transform-style: preserve-3d;
+}
+
+.intro-tech-word {
+  letter-spacing: 0.42em;
+  padding-left: 0.42em;
+}
+
+/* The "@" bowl sits below the baseline in most sans faces; nudge it back up. */
+.intro-at {
+  display: inline-block;
+  transform: translateY(-0.09em);
+}
+
+/*
+ * Exit — the curtain lift. React adds this class when the page is ready and
+ * the build has finished, then removes the node once it has played out.
+ */
+#acob-intro.intro-leaving {
+  transform: translateY(-100%);
+  border-bottom-left-radius: 2.5rem;
+  border-bottom-right-radius: 2.5rem;
+  transition:
+    transform var(--intro-exit-duration) var(--intro-ease-quint),
+    border-radius var(--intro-exit-duration) var(--intro-ease-quint);
+}
+
+/* Drifts slower than the panel — a touch of parallax weight. */
+#acob-intro.intro-leaving .intro-wordmark {
+  animation: none;
+  transform: translateY(60px);
+  transition: transform var(--intro-exit-duration) var(--intro-ease-quint);
+}

@@ -2,6 +2,7 @@ import type React from 'react';
 import './globals.css';
 import '../styles/customShadow.css';
 import '../styles/animations.css';
+import '../styles/intro-loader.css';
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import { Providers } from '@/components/providers/session-provider';

@@ -3,6 +3,16 @@
 import { motion, type Variants } from 'framer-motion';
 import { type ReactNode, useEffect } from 'react';
 
+import {
+  AT_RISE_EM,
+  BRAND,
+  LIGHTING,
+  LOADER_TIMELINES as TIMELINES,
+  loaderDuration as passDuration,
+  type LoaderTempo,
+  WORD_GAP_EM,
+} from './intro-timeline';
+
 /**
  * ACOB Wordmark Loader
  *
@@ -13,114 +23,16 @@ import { type ReactNode, useEffect } from 'react';
  *  4. TECHNOLOGY slides down from underneath the ACOB LIGHTING line.
  */
 
-const BRAND = 'ACOB';
-const LIGHTING = 'LIGHTING';
-/** Gap between ACOB and LIGHTING, in em — a real space glyph collapses to
- * zero width because it's the sole content of an inline-block box (leading/
- * trailing whitespace inside that box gets trimmed), so the gap is a sized
- * spacer instead. */
-const WORD_GAP_EM = 0.32;
-
-/**
- * Optical correction for the "@". Its bowl is drawn extending below the
- * baseline in most sans faces, while the lining digits beside it sit exactly
- * on it — so baseline-aligned, the "@" reads as sagging. Nudge it back up.
+/*
+ * Choreography lives in ./intro-timeline so the server-rendered intro panel
+ * and this client component stay in lockstep. Re-exported here because the
+ * /try playground imports them from this module.
  */
-const AT_RISE_EM = 0.09;
-
-/* ------------------------------------------------------------------ */
-/* Timeline (seconds)                                                  */
-/* ------------------------------------------------------------------ */
-
-type TimelineInput = {
-  /** When the lone "A" lands. */
-  aStart: number;
-  /** When "C" starts; O and B follow on the stagger. */
-  brandStart: number;
-  brandStagger: number;
-  /** How long one letter takes to swing out. */
-  letterDuration: number;
-  /** Gap after the last brand letter before LIGHTING begins. */
-  lightingLead: number;
-  lightingStagger: number;
-  /** Gap after LIGHTING lands before TECHNOLOGY drops. */
-  techLead: number;
-  techDuration: number;
-  /**
-   * Beat after TECHNOLOGY lands before "@10" swings out. It waits for a
-   * settled word — starting mid-slide made it ride down into place instead of
-   * emerging from a stationary neighbour like every other letter.
-   */
-  anniversaryBeat: number;
-  /** Beat to rest on the finished mark before the curtain takes it. */
-  restBeat: number;
-};
-
-function buildTimeline(i: TimelineInput) {
-  const lightingStart =
-    i.brandStart + i.brandStagger * (BRAND.length - 1) + i.lightingLead;
-  const techStart =
-    lightingStart + i.lightingStagger * (LIGHTING.length - 1) + i.techLead;
-  const anniversaryStart = techStart + i.techDuration + i.anniversaryBeat;
-
-  return {
-    ...i,
-    lightingStart,
-    techStart,
-    anniversaryStart,
-    /** One full pass. */
-    duration: techStart + i.techDuration + i.restBeat,
-    /** One full pass that also reveals "@10". */
-    durationAnniversary: anniversaryStart + i.letterDuration + i.restBeat,
-  };
-}
-
-export type LoaderTempo = 'tight' | 'full';
-
-export const LOADER_TIMELINES: Record<
-  LoaderTempo,
-  ReturnType<typeof buildTimeline>
-> = {
-  /**
-   * Ships to the site. Same choreography, roughly half the wall time — an
-   * intro that gates every session should be over in a couple of seconds.
-   */
-  tight: buildTimeline({
-    aStart: 0.08,
-    brandStart: 0.32,
-    brandStagger: 0.15,
-    letterDuration: 0.4,
-    lightingLead: 0.24,
-    lightingStagger: 0.05,
-    techLead: 0.16,
-    techDuration: 0.42,
-    anniversaryBeat: 0.06,
-    restBeat: 0.18,
-  }),
-
-  /** The original, slower pacing — kept for comparison in /try. */
-  full: buildTimeline({
-    aStart: 0.15,
-    brandStart: 0.7,
-    brandStagger: 0.32,
-    letterDuration: 0.62,
-    lightingLead: 0.372,
-    lightingStagger: 0.105,
-    techLead: 0.35,
-    techDuration: 0.75,
-    anniversaryBeat: 0.12,
-    restBeat: 0.4,
-  }),
-};
-
-/** How long one pass runs, for callers that need to schedule around it. */
-export function loaderDuration(
-  tempo: LoaderTempo,
-  withAnniversary: boolean,
-): number {
-  const t = LOADER_TIMELINES[tempo];
-  return withAnniversary ? t.durationAnniversary : t.duration;
-}
+export {
+  LOADER_TIMELINES,
+  loaderDuration,
+  type LoaderTempo,
+} from './intro-timeline';
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 /** Heavy in-out, the "expensive machinery" feel for the exits. */
@@ -202,6 +114,7 @@ export default function AcobWordmarkLoader({
   mode = 'animate',
   showAnniversary = false,
   tempo = 'tight',
+  idle = false,
 }: {
   onComplete?: () => void;
   /** Optional variants applied to the wordmark block, so an exit can move it. */
@@ -217,15 +130,21 @@ export default function AcobWordmarkLoader({
   showAnniversary?: boolean;
   /** Pacing preset. 'tight' ships; 'full' is the original, for comparison. */
   tempo?: LoaderTempo;
+  /**
+   * The build has finished but the page still isn't ready. The finished mark
+   * breathes in place rather than replaying the whole build — so the exit can
+   * fire the instant readiness lands, instead of waiting out another pass.
+   */
+  idle?: boolean;
 }) {
   const animateIn = mode === 'animate';
-  const t = LOADER_TIMELINES[tempo];
+  const t = TIMELINES[tempo];
 
   useEffect(() => {
     if (!onComplete) {
       return;
     }
-    const pass = loaderDuration(tempo, showAnniversary);
+    const pass = passDuration(tempo, showAnniversary);
     const timer = setTimeout(() => onComplete(), pass * 1000);
     return () => clearTimeout(timer);
   }, [onComplete, showAnniversary, tempo]);
@@ -243,94 +162,106 @@ export default function AcobWordmarkLoader({
             : { duration: 1.8, repeat: Infinity, ease: 'easeInOut' }
         }
       >
-        {/* ACOB LIGHTING */}
-        <div
-          className="flex items-baseline whitespace-nowrap font-bold leading-none tracking-tight text-[hsl(var(--loader-ink))]"
-          style={{
-            fontSize: 'clamp(2.25rem, 9vw, 5.5rem)',
-            transformStyle: 'preserve-3d',
-          }}
-        >
-          {BRAND.split('').map((char, i) => (
-            <Letter
-              key={`brand-${i}`}
-              char={char}
-              delay={
-                i === 0 ? t.aStart : t.brandStart + t.brandStagger * (i - 1)
-              }
-              duration={t.letterDuration}
-              animateIn={animateIn}
-            />
-          ))}
-
-          {/* the gap before LIGHTING opens up with the L */}
-          <WordGap
-            delay={t.lightingStart}
-            duration={t.letterDuration}
-            animateIn={animateIn}
-          />
-
-          {LIGHTING.split('').map((char, i) => (
-            <Letter
-              key={`lighting-${i}`}
-              char={char}
-              delay={t.lightingStart + t.lightingStagger * i}
-              duration={t.letterDuration}
-              className="text-[hsl(var(--loader-accent))]"
-              animateIn={animateIn}
-            />
-          ))}
-        </div>
-
-        {/* TECHNOLOGY slides down from underneath the line above */}
         <motion.div
-          className="overflow-hidden"
-          initial={animateIn ? { height: 0 } : false}
-          animate={{ height: 'auto' }}
-          transition={{
-            duration: t.techDuration,
-            delay: t.techStart,
-            ease: easeOut,
-          }}
+          className="flex flex-col items-center"
+          animate={idle ? { opacity: [1, 0.62, 1] } : { opacity: 1 }}
+          transition={
+            idle
+              ? { duration: 1.8, repeat: Infinity, ease: 'easeInOut' }
+              : { duration: 0.3 }
+          }
         >
+          {/* ACOB LIGHTING */}
+          <div
+            className="flex items-baseline whitespace-nowrap font-bold leading-none tracking-tight text-[hsl(var(--loader-ink))]"
+            style={{
+              fontSize: 'clamp(2.25rem, 9vw, 5.5rem)',
+              transformStyle: 'preserve-3d',
+            }}
+          >
+            {BRAND.split('').map((char, i) => (
+              <Letter
+                key={`brand-${i}`}
+                char={char}
+                delay={
+                  i === 0 ? t.aStart : t.brandStart + t.brandStagger * (i - 1)
+                }
+                duration={t.letterDuration}
+                animateIn={animateIn}
+              />
+            ))}
+
+            {/* the gap before LIGHTING opens up with the L */}
+            <WordGap
+              delay={t.lightingStart}
+              duration={t.letterDuration}
+              animateIn={animateIn}
+            />
+
+            {LIGHTING.split('').map((char, i) => (
+              <Letter
+                key={`lighting-${i}`}
+                char={char}
+                delay={t.lightingStart + t.lightingStagger * i}
+                duration={t.letterDuration}
+                className="text-[hsl(var(--loader-accent))]"
+                animateIn={animateIn}
+              />
+            ))}
+          </div>
+
+          {/* TECHNOLOGY slides down from underneath the line above */}
           <motion.div
-            className="pt-2 text-center font-semibold uppercase text-[hsl(var(--loader-sub))]"
-            style={{ fontSize: 'clamp(0.8rem, 3vw, 1.6rem)' }}
-            initial={animateIn ? { y: '-110%', opacity: 0 } : false}
-            animate={{ y: '0%', opacity: 1 }}
+            className="overflow-hidden"
+            initial={animateIn ? { height: 0 } : false}
+            animate={{ height: 'auto' }}
             transition={{
               duration: t.techDuration,
               delay: t.techStart,
               ease: easeOut,
             }}
           >
-            <span
-              className="inline-flex items-baseline"
-              style={{ transformStyle: 'preserve-3d' }}
+            <motion.div
+              className="pt-2 text-center font-semibold uppercase text-[hsl(var(--loader-sub))]"
+              style={{ fontSize: 'clamp(0.8rem, 3vw, 1.6rem)' }}
+              initial={animateIn ? { y: '-110%', opacity: 0 } : false}
+              animate={{ y: '0%', opacity: 1 }}
+              transition={{
+                duration: t.techDuration,
+                delay: t.techStart,
+                ease: easeOut,
+              }}
             >
-              <span style={{ letterSpacing: '0.42em', paddingLeft: '0.42em' }}>
-                Technology
+              <span
+                className="inline-flex items-baseline"
+                style={{ transformStyle: 'preserve-3d' }}
+              >
+                <span
+                  style={{ letterSpacing: '0.42em', paddingLeft: '0.42em' }}
+                >
+                  Technology
+                </span>
+                {showAnniversary && (
+                  <Letter
+                    char={
+                      <>
+                        <span
+                          className="inline-block"
+                          style={{ transform: `translateY(-${AT_RISE_EM}em)` }}
+                        >
+                          @
+                        </span>
+                        10
+                      </>
+                    }
+                    delay={t.anniversaryStart}
+                    duration={t.letterDuration}
+                    animateIn={animateIn}
+                    className="font-bold text-[hsl(var(--loader-gold))]"
+                  />
+                )}
               </span>
-              {showAnniversary && (
-                <Letter
-                  char={
-                    <>
-                      <span
-                        className="inline-block"
-                        style={{ transform: `translateY(-${AT_RISE_EM}em)` }}
-                      >
-                        @
-                      </span>
-                      10
-                    </>
-                  }
-                  delay={t.anniversaryStart}
-                  duration={t.letterDuration}
-                  animateIn={animateIn}
-                  className="font-bold text-[hsl(var(--loader-gold))]"
-                />
-              )}
-            </span>
+            </motion.div>
           </motion.div>
         </motion.div>
       </motion.div>

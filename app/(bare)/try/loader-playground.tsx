@@ -59,7 +59,8 @@ export default function LoaderPlayground() {
     setPageReady(!slowPage);
 
     if (slowPage) {
-      // Stay "loading" long enough that the intro has to run a second pass.
+      // Stay "loading" past the end of the build, so you can see the mark
+      // hold and breathe before the exit finally fires.
       slowTimer.current = setTimeout(
         () => setPageReady(true),
         loaderDuration(tempo, anniversary) * 1200,
@@ -89,8 +90,8 @@ export default function LoaderPlayground() {
         <AcobLoaderOverlay
           key={runId}
           exit={exit}
-          // "Slow page" holds ready false for one extra pass, so you can see
-          // the intro loop before the exit finally fires.
+          // "Slow page" holds ready false past the end of the build, so you
+          // can see the mark wait before the exit fires.
           ready={pageReady}
           loop
           showAnniversary={anniversary}
@@ -147,7 +148,7 @@ export default function LoaderPlayground() {
                 onChange={e => setSlowPage(e.target.checked)}
                 className="h-4 w-4 accent-[hsl(var(--primary))]"
               />
-              Simulate slow page (loop the intro)
+              Simulate slow page (hold on the mark)
             </label>
             <label className="flex items-center gap-2 text-xs text-muted-foreground">
               <input
